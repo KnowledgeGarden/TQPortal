@@ -4,5 +4,7 @@
  */
 
 exports.index = function(req, res){
-  res.render('index', { title: 'TQPortal' });
+	//changing this value allows changing landing page
+  var idx = 'newindex';
+  res.render(idx, { title: 'TQPortal' });
 };

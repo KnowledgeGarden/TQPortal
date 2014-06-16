@@ -7,12 +7,19 @@ var home = require('./index')
   , admin = require('./admin')
   , user  = require('./user')
   , login = require('./login')
+  , blog = require('./blog')
+  , matrix = require('./matrix')
   , signup = require('./signup')
   , mongoose = require('mongoose')
   , passport = require('passport')
   , User = require('../apps/models/account')
+  , articles = require('../apps/models/articles')
+  , auth = require('./auth/authorization')
   , LocalStrategy = require('passport-local').Strategy;
 	
+var articleAuth = [auth.requiresLogin, auth.article.hasAuthorization];
+var commentAuth = [auth.requiresLogin, auth.comment.hasAuthorization];
+
 module.exports = function(app, passport) {
 	////////////////////////////////////////
 	// We have three "main" templates:
@@ -38,8 +45,18 @@ module.exports = function(app, passport) {
 	// =====================================
 	//app.get('/bkmrk', bkmrk.bkmrk); //look for bkmrk.handlebars
 
+	app.get('/blog', blog.blog);
+	app.get('/matrix', matrix.matrix);
 	
-	
+    app.get('/blog/new', auth.requiresLogin, articles.new);
+    app.post('/blog', auth.requiresLogin, articles.create);
+    app.get('/blog/:id', articles.show);
+    app.get('/blog/:id/edit', articleAuth, articles.edit);
+    app.put('/blog/:id', articleAuth, articles.update);
+    app.delete('/blog/:id', articleAuth, articles.destroy);
+
+	  // home route
+	//app.get('/', articles.index)	
 	// =====================================
 	// LOGIN ===============================
 	// =====================================
@@ -52,10 +69,11 @@ module.exports = function(app, passport) {
 		    if (err) { return next(err); }
 		    if (!user) {
 		      //req.session.messages =  [info.message];
-		      return res.redirect('/foo');   //TODO
+		      return res.redirect('/NoSuchUser');   //TODO
 		    }
 		    req.logIn(user, function(err) {
 		      if (err) { return next(err); }
+		      
 		      return res.redirect('/');
 		    });
 		  })(req, res, next);
@@ -81,12 +99,12 @@ module.exports = function(app, passport) {
 	    	homepage : req.body.homepage,
 	    	password : req.body.password //TODO storing raw password
 	    	});
-		console.log('Saving '+user+' '+user.homepage);
+		console.log('Saving '+user+' '+user.email);
 		user.save(function(err) {
 			  if(err) {
 			    console.log(err);
 			  } else {
-			    console.log('User: ' + user.username + " saved.");
+			    console.log('User: ' + user.email + " saved.");
 			  }
 			});
 		/*

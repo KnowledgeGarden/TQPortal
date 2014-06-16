@@ -5,20 +5,160 @@
     <title>TopicQuests Foundation</title>
      <link href="css/bootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
      <link href="css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="css/orbit-1.2.3.css">
-  <script src="js/jquery-1.5.1.min.js" type="text/javascript"></script>
-  <script src="js/jquery.orbit-1.2.3.min.js" type="text/javascript"></script>
+<style>  
+  body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+  }
+</style>
+    <style>
+        #slides {
+            display: none;
+        }
+
+            #slides .slidesjs-navigation {
+                margin-top: 3px;
+            }
+
+            #slides .slidesjs-previous {
+                margin-right: 5px;
+                float: left;
+                position: absolute;
+                top: 370px;
+                margin-top: -20px;
+                left: 20px;
+            }
+
+            #slides .slidesjs-next {
+                margin-right: 5px;
+                float: left;
+                position: absolute;
+                top: 370px;
+                margin-top: -20px;
+                right: 20px;
+            }
+
+        .slidesjs-pagination {
+            margin: 6px 0 0;
+            float: right;
+            list-style: none;
+        }
+
+            .slidesjs-pagination li {
+                float: left;
+                margin: 0 1px;
+            }
+
+                .slidesjs-pagination li a {
+                    display: block;
+                    width: 13px;
+                    height: 0;
+                    padding-top: 13px;
+                    background-image: url(img/pagination.png);
+                    background-position: 0 0;
+                    float: left;
+                    overflow: hidden;
+                }
+
+                    .slidesjs-pagination li a.active,
+                    .slidesjs-pagination li a:hover.active {
+                        background-position: 0 -13px;
+                    }
+
+                    .slidesjs-pagination li a:hover {
+                        background-position: 0 -26px;
+                    }
+
+        #slides a:link,
+        #slides a:visited {
+            color: #333;
+        }
+
+        #slides a:hover,
+        #slides a:active {
+            color: #0094ff;
+        }
+    </style>
+    <!-- End SlidesJS Optional-->
+
+    <!-- SlidesJS Required: These styles are required if you'd like a responsive slideshow -->
+    <style>
+        #slides {
+            display: none;
+        }
+    </style>
+  <script src="js/jquery-1.11.1.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="js/jquery.slides.min.js"></script>
   
-  		<script type="text/javascript">
-			$(window).load(function() {
-				$('#featured').orbit();
-			});
-		</script>
+    <script>
+        $(document).keyup(function (event) {
+
+            /* left arrow 37
+            up arrow 38
+            right arrow 39
+            down arrow 40 */
+            switch (event.keyCode) {
+                case 37:  // 
+                    $(".slidesjs-previous").click();
+                    break;
+                case 39:  // 
+                    $(".slidesjs-next").click();
+                    break;
+                default:
+                    //  ne rien faire
+
+            }
+        })
+        $(function () {
+            $('#slides').slidesjs({
+                preload: true,
+                preloadImage: 'img/loading.gif',
+                width: 1366,
+                height: 542,
+                play: {
+                    active: false,
+                    auto: true,
+                    interval: 4000,
+                    swap: false
+                },
+                navigation: {
+                    active: false,
+                    effect: "fade"
+                },
+
+                pagination: {
+                    active: false,
+                    effect: "fade"
+                },
+                effect: {
+
+                    fade: {
+                        speed: 0,
+                        crossfade: false
+                    }
+                },
+                end: 3
+            });
+        });
+    </script>
+  <script>
+    jQuery(document).ready(function ($) {
+        var screenWidth = $(window).width();
+        var h = screenWidth / 1.773;
+//alert('width: '+screenWidth+' '+h );
+        $(".slidesjs-container").css('height', "760px");
+        if (screenWidth < 1800) {
+            $(".slidesjs-container").css('height', '700px'); <!-- 537 -->
+            $("#slide-perviosID").css('top', "275px");
+            $("#slide-nextID").css('top', "275px");
+        }
+    });
+</script>
   
 </head>
 <body>
+   <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
   <div class="container">
-<!--    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
             <span class="sr-only">Toggle navigation</span>
@@ -26,21 +166,32 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">ExpressDerby Prototype</a>
-        </div> --> <!-- navbar-header -->
- <!--       <div class="collapse navbar-collapse">
+          <a class="navbar-brand" href="#">TopicQuests Portal</a>
+        </div> <!-- navbar-header -->
+        <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="/">Home</a></li>
             <li><a href="/about">About</a></li>
             <li><a href="/contact">Contact</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/signup">Signup</a></li>
+            <li><a href="/admin">Admin</a></li>
           </ul>
-        </div> --><!--/.nav-collapse -->
- <!--   </div> --><!-- navbar -->
- <!--   <br/> <br/> -->
+          <ul class="nav navbar-nav navbar-right">
+             <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+            	<li><a href="/signup">Signup</a></li>
+            	<li><a href="/login">Login</a></li>
+            	<li><a href="/logout">Logout</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+   <!-- <br/> <br/> -->
+ </div> <!-- /container -->
+    </div> <!-- navbar -->
+ <div class="container">
     {{{body}}}
  </div> <!-- container -->
-
+ <script src="js/bootstrap.js"></script>
 </body>
 </html>
