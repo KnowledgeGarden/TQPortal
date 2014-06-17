@@ -2,17 +2,30 @@
  * Passport configuration
  */
 var LocalStrategy = require('passport-local').Strategy
-  , User = require('../apps/models/account');
+  , mongoose = require('mongoose')
+  , User = mongoose.model('User');
 
 module.exports = function (passport) {
 	console.log('PASSPORT-PRE '+passport);
-  // serialize sessions
+  ///////////////////////////////
+  // Probably much more secure ways to do this??
+  ///////////////////////////////
+  /**
+   * Serialize <code>user</code> to a string for a cookie
+   * @param user
+   */
   passport.serializeUser(function(user, done) {
-    done(null, user.id);
+	  console.log('passport.serializeUser '+user.email);
+    done(null, user.email);
   });
 
-  passport.deserializeUser(function(id, done) {
-    User.findOne({ _id: id }, function (err, user) {
+  /**
+   * Find a user based on <code>email</code> from a cookie
+   * @param email
+   */
+  passport.deserializeUser(function(email, done) {
+    User.findOne({ email: email }, function (err, user) {
+    	console.log('passport.deserializer '+email+' '+user);
       done(err, user);
     });
   });

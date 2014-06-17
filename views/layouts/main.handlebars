@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <title>TopicQuests Foundation</title>
-     <link href="css/bootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
-     <link href="css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" />
+     <link href="/css/bootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
+     <link href="/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" />
 <style>  
   body {
     padding-top: 50px;
@@ -87,8 +87,8 @@
             display: none;
         }
     </style>
-  <script src="js/jquery-1.11.1.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="js/jquery.slides.min.js"></script>
+  <script src="/js/jquery-1.11.1.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="/js/jquery.slides.min.js"></script>
   
     <script>
         $(document).keyup(function (event) {
@@ -146,12 +146,14 @@
         var screenWidth = $(window).width();
         var h = screenWidth / 1.773;
 //alert('width: '+screenWidth+' '+h );
+	try {
         $(".slidesjs-container").css('height', "760px");
         if (screenWidth < 1800) {
             $(".slidesjs-container").css('height', '700px'); <!-- 537 -->
             $("#slide-perviosID").css('top', "275px");
             $("#slide-nextID").css('top', "275px");
         }
+    } catch (err) {alert('foo');}
     });
 </script>
   
@@ -192,6 +194,6 @@
  <div class="container">
     {{{body}}}
  </div> <!-- container -->
- <script src="js/bootstrap.js"></script>
+ <script src="/js/bootstrap.js"></script>
 </body>
 </html>

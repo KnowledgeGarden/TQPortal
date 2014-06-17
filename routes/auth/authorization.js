@@ -3,6 +3,7 @@
  */
 
 exports.requiresLogin = function (req, res, next) {
+	console.log("REQ LOGIN "+req.session);
   if (req.isAuthenticated()) return next();
 //TODO returnTo doesn't exist  if (req.method == 'GET') req.session.returnTo = req.originalUrl;
   res.redirect('/login');

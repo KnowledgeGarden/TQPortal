@@ -13,7 +13,7 @@ var home = require('./index')
   , mongoose = require('mongoose')
   , passport = require('passport')
   , User = require('../apps/models/account')
-  , articles = require('../apps/models/articles')
+  , acls = require('../apps/models/articles')
   , auth = require('./auth/authorization')
   , LocalStrategy = require('passport-local').Strategy;
 	
@@ -21,6 +21,7 @@ var articleAuth = [auth.requiresLogin, auth.article.hasAuthorization];
 var commentAuth = [auth.requiresLogin, auth.comment.hasAuthorization];
 
 module.exports = function(app, passport) {
+	this.BlogModel = new acls();
 	////////////////////////////////////////
 	// We have three "main" templates:
 	//   main.handlebars for unauthenticated views
@@ -48,12 +49,26 @@ module.exports = function(app, passport) {
 	app.get('/blog', blog.blog);
 	app.get('/matrix', matrix.matrix);
 	
-    app.get('/blog/new', auth.requiresLogin, articles.new);
-    app.post('/blog', auth.requiresLogin, articles.create);
-    app.get('/blog/:id', articles.show);
-    app.get('/blog/:id/edit', articleAuth, articles.edit);
-    app.put('/blog/:id', articleAuth, articles.update);
-    app.delete('/blog/:id', articleAuth, articles.destroy);
+    app.get('/blog/new', auth.requiresLogin, function(req,res) {
+        res.render('blogform', {
+            title: 'New Article' }); //,
+            //article: new Article({})
+
+    });
+    
+    app.post('/blog', auth.requiresLogin, function(req,res) {
+    	var body = req.body;
+    	console.log('ROUTES_NEW_POST '+JSON.stringify(body));
+    	BlogModel.create(body, req.user, function(err,result) {
+    		console.log('ROUTES_NEW_POST-1 '+err+' '+result);
+    	});
+    	
+    });
+    
+ //   app.get('/blog/:id', articles.show);
+ //   app.get('/blog/:id/edit', articleAuth, articles.edit);
+ //   app.put('/blog/:id', articleAuth, articles.update);
+ //   app.delete('/blog/:id', articleAuth, articles.destroy);
 
 	  // home route
 	//app.get('/', articles.index)	

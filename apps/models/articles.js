@@ -1,61 +1,70 @@
 /**
- * blog model
+ * Blog Model
+ * <p>A blog post is an instance of a Topic.
+ * Each tag is an instance of a Topic.
+ * Each comment is an instance of a Topic.
+ * All tags and comments are represented as
+ * <em>relations</em> with the blog's Topic
+ * </p>
  */
 var mongoose = require('mongoose')
-  , bcrypt   = require('bcryptjs')
-  , Schema = mongoose.Schema;
+  , x = require('./topic')
+//  , TopicSchema = require('./topic.schema')
+  , Topic = mongoose.model('Topic')
+  , tm = require('./tags')
+  , utils = require('../../lib/utils');
 
-/**
- * Getters
- */
+var BlogModel =  module.exports = function() {
+	console.log("FFFF "+tm);
+	this.TagModel = new tm();
+	var self = this;
+	
+	/**
+	 * Create a new blog post
+	 * @param blog: a JSON object with appropriate values set
+	 * @param user
+	 * @param callback: signature (err, result): result = _id of new object
+	 */
+	self.create = function (blog, user, callback) {
+		console.log('ARTICLES_CREATE '+JSON.stringify(blog));
+		var article = new Topic();
+		//we have to take this apart, build the object from scratch
+		// because of tags, which are relations.
+		var label = blog.title;
+		var details = blog.body;
+		var tags = blog.tags;
+		console.log('ARTICLES_CREATE-1 '+tags);
+		var tagList = tags.split(',');
+		this.TagModel.processTags(tagList, function(err,result) {
+		//	  article.user = req.user;
+			  console.log('NEW_POST '+JSON.stringify(result));
+	/**		  article.save(function(err) {
+				console.log('ARTICLES_CREATE-1 '+err);
+				  
+			    if (!err) {
+			      req.flash('success', 'Successfully created article!');
+			     callback(err,article._id);
+			    } else {
+			    	callback(err,null);
+			    }
+			  });	*/
+		});
 
-var getTags = function (tags) {
-  return tags.join(',')
+	};
+	
+	//self.addComment
 };
-
-/**
- * Setters
- */
-
-var setTags = function (tags) {
-  return tags.split(',')
-};
-////////////////////////////
-// Primary Schema
-////////////////////////////
-var ArticleSchema = new Schema ({
-	  title     : {type : String, default : '', trim : true}, 
-	  body     : {type : String, default : '', trim : true},
-	  tags: {type: [], get: getTags, set: setTags},
-	  user: { type : Schema.ObjectId, ref : 'User' },
-	  createdAt  : {type : Date, default : Date.now}
-	});
 /**
  * Validations
- */
+ * /
 
-ArticleSchema.path('title').required(true, 'Article title cannot be blank');
-ArticleSchema.path('body').required(true, 'Article body cannot be blank');
+TopicSchema.path('label').required(true, 'Article title cannot be blank');
+TopicSchema.path('details').required(true, 'Article body cannot be blank');
 
-/**
- * Pre-remove hook
- */
-
-ArticleSchema.pre('remove', function (next) {
-  var imager = new Imager(imagerConfig, 'S3')
-  var files = this.image.files
-
-  // if there are files associated with the item, remove from the cloud too
-  imager.remove(files, function (err) {
-    if (err) return next(err)
-  }, 'article')
-
-  next()
-})
 
 /**
  * Methods
- */
+ * /
 
 ArticleSchema.methods = {
 
@@ -65,7 +74,7 @@ ArticleSchema.methods = {
    * @param {Object} images
    * @param {Function} cb
    * @api private
-   */
+   * /
 
   uploadAndSave: function (images, cb) {
     if (!images || !images.length) return this.save(cb)
@@ -91,7 +100,7 @@ ArticleSchema.methods = {
    * @param {Object} comment
    * @param {Function} cb
    * @api private
-   */
+   * /
 
   addComment: function (user, comment, cb) {
     var notify = require('../mailer')
@@ -117,7 +126,7 @@ ArticleSchema.methods = {
    * @param {commentId} String
    * @param {Function} cb
    * @api private
-   */
+   * /
 
   removeComment: function (commentId, cb) {
     var index = utils.indexof(this.comments, { id: commentId });
@@ -125,11 +134,11 @@ ArticleSchema.methods = {
     else return cb('not found');
     this.save(cb);
   }
-}
+};
 
 /**
  * Statics
- */
+ * /
 
 ArticleSchema.statics = {
 
@@ -139,7 +148,7 @@ ArticleSchema.statics = {
    * @param {ObjectId} id
    * @param {Function} cb
    * @api private
-   */
+   * /
 
   load: function (id, cb) {
     this.findOne({ _id : id })
@@ -154,7 +163,7 @@ ArticleSchema.statics = {
    * @param {Object} options
    * @param {Function} cb
    * @api private
-   */
+   * /
 
   list: function (options, cb) {
     var criteria = options.criteria || {};
@@ -169,13 +178,12 @@ ArticleSchema.statics = {
 
 };
 
-mongoose.model('Article', ArticleSchema)
 /////////////////////////////
 // Articles
 /////////////////////////////
 /**
  * Load
- */
+ * /
 
 exports.load = function(req, res, next, id){
   var User = mongoose.model('User')
@@ -190,9 +198,9 @@ exports.load = function(req, res, next, id){
 
 /**
  * List
- */
+ * /
 
-exports.index = function(req, res){
+exports.index = function(req, res) {
   var page = (req.param('page') > 0 ? req.param('page') : 1) - 1;
   var perPage = 30;
   var options = {
@@ -213,13 +221,17 @@ exports.index = function(req, res){
   });
 };
 
+mongoose.model('Article', ArticleSchema);
+
+var Article = mongoose.model('Article');
+
 /**
  * New article
- */
+ * /
 
-exports.new = function(req, res) {
+exports.newarticle = function(req, res) {
 	console.log('ARTICLE.NEW');
-  res.render('blogform', {
+    res.render('blogform', {
     title: 'New Article',
     article: new Article({})
   });
@@ -227,32 +239,45 @@ exports.new = function(req, res) {
 
 /**
  * Create an article
- */
-
+ * @param req
+ * @param res
+ * /
 exports.create = function (req, res) {
+	console.log('ARTICLES_CREATE '+req.body.title);
   var article = new Article(req.body);
   article.user = req.user;
-
-  article.uploadAndSave(req.files.image, function (err) {
+  console.log('NEW_POST '+article);
+  article.save(function(err) {
+	console.log('ARTICLES_CREATE-1 '+err);
+	  
     if (!err) {
       req.flash('success', 'Successfully created article!');
-      return res.redirect('/articles/'+article._id);
+      return res.redirect('/blog/'+article._id);
     }
-
-    res.render('articles/new', {
-      title: 'New Article',
-      article: article,
-      error: utils.errors(err.errors || err)
-    });
   });
+  //see if there is an image to upload
+/*  if (req.files.image) {
+	  article.uploadAndSave(req.files.image, function (err) {
+	    if (!err) {
+	      req.flash('success', 'Successfully created article!');
+	      return res.redirect('/blog/'+article._id);
+	    }
+	
+	    res.render('blog/new', {
+	      title: 'New Article',
+	      article: article,
+	      error: utils.errors(err.errors || err)
+	    });
+	  });
+  } * /
 };
 
 /**
  * Edit an article
- */
+ * /
 
 exports.edit = function (req, res) {
-  res.render('articles/edit', {
+  res.render('blog/edit', {
     title: 'Edit ' + req.article.title,
     article: req.article
   });
@@ -260,7 +285,7 @@ exports.edit = function (req, res) {
 
 /**
  * Update article
- */
+ * /
 
 exports.update = function(req, res){
   var article = req.article;
@@ -268,10 +293,10 @@ exports.update = function(req, res){
 
   article.uploadAndSave(req.files.image, function(err) {
     if (!err) {
-      return res.redirect('/articles/' + article._id);
+      return res.redirect('/blog/' + article._id);
     }
 
-    res.render('articles/edit', {
+    res.render('blog/edit', {
       title: 'Edit Article',
       article: article,
       error: utils.errors(err.errors || err)
@@ -281,100 +306,50 @@ exports.update = function(req, res){
 
 /**
  * Show
- */
+ * /
 
 exports.show = function(req, res){
-  res.render('articles/show', {
-    title: req.article.title,
-    article: req.article
-  });
+	console.log('ARTICLES.show-1 '+req.params.id);
+	//fetch the given article by its _id passed in from the request,
+	// e.g. /blog/5343429ax934
+	var id = req.params.id;
+	var q = {};
+	q['_id'] = id;
+	Article.findOne(q,function(err,result) {
+		//if you find it, show it
+		console.log('ARTICLES.show-2 '+err);
+		if (result) {
+			console.log('ARTICLES.show-3 '+JSON.stringify(result));
+		//  res.render('blog/show', {
+//		    title: req.article.title,
+//		    article: req.article
+		//  });
+		} else {
+			//TOO BAD: post identified by id not found
+		}
+
+	});
+	
 };
 
 /**
  * Delete an article
- */
+ * /
 
 exports.destroy = function(req, res){
   var article = req.article;
   article.remove(function(err) {
     req.flash('info', 'Deleted successfully');
-    res.redirect('/articles');
+    res.redirect('/blog');
   });
 };
+
+*/
 ///////////////////////////
 // Comments
 ///////////////////////////
-/**
- * Load comment
- */
 
-exports.load = function (req, res, next, id) {
-  var article = req.article;
-  utils.findByParam(article.comments, { id: id }, function (err, comment) {
-    if (err) return next(err);
-    req.comment = comment;
-    next();
-  });
-};
-
-/**
- * Create comment
- */
-
-exports.create = function (req, res) {
-  var article = req.article;
-  var user = req.user;
-
-  if (!req.body.body) return res.redirect('/articles/'+ article.id);
-
-  article.addComment(user, req.body, function (err) {
-    if (err) return res.render('500');
-    res.redirect('/articles/'+ article.id);
-  });
-};
-
-/**
- * Delete comment
- */
-
-exports.destroy = function (req, res) {
-  var article = req.article;
-  article.removeComment(req.param('commentId'), function (err) {
-    if (err) {
-      req.flash('error', 'Oops! The comment was not found');
-    } else {
-      req.flash('info', 'Removed comment');
-    }
-    res.redirect('/articles/' + article.id);
-  });
-};
 
 /////////////////////////////
 // Tags
 /////////////////////////////
-/**
- * List items tagged with a tag
- */
-
-exports.index = function (req, res) {
-  var criteria = { tags: req.param('tag') };
-  var perPage = 5;
-  var page = (req.param('page') > 0 ? req.param('page') : 1) - 1;
-  var options = {
-    perPage: perPage,
-    page: page,
-    criteria: criteria
-  };
-
-  Article.list(options, function(err, articles) {
-    if (err) return res.render('500');
-    Article.count(criteria).exec(function (err, count) {
-      res.render('articles/index', {
-        title: 'Articles tagged ' + req.param('tag'),
-        articles: articles,
-        page: page + 1,
-        pages: Math.ceil(count / perPage)
-      });
-    });
-  });
-};
