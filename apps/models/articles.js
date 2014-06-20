@@ -8,52 +8,85 @@
  * </p>
  */
 var mongoose = require('mongoose')
-  , x = require('./topic')
-//  , TopicSchema = require('./topic.schema')
-  , Topic = mongoose.model('Topic')
+  , Topic = require('./topic') //mongoose.model('Topic')
   , tm = require('./tags')
+  , types = require('../types')
+  , icons = require('../icons')
+  , uuid = require('../../lib/uuidutil')
   , utils = require('../../lib/utils');
 
 var BlogModel =  module.exports = function() {
-	console.log("FFFF "+tm);
-	this.TagModel = new tm();
-	var self = this;
+  this.TagModel = new tm();
+  var self = this;
 	
-	/**
-	 * Create a new blog post
-	 * @param blog: a JSON object with appropriate values set
-	 * @param user
-	 * @param callback: signature (err, result): result = _id of new object
-	 */
-	self.create = function (blog, user, callback) {
-		console.log('ARTICLES_CREATE '+JSON.stringify(blog));
-		var article = new Topic();
-		//we have to take this apart, build the object from scratch
-		// because of tags, which are relations.
-		var label = blog.title;
-		var details = blog.body;
-		var tags = blog.tags;
-		console.log('ARTICLES_CREATE-1 '+tags);
-		var tagList = tags.split(',');
-		this.TagModel.processTags(tagList, function(err,result) {
-		//	  article.user = req.user;
-			  console.log('NEW_POST '+JSON.stringify(result));
-	/**		  article.save(function(err) {
-				console.log('ARTICLES_CREATE-1 '+err);
-				  
-			    if (!err) {
-			      req.flash('success', 'Successfully created article!');
-			     callback(err,article._id);
-			    } else {
-			    	callback(err,null);
-			    }
-			  });	*/
-		});
-
-	};
-	
-	//self.addComment
+  /**
+   * Create a new blog post
+   * @param blog: a JSON object with appropriate values set
+   * @param user
+   * @param callback: signature (err, result): result = _id of new object
+   */
+  self.create = function (blog, user, callback) {
+    console.log('ARTICLES_CREATE '+JSON.stringify(blog));
+    var article = new Topic();
+    article.locator = uuid.newUUID();
+    article.instanceOf = types.BLOG_TYPE;
+    article.creatorId = user._id;
+    article.largeIcon = icons.PUBLICATION;
+    article.smallIcon = icons.PUBLICATION_SM;
+    //we have to take this apart, build the object from scratch
+    // because of tags, which are relations.
+    var label = blog.title;
+    article.label = label;
+    var details = blog.body;
+    article.details = details;
+    // fetch the user for later linking
+    Topic.findNodeByLocator(user.handle, function(err,result) {
+      var thisUser = result;
+      var tags = blog.tags;
+      console.log('ARTICLES_CREATE-1 '+article);
+      var tagList = tags.split(',');
+      //process the tags -- wants the user topic so it can link user to tags
+      this.TagModel.processTags(tagList, thisUser, article.locator, label, function(err,result) {
+        console.log('NEW_POST '+JSON.stringify(result));
+        //result is a structure:
+        //{ locators: [],labels: [] }
+        //which allows us to store the locators for each tag and the labels.
+        //IN FACT: the TopicSchema is not setup to handle this structure,
+        // but interestingly, could accept it anyway.
+        //PERHAPS that's a better way to pass relations: a locator and some kind of label
+        // with which to make an HREF at the browser
+        var lox = result.locators;
+		var labs = result.labels;
+		//see to it that we have some tags
+		if (lox) {
+          var len = lox.length;
+          for (var i=0;i<len;i++) {
+            article.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_DOCUMENT_RELATION_TYPE, 'Tag-Document Relation', lox[i],labs[i]);
+          }
+		}
+        console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
+        article.addRelation(types.SIMPLE_RELATION_TYPE, types.DOCUMENT_CREATOR_RELATION_TYPE, 'Document-Creator Relation', user.handle,user.handle);
+        article.save(function(err) {
+          console.log('ARTICLES_CREATE-3 '+err);	  
+          if (!err) {
+            thisUser.addRelation(types.SIMPLE_RELATION_TYPE, types.DOCUMENT_CREATOR_RELATION_TYPE, 'Document-Creator Relation', article.locator,"Blog Post");
+            thisUser.save(function(err) {
+              console.log('ARTICLES_CREATE-4 '+err);	  
+              if (!err) {
+                callback(err,article._id);
+              } else {
+                callback(err,null);
+              }
+            });
+          } else {
+            callback(err,null);
+          }
+        });
+      });
+    });
+  };
 };
+
 /**
  * Validations
  * /

@@ -8,7 +8,7 @@
  * many times.</p>
  */
 var mongoose = require('mongoose')
-  , Topic = mongoose.model('Topic')
+  , Topic = require('./topic')
   , rpa = require('../../lib/stringutil')
   , utils = require('../../lib/utils');
 
@@ -27,26 +27,66 @@ var TagModel = module.exports = function() {
 	 */
 	//{"locators":["First_Tag_TAG","First_Post_TAG","Bitchen_TAG"],
 	//"labels":["First Tag","First Post","Bitchen"]}	
-	self.processTags = function(tags, callback) {
+	self.processTags = function(tags, usertopic, docLocator, docLabel, callback) {
 		console.log('TAGS.processTags '+tags);
 		var labels = [];
 		var locators = [];
+		var locator;
+		var result = {};
 		if (tags instanceof Array) {
 			var len = tags.length;
-			var t;
+			var t,l;
 			for(var i=0;i<len;i++) {
-				t = tags[i].trim();
-				console.log('TAG '+t);
-				labels.push(t);
-				t = this.replaceAll(t, ' ', '_');
-				locators.push(t+'_TAG');
+				l = tags[i].trim();
+				console.log('TAG-1 '+t);
+				labels.push(l);
+				t = this.replaceAll(l, ' ', '_');
+				locator = t+'_TAG';
+				locators.push(locator);
+				//find or create this tag
+				this.findOrCreateTag(locator.l,usertopic, docLocator,docLabel);
 			}
+		} else if (tags !== "") {
+			//it's just a string
+			t = tags.trim();
+			console.log('TAG-2 '+t);
+			labels.push(t);
+			t = this.replaceAll(t, ' ', '_');
+			locator = t+'_TAG';
+			locators.push(locator);
+			//find or create this tag
+			this.findOrCreateTag(locator);			
 		}
-		var result = {};
-		result['locators'] = locators;
-		result['labels'] = labels;
+		if (locators.lengh > 0) {
+		  result['locators'] = locators;
+		  result['labels'] = labels;
+		}
 		callback("",result);
 	};
+	
+	self.findOrCreateTag = function(tagLocator, label, usertopic, docLocator, docLabel) {
+		Topic.findNodeByLocator(tagLocator, function(err,result) {
+			console.log('TAGS.processTags-1 '+tagLocator+' '+err+' '+result);
+			var theTag = result;
+			if (theTag === null) {
+				//create the tag
+				theTag = new Topic();
+				theTag.locator = tagLocator;
+				theTag.label = label;
+				theTag.instanceOf = types.BLOG_TYPE;
+				theTag.creatorId = usertopic.locator;
+				theTag.largeIcon = icons.TAG;
+				theTag.smallIcon = icons.TAG_SM;
+			}
+			//wire this tag's relations
+			usertopic.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation', tagLocator, label);						
+			theTag.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation', user.handle, user.handle);			
+			theTag.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_DOCUMENT_RELATION_TYPE, 'Tag-Document Relation', docLocator, docLabel);
+			theTag.save(function(err) {
+				console.log("TAGS.findOrCreateTag saved "+tagLocator+" "+err);
+			})
+		});		
+	}
 };
 
 

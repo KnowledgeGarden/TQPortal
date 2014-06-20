@@ -1,7 +1,6 @@
 /**
  * Server: the program's entry point
  */
-"use strict";
 var express = require("express")
   //stuff
   , http  = require("http")
