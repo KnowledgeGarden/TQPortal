@@ -9,6 +9,8 @@
  */
 var mongoose = require('mongoose')
   , Topic = require('./topic')
+  , types = require('../types')
+  , icons = require('../icons')
   , rpa = require('../../lib/stringutil')
   , utils = require('../../lib/utils');
 
@@ -27,44 +29,63 @@ var TagModel = module.exports = function() {
 	 */
 	//{"locators":["First_Tag_TAG","First_Post_TAG","Bitchen_TAG"],
 	//"labels":["First Tag","First Post","Bitchen"]}	
-	self.processTags = function(tags, usertopic, docLocator, docLabel, callback) {
-		console.log('TAGS.processTags '+tags);
+	self.processTagList = function(tagList, usertopic, docLocator, docLabel, callback) {
+		console.log('TAGS.processTagList '+tagList+' '+usertopic);
 		var labels = [];
 		var locators = [];
 		var locator;
 		var result = {};
-		if (tags instanceof Array) {
-			var len = tags.length;
+		var len = tagList.length;
+		if (len > 0) {
 			var t,l;
 			for(var i=0;i<len;i++) {
-				l = tags[i].trim();
+				l = tagList[i].trim();
 				console.log('TAG-1 '+t);
 				labels.push(l);
 				t = this.replaceAll(l, ' ', '_');
 				locator = t+'_TAG';
 				locators.push(locator);
 				//find or create this tag
-				this.findOrCreateTag(locator.l,usertopic, docLocator,docLabel);
+				this.findOrCreateTag(locator,l,usertopic, docLocator,docLabel, function() {
+					if (locators.lengh > 0) {
+						  result['locators'] = locators;
+						  result['labels'] = labels;
+						}
+					
+				});
 			}
-		} else if (tags !== "") {
-			//it's just a string
-			t = tags.trim();
-			console.log('TAG-2 '+t);
-			labels.push(t);
-			t = this.replaceAll(t, ' ', '_');
-			locator = t+'_TAG';
-			locators.push(locator);
-			//find or create this tag
-			this.findOrCreateTag(locator);			
-		}
-		if (locators.lengh > 0) {
-		  result['locators'] = locators;
-		  result['labels'] = labels;
 		}
 		callback("",result);
 	};
 	
-	self.findOrCreateTag = function(tagLocator, label, usertopic, docLocator, docLabel) {
+	self.processTag = function(tagString, usertopic, docLocator, docLabel, callback) {
+		console.log('TAGS.processTag '+tagString+' '+usertopic);
+	  var result = {};
+	  if (tagString !== "") {
+		var labels = [];
+		var locators = [];
+		var locator;
+		var t,l;
+		l = tagString.trim();
+		console.log('TAG-2 '+t);
+		labels.push(t);
+		t = this.replaceAll(l, ' ', '_');
+		locator = t+'_TAG';
+		locators.push(locator);
+		//find or create this tag
+		this.findOrCreateTag(locator, l, usertopic, docLocator,docLabel, function() {
+			if (locators.lengh > 0) {
+				  result['locators'] = locators;
+				  result['labels'] = labels;
+			}			
+		});
+		
+	  }
+	  callback("",result);
+	};
+	
+	self.findOrCreateTag = function(tagLocator, label, usertopic, docLocator, docLabel, callback) {
+		console.log('TAGS.findOrCreate '+tagLocator+' '+usertopic);
 		Topic.findNodeByLocator(tagLocator, function(err,result) {
 			console.log('TAGS.processTags-1 '+tagLocator+' '+err+' '+result);
 			var theTag = result;
@@ -73,18 +94,20 @@ var TagModel = module.exports = function() {
 				theTag = new Topic();
 				theTag.locator = tagLocator;
 				theTag.label = label;
-				theTag.instanceOf = types.BLOG_TYPE;
+				theTag.instanceOf = types.TAG_TYPE;
 				theTag.creatorId = usertopic.locator;
 				theTag.largeIcon = icons.TAG;
 				theTag.smallIcon = icons.TAG_SM;
 			}
+			console.log('TAGS.findOrCreate-1 '+theTag);
 			//wire this tag's relations
 			usertopic.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation', tagLocator, label);						
-			theTag.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation', user.handle, user.handle);			
+			theTag.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation', usertopic.locator, usertopic.locator);			
 			theTag.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_DOCUMENT_RELATION_TYPE, 'Tag-Document Relation', docLocator, docLabel);
 			theTag.save(function(err) {
 				console.log("TAGS.findOrCreateTag saved "+tagLocator+" "+err);
-			})
+			});
+			callback();
 		});		
 	}
 };

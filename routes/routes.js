@@ -7,6 +7,7 @@ var home = require('./index')
   , admin = require('./admin')
   , user  = require('./user')
   , login = require('./login')
+  , blogindex = require('./blogindex')
   , blog = require('./blog')
   , matrix = require('./matrix')
   , signup = require('./signup')
@@ -26,12 +27,8 @@ var commentAuth = [auth.requiresLogin, auth.comment.hasAuthorization];
 module.exports = function(app, passport) {
 	this.BlogModel = new acls();
 	this.UserModel = new userModel();
-	////////////////////////////////////////
-	// We have three "main" templates:
-	//   main.handlebars for unauthenticated views
-	//   mainauth.handlebars for authenticated views
-	//   mainadmin.handlebars for authenticated views by admins
-	////////////////////////////////////////
+	console.log("ROUTER "+this.BlogModel);
+	
 	
     // =====================================
 	// HOME PAGE (with login links) ========
@@ -49,11 +46,18 @@ module.exports = function(app, passport) {
 	// Bookmarks ===============================
 	// =====================================
 	//app.get('/bkmrk', bkmrk.bkmrk); //look for bkmrk.handlebars
-
 	app.get('/blog', function(req,res) {
-    	Topic.listNodesByType(types.BLOG_TYPE, function(err,result) {
+		
+//		data['title']='Blog Posts';
+//		var blogs = [{locator:'foo', label:'My first blog post'}, {locator:'bar',label:'My second blog post'}];
+		
+//		console.log("ROUTES/blog-1 "+JSON.stringify(data));
+//        res.render('blog', data); //,
+  	Topic.listNodesByType(types.BLOG_TYPE, function(err,result) {
     		console.log('ROUTES/blog '+err+' '+result);
-            res.render('blog', {title: 'Blog Posts' }); //,
+    		var data = {};
+    		data['message']=result;
+            res.render('blogindex', data); //,
    		
     	});
 		
@@ -65,11 +69,42 @@ module.exports = function(app, passport) {
             res.render('blogform', {title: 'New Article' }); //,
     });
     
+    app.get('/blog/:id', function(req,res) {
+    	var q = req.params.id;
+    	console.log('BLOGrout '+q);
+    	Topic.findNodeByLocator(q, function(err,result) {
+        	console.log('BLOGrout-1 '+result);
+    		var title = result.label;
+    		var details = result.details;
+    		var userid = result.creatorId;
+    		var relns = result.relations;
+    		var date = result.editedAt;
+    		var data = {};
+    		data.title = title;
+    		data.body = details;
+        	console.log('BLOGrout-2 '+JSON.stringify(data));
+   		
+            res.render('blog', data); //,
+    		
+    	});
+});
+    
+    /**
+     * Function which ties the app-embedded route back to here
+     */
+    var blogsupport = function(body,usx, callback) {
+    	this.BlogModel.create(body, usx, function(err,result) {
+    		callback(err,result);
+    	});
+    };
+    
     app.post('/blog', auth.requiresLogin, function(req,res) {
     	var body = req.body;
-    	console.log('ROUTES_NEW_POST '+JSON.stringify(body));
-    	BlogModel.create(body, req.user, function(err,result) {
+    	console.log('ROUTES_NEW_POST '+this.BlogModel+' '+JSON.stringify(body));
+    	
+    	blogsupport(body, req.user, function(err,result) {
     		console.log('ROUTES_NEW_POST-1 '+err+' '+result);
+            res.render('blogindex', data); //,
     	});
     	
     });
@@ -110,12 +145,16 @@ module.exports = function(app, passport) {
       req.body.password);
     //validate handle
     if (handle == "") {
-      return res/redirect('/HandleRequired');
+      return res.redirect('/HandleRequired');
     }
     Topic.findNodeByLocator(handle, function(err, result) {
-    	if (result !== null) {
-    	     return res/redirect('/HandleExists');
+    	console.log('SIGNUP-x '+result.length);
+    	//if (result !== null) {
+       	if (result.length > 0) {
+        	console.log('SIGNUP-B');
+    	     return res.redirect('/HandleExists');
     	}
+    	console.log('SIGNUP-C');
         var user = new User({ 
             username : req.body.handle, 
             fullname : req.body.fullname,
@@ -123,9 +162,9 @@ module.exports = function(app, passport) {
             avatar : req.body.avatar,
             homepage : req.body.homepage,
             password : req.body.password //TODO storing raw password
-          });
-          console.log('Saving '+user+' '+user.email);
-          user.save(function(err) {
+        });
+        console.log('Saving '+user+' '+user.email);
+        user.save(function(err) {
             if(err) {
               console.log(err);
             } else {
@@ -134,7 +173,7 @@ module.exports = function(app, passport) {
               UserModel.newUserTopic(user,function(err,result) {
             	  if (err) {
             		  console.log('ROUTES.signup/post error '+err);
-            		  return res/redirect('/SignupError');
+            		  return res.redirect('/SignupError');
             	  }
               });
             }

@@ -10,25 +10,31 @@ var mongoose = require('mongoose')
   , constants = require('../constants')
   , Topic = require('./topic');
 
-var UserModel = function() {
+var UserModel = module.exports = function() {
 	var self = this;
 	
 	self.newUserTopic = function(user, callback) {
+		//NOTE: user.username same as handle
+		console.log('USER.newUserTopic- '+JSON.stringify(user));
 		// In fact, we already check for valid and unique handle in routes.js
-		this.findUser(user.handle, function(err,result) {
-			if (result !== null) {
-				callback(user.handle+" already exists", null);
+		console.log('USER.newUserTopic-1 '+user.username)
+		this.findUser(user.username, function(err,result) {
+			console.log('USER.newUserTopic- '+err+' '+result);
+			//if (result !== null) {
+			if (result.lengh > 0) {
+				callback(user.username+" already exists", null);
 			} else {
 				//create a new user
 				var usr = new Topic();
-				usr.locator = user.handle;
+				usr.locator = user.username;
 				usr.instanceOf = types.USER_TYPE;
 				usr.creatorId = constants.SYSTEM_USER;
 				usr.largeIcon = icons.PERSON_ICON;
 				usr.smallIcon = icons.PERSON_ICON_SM;
 				usr.label = user.fullname;
-				user.save(function(err) {
+				usr.save(function(err) {
 					console.log('USER.newUserTopic saved '+err);
+					console.log(JSON.stringify(usr));
 					callback(err,null);
 				});
 

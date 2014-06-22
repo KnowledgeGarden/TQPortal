@@ -17,8 +17,9 @@ var mongoose = require('mongoose')
 
 var BlogModel =  module.exports = function() {
   this.TagModel = new tm();
+  this.types = types;
+  console.log("TAGMODEL "+this.TagModel);
   var self = this;
-	
   /**
    * Create a new blog post
    * @param blog: a JSON object with appropriate values set
@@ -29,7 +30,7 @@ var BlogModel =  module.exports = function() {
     console.log('ARTICLES_CREATE '+JSON.stringify(blog));
     var article = new Topic();
     article.locator = uuid.newUUID();
-    article.instanceOf = types.BLOG_TYPE;
+    article.instanceOf = self.types.BLOG_TYPE;
     article.creatorId = user._id;
     article.largeIcon = icons.PUBLICATION;
     article.smallIcon = icons.PUBLICATION_SM;
@@ -40,49 +41,89 @@ var BlogModel =  module.exports = function() {
     var details = blog.body;
     article.details = details;
     // fetch the user for later linking
-    Topic.findNodeByLocator(user.handle, function(err,result) {
+    console.log('ARTICLES_CREATE-00 '+JSON.stringify(user));
+    Topic.findNodeByLocator(user.username, function(err,result) {
       var thisUser = result;
+      console.log('ARTICLES_CREATE-0 '+thisUser);
       var tags = blog.tags;
       console.log('ARTICLES_CREATE-1 '+article);
-      var tagList = tags.split(',');
-      //process the tags -- wants the user topic so it can link user to tags
-      this.TagModel.processTags(tagList, thisUser, article.locator, label, function(err,result) {
-        console.log('NEW_POST '+JSON.stringify(result));
-        //result is a structure:
-        //{ locators: [],labels: [] }
-        //which allows us to store the locators for each tag and the labels.
-        //IN FACT: the TopicSchema is not setup to handle this structure,
-        // but interestingly, could accept it anyway.
-        //PERHAPS that's a better way to pass relations: a locator and some kind of label
-        // with which to make an HREF at the browser
-        var lox = result.locators;
-		var labs = result.labels;
-		//see to it that we have some tags
-		if (lox) {
-          var len = lox.length;
-          for (var i=0;i<len;i++) {
-            article.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_DOCUMENT_RELATION_TYPE, 'Tag-Document Relation', lox[i],labs[i]);
-          }
-		}
-        console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-        article.addRelation(types.SIMPLE_RELATION_TYPE, types.DOCUMENT_CREATOR_RELATION_TYPE, 'Document-Creator Relation', user.handle,user.handle);
-        article.save(function(err) {
-          console.log('ARTICLES_CREATE-3 '+err);	  
-          if (!err) {
-            thisUser.addRelation(types.SIMPLE_RELATION_TYPE, types.DOCUMENT_CREATOR_RELATION_TYPE, 'Document-Creator Relation', article.locator,"Blog Post");
-            thisUser.save(function(err) {
-              console.log('ARTICLES_CREATE-4 '+err);	  
-              if (!err) {
+      console.log("ARTICLES_CREATE_1a "+self.TagModel);
+      if (tags.indexOf(',') > -1) {
+    	  var tagList = tags.split(',');
+    	  self.TagModel.processTagList(tagList, thisUser, article.locator,label, function(err,result) {
+              console.log('NEW_POST-1 '+JSON.stringify(result));
+              var lox = result.locators;
+    		  var labs = result.labels;
+    		  //see to it that we have some tags
+    		  if (lox) {
+                var len = lox.length;
+                for (var i=0;i<len;i++) {
+                  article.addRelation(self.types.SIMPLE_RELATION_TYPE, self.types.TAG_DOCUMENT_RELATION_TYPE, 'Tag-Document Relation', lox[i],labs[i]);
+                }
+    		  }
+              console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
+              article.addRelation(self.types.SIMPLE_RELATION_TYPE, self.types.DOCUMENT_CREATOR_RELATION_TYPE, 'Document-Creator Relation', user.handle,user.handle);
+              article.save(function(err) {
+                console.log('ARTICLES_CREATE-3 '+err);	  
+                if (!err) {
+                  console.log('ARTICLES_CREATE-3a '+thisUser);	  
+            	  
+                  thisUser.addRelation(self.types.SIMPLE_RELATION_TYPE, self.types.DOCUMENT_CREATOR_RELATION_TYPE, 'Document-Creator Relation', article.locator,"Blog Post");
+                  thisUser.save(function(err) {
+                    console.log('ARTICLES_CREATE-4 '+err);	  
+                    if (!err) {
+                    callback(err,article._id);
+                    } else {
+                      callback(err,null);
+                    }
+                  }); //thisUser.save
+                } else {
+                  callback(err,null);
+                }
+              }); //article.save   		  
+    	  });
+      } else {
+      
+        self.TagModel.processTag(tags, thisUser, article.locator, label, function(err,result) {
+          console.log('NEW_POST-2 '+JSON.stringify(result));
+          //result is a structure:
+          //{ locators: [],labels: [] }
+          //which allows us to store the locators for each tag and the labels.
+          //IN FACT: the TopicSchema is not setup to handle this structure,
+          // but interestingly, could accept it anyway.
+          //PERHAPS that's a better way to pass relations: a locator and some kind of label
+          // with which to make an HREF at the browser
+          var lox = result.locators;
+		  var labs = result.labels;
+		  //see to it that we have some tags
+		  if (lox) {
+            var len = lox.length;
+            for (var i=0;i<len;i++) {
+              article.addRelation(self.types.SIMPLE_RELATION_TYPE, self.types.TAG_DOCUMENT_RELATION_TYPE, 'Tag-Document Relation', lox[i],labs[i]);
+            }
+		  }
+          console.log("ARTICLES_CREATE_22 "+JSON.stringify(article));
+          article.addRelation(self.types.SIMPLE_RELATION_TYPE, self.types.DOCUMENT_CREATOR_RELATION_TYPE, 'Document-Creator Relation', user.handle,user.handle);
+          article.save(function(err) {
+            console.log('ARTICLES_CREATE-33 '+err);	  
+            if (!err) {
+              console.log('ARTICLES_CREATE-33a '+thisUser);	  
+        	  
+              thisUser.addRelation(self.types.SIMPLE_RELATION_TYPE, self.types.DOCUMENT_CREATOR_RELATION_TYPE, 'Document-Creator Relation', article.locator,"Blog Post");
+              thisUser.save(function(err) {
+                console.log('ARTICLES_CREATE-44 '+err);	  
+                if (!err) {
                 callback(err,article._id);
-              } else {
-                callback(err,null);
-              }
-            });
-          } else {
-            callback(err,null);
-          }
-        });
-      });
+                } else {
+                  callback(err,null);
+                }
+              }); //thisUser.save
+            } else {
+              callback(err,null);
+            }
+          }); //article.save
+        });//processTags
+      }
     });
   };
 };

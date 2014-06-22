@@ -15,7 +15,7 @@ module.exports = function (passport) {
    * @param user
    */
   passport.serializeUser(function(user, done) {
-	  console.log('passport.serializeUser '+user.email);
+//	  console.log('passport.serializeUser '+user.email);
     done(null, user.email);
   });
 
@@ -25,7 +25,7 @@ module.exports = function (passport) {
    */
   passport.deserializeUser(function(email, done) {
     User.findOne({ email: email }, function (err, user) {
-    	console.log('passport.deserializer '+email+' '+user);
+ //   	console.log('passport.deserializer '+email+' '+user);
       done(err, user);
     });
   });

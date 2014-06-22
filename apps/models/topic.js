@@ -75,18 +75,25 @@ TopicSchema.statics.listNodesByType = function(nodeType, callback) {
 	p['instanceOf']=nodeType;
 	Topic.find(p, function(err, result) {
 		console.log('TOPIC.listNodesByType '+nodeType+' '+err+' '+result);
+		//TODO: this returns a list of JSON objects, not topics
 		callback(err,result);
 	});
 };
 
+
 TopicSchema.statics.findNodeByLocator = function(locator, callback) {
 	var p = {};
 	p['locator'] = locator;
-	Topic.find(p,function(err,result){
-		console.log('TOPIC.findNodeBylocator '+locator+' '+err+' '+result);
+	
+	console.log('TOPIC.findNodeByLocator '+locator+' '+JSON.stringify(p));
+	
+	Topic.findOne(p,function(err,result){
+		console.log('TOPIC.findNodeBylocator-1 '+locator+' '+err+' '+result);
+		//result will be a TopicSchema object
 		callback(err,result);
 	});
 };
+
 var Topic = mongoose.model('Topic', TopicSchema);
 module.exports = Topic;
 
