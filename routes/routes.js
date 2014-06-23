@@ -9,6 +9,7 @@ var home = require('./index')
   , login = require('./login')
   , blogindex = require('./blogindex')
   , blog = require('./blog')
+  , tag = require('./tag')
   , matrix = require('./matrix')
   , signup = require('./signup')
   , mongoose = require('mongoose')
@@ -28,7 +29,7 @@ module.exports = function(app, passport) {
 	this.BlogModel = new acls();
 	this.UserModel = new userModel();
 	console.log("ROUTER "+this.BlogModel);
-	
+
 	
     // =====================================
 	// HOME PAGE (with login links) ========
@@ -42,26 +43,26 @@ module.exports = function(app, passport) {
 	// Users ===============================
 	// =====================================
 	app.get('/users', user.list);
-	// =====================================
-	// Bookmarks ===============================
-	// =====================================
-	//app.get('/bkmrk', bkmrk.bkmrk); //look for bkmrk.handlebars
-	app.get('/blog', function(req,res) {
+  // =====================================
+  // Blog ===============================
+  // =====================================
+
+  app.get('/blog', function(req,res) {
 		
-//		data['title']='Blog Posts';
-//		var blogs = [{locator:'foo', label:'My first blog post'}, {locator:'bar',label:'My second blog post'}];
-		
-//		console.log("ROUTES/blog-1 "+JSON.stringify(data));
-//        res.render('blog', data); //,
-  	Topic.listNodesByType(types.BLOG_TYPE, function(err,result) {
-    		console.log('ROUTES/blog '+err+' '+result);
-    		var data = {};
-    		data['message']=result;
-            res.render('blogindex', data); //,
-   		
-    	});
-		
-	});
+    Topic.listNodesByType(types.BLOG_TYPE, function(err,result) {
+      console.log('ROUTES/blog '+err+' '+result);
+      //TODO
+      // Reverse the order of these results
+      var posts = [];
+      var len = result.length;
+      for (var i = len-1;i>-1;i--) {
+    	  posts.push(result[i]);
+      }
+      var data = {};
+      data['message']=posts;
+      res.render('blogindex', data); //,
+    });		
+  });
 	
 	app.get('/matrix', matrix.matrix);
 	
@@ -69,7 +70,7 @@ module.exports = function(app, passport) {
             res.render('blogform', {title: 'New Article' }); //,
     });
     
-    app.get('/blog/:id', function(req,res) {
+  app.get('/blog/:id', function(req,res) {
     	var q = req.params.id;
     	console.log('BLOGrout '+q);
     	Topic.findNodeByLocator(q, function(err,result) {
@@ -78,6 +79,18 @@ module.exports = function(app, passport) {
     		var details = result.details;
     		var userid = result.creatorId;
     		var relns = result.relations;
+    		var tags;
+    		var len = relns.length;
+    		if (len > 0) {
+    			var r;
+    			tags = [];
+    			for (var i=0;i<len;i++) {
+    				r = relns[i];
+    				if (r.relationType === types.TAG_DOCUMENT_RELATION_TYPE) {
+    					//TODO
+    				}
+    			}
+    		}
     		var date = result.editedAt;
     		var data = {};
     		data.title = title;
@@ -87,7 +100,7 @@ module.exports = function(app, passport) {
             res.render('blog', data); //,
     		
     	});
-});
+  });
     
     /**
      * Function which ties the app-embedded route back to here
@@ -104,11 +117,37 @@ module.exports = function(app, passport) {
     	
     	blogsupport(body, req.user, function(err,result) {
     		console.log('ROUTES_NEW_POST-1 '+err+' '+result);
-            res.render('blogindex', data); //,
+    		return res.redirect('/blog');
     	});
     	
     });
-    
+  // =====================================
+  // Tags ===============================
+  // =====================================
+
+  app.get('/tag/:id', function(req,res) {
+    var q = req.params.id;
+    console.log('TAGroute '+q);
+    Topic.findNodeByLocator(q, function(err,result) {
+      console.log('TAGroute-1 '+result);
+      var title = result.label;
+      var details = result.details;
+      var userid = result.creatorId;
+      var relns = result.relations;
+      var date = result.editedAt;
+      var data = {};
+      data.title = title;
+      data.body = details;
+      console.log('TAGroute-2 '+JSON.stringify(data));
+   		
+      res.render('tag', data); //,
+    		
+      });
+   });
+
+		
+		
+		
   // =====================================
   // LOGIN ===============================
   // =====================================
@@ -148,9 +187,9 @@ module.exports = function(app, passport) {
       return res.redirect('/HandleRequired');
     }
     Topic.findNodeByLocator(handle, function(err, result) {
-    	console.log('SIGNUP-x '+result.length);
+    	console.log('SIGNUP-x '+result);
     	//if (result !== null) {
-       	if (result.length > 0) {
+       	if (result !== null && result.length > 0) {
         	console.log('SIGNUP-B');
     	     return res.redirect('/HandleExists');
     	}
@@ -177,6 +216,7 @@ module.exports = function(app, passport) {
             	  }
               });
             }
+            return res.redirect('/');
           });
     });
   });

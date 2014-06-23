@@ -100,10 +100,10 @@ var TagModel = module.exports = function() {
 				theTag.smallIcon = icons.TAG_SM;
 			}
 			console.log('TAGS.findOrCreate-1 '+theTag);
-			//wire this tag's relations
-			usertopic.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation', tagLocator, label);						
-			theTag.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation', usertopic.locator, usertopic.locator);			
-			theTag.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_DOCUMENT_RELATION_TYPE, 'Tag-Document Relation', docLocator, docLabel);
+			//wire this tag's relations 
+			usertopic.addRelation(types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation',icons.TAG_SM , tagLocator, label);						
+			theTag.addRelation(types.TAG_CREATOR_RELATION_TYPE, 'Tag-Creator Relation', usertopic.locator,icons.PERSON_ICON_SM, usertopic.locator);			
+			theTag.addRelation(types.SIMPLE_RELATION_TYPE, types.TAG_DOCUMENT_RELATION_TYPE, 'Tag-Document Relation',icons.PUBLICATION_SM, docLocator, docLabel);
 			theTag.save(function(err) {
 				console.log("TAGS.findOrCreateTag saved "+tagLocator+" "+err);
 			});

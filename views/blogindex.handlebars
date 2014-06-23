@@ -1,8 +1,8 @@
 <h1>Blog Central!</h1>
 <a href="/blog/new" class="btn btn-btn-success btn-small">New Article</a><br />
 
-<ul>
+<div>
  {{#each message}}
-  <li> <a href="/blog/{{ locator }}"> {{ label }}</a> </li>
+  <h4><a href="/blog/{{ locator }}"> {{ label }}</a></h4>
  {{/each}}
-</ul>
+</div>

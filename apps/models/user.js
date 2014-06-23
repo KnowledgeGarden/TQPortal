@@ -21,7 +21,7 @@ var UserModel = module.exports = function() {
 		this.findUser(user.username, function(err,result) {
 			console.log('USER.newUserTopic- '+err+' '+result);
 			//if (result !== null) {
-			if (result.lengh > 0) {
+			if (result != null && result.length > 0) {
 				callback(user.username+" already exists", null);
 			} else {
 				//create a new user
