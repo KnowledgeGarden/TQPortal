@@ -8,9 +8,9 @@ var home = require('./index')
   , user  = require('./user')
   , login = require('./login')
   , blogindex = require('./blogindex')
-  , blog = require('./blog')
+  , wm = require('../apps/models/wiki')
+  , bkmrk = require('../apps/models/bookmark')
   , tag = require('./tag')
-  , matrix = require('./matrix')
   , signup = require('./signup')
   , mongoose = require('mongoose')
   , passport = require('passport')
@@ -28,6 +28,8 @@ var commentAuth = [auth.requiresLogin, auth.comment.hasAuthorization];
 module.exports = function(app, passport) {
 	this.BlogModel = new acls();
 	this.UserModel = new userModel();
+	this.WikiModel = new wm();
+	this.BookmarkModel = new bkmrk();
 	console.log("ROUTER "+this.BlogModel);
 
 	
@@ -64,7 +66,6 @@ module.exports = function(app, passport) {
     });		
   });
 	
-	app.get('/matrix', matrix.matrix);
 	
     app.get('/blog/new', auth.requiresLogin, function(req,res) {
             res.render('blogform', {title: 'New Article' }); //,
