@@ -1,7 +1,7 @@
 /**
  * Comments
  */
-var utils = require('../../lib/utils');
+var utils = require('../util/utils');
 
 /**
  * Load comment

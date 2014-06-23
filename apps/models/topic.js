@@ -2,8 +2,8 @@
  * Topic, the primary information artifact
  */
 var mongoose = require('mongoose')
-  , utils = require('../../lib/utils')
-  , struct = require('../../lib/relnstruct')
+  , utils = require('../util/utils')
+  , struct = require('../util/relnstruct')
   , Schema = mongoose.Schema;
 
 

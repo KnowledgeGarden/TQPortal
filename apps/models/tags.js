@@ -11,8 +11,8 @@ var mongoose = require('mongoose')
   , Topic = require('./topic')
   , types = require('../types')
   , icons = require('../icons')
-  , rpa = require('../../lib/stringutil')
-  , utils = require('../../lib/utils');
+  , rpa = require('../util/stringutil')
+  , utils = require('../util/utils');
 
 
 var TagModel = module.exports = function() {

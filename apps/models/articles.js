@@ -12,8 +12,8 @@ var mongoose = require('mongoose')
   , tm = require('./tags')
   , types = require('../types')
   , icons = require('../icons')
-  , uuid = require('../../lib/uuidutil')
-  , utils = require('../../lib/utils');
+  , uuid = require('../util/uuidutil')
+  , utils = require('../util/utils');
 
 var BlogModel =  module.exports = function() {
   this.TagModel = new tm();
