@@ -48,8 +48,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.set("views", __dirname + "/views");
 app.use(express.static(path.join(__dirname, "public")));
 
-var exphbs = require("express3-handlebars");
-
 // all environments
 app.set("port", process.env.PORT || 80);
 
