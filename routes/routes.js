@@ -96,9 +96,10 @@ module.exports = function(app, passport) {
     		var data = {};
     		data.title = title;
     		data.body = details;
+    		data.image = "/images/publication.png";
         	console.log('BLOGrout-2 '+JSON.stringify(data));
    		
-            res.render('blog', data); //,
+            res.render('topic', data); //,
     		
     	});
   });
@@ -221,6 +222,18 @@ module.exports = function(app, passport) {
           });
     });
   });
+  
+  // =====================================
+  // Admin ===============================
+  // /listusers
+  // /inviteuser
+  // /exportdb
+  // /importdb
+  // =====================================
+  
+  //TODO: need isAdmin
+  app.get('/admin', isLoggedIn, admin.admin);
+
 	// =====================================
 	// PROFILE SECTION =====================
 	// =====================================
