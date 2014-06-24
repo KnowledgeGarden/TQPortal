@@ -1,8 +1,22 @@
 <h1>Blog Central!</h1>
-<a href="/blog/new" class="btn btn-btn-success btn-small">New Article</a><br />
-
-<div>
- {{#each message}}
-  <h4><a href="/blog/{{ locator }}"> {{ label }}</a></h4>
- {{/each}}
+<div class="form-group">
+  <a href="/blog/new" class="btn btn-btn-success btn-small">New Article</a><br />
+</div>
+<div class="form-group">
+  <div class="col-xs-11" position:"left";>
+    <h2><img src="{{image}}"> {{title}}</h2>
+    <table class="table table-striped table-bordered table-fixedheader">
+      <thead>
+        <tr>
+          <th>Blog Posts</th>
+        </tr>
+      </thead>
+      <!-- trying to get scrolling to work here; next is paging -->
+      <tbody style="height:20px">
+      {{#each message}}
+       <tr><td><h4><a href="/blog/{{ locator }}"> {{ label }}</a></h4></td></tr>
+      {{/each}}
+     </tbody>
+    </table>
+  </div>
 </div>

@@ -4,14 +4,28 @@
  
  */
 
-//var url = require('url');
-
 exports.admin = function(req, res){
    
-	//var parsed_url = url.parse(req.url, true);
-
-  	//console.log(parsed_url);
-
 	res.render('admin', { title: 'Admin' });
+
+};
+
+exports.exportdb = function(req, res){
+	res.render('exportdb', { title: 'Admin' });
+
+};
+
+exports.importdb = function(req, res){
+	res.render('importdb', { title: 'Admin' });
+
+};
+
+exports.inviteuser = function(req, res){
+	res.render('inviteuser', { title: 'Admin' });
+
+};
+
+exports.listusers = function(req, res){
+	res.render('listusers', { title: 'Admin' });
 
 };

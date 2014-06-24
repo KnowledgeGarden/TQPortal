@@ -18,7 +18,7 @@ var mongoose = require('mongoose')
 var TagModel = module.exports = function() {
 	var self = this;
 	this.replaceAll = rpa.replaceAll;
-	console.log('TAGS '+this.replaceAll);
+	console.log('TAGS ');
 	/**
 	 * Process new tags into Topic objects
 	 * @param tags: one of String or []
