@@ -3,12 +3,14 @@ A simple node-express-mongoose portal
 
 In a sense, this portal mimics, as a scaled down prototype of ["https://github.com/KnowledgeGarden/ExpressDerbyPrototype"]("https://github.com/KnowledgeGarden/ExpressDerbyPrototype" "another project.")
 
-The platform uses MongoDB by way of mongoose, Express 4, and Handlebars to craft a similation of a *topic map*. The javascript model file topic.js serves as the primary database artifact which is a container for all information resources, be they blog entries, the user, tags, bookmarks, or wiki pages.
-
+The platform uses MongoDB by way of mongodb for user persistence, Express 4, and Handlebars to craft a similation of a *topic map*. The platform uses an instance of [https://github.com/KnowledgeGarden/TQTopicMap](https://github.com/KnowledgeGarden/TQTopicMap)
+for persistence of all topics, which include blog posts and other artifacts.
 ## Usage
 For the time being, just clone the project, make sure MongoDB is running, then:
 
 npm update
+
+At that time, make a copy of a fully updated TQTopicMap and drop that in a new directory: **node_modules/tqtopicmap**
 
 node server.js
 

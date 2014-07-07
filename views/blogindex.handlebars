@@ -14,7 +14,14 @@
       <!-- trying to get scrolling to work here; next is paging -->
       <tbody style="height:20px">
       {{#each message}}
-       <tr><td><h4><a href="/blog/{{ locator }}"> {{ label }}</a></h4></td></tr>
+       <tr><td>
+        <table>
+         <tr>
+          <td width="60%"><h4><a href="/blog/{{ locator }}"> {{ label }}</a></h4></td>
+          <td> {{ user }} {{ date }} </td>
+         </tr>
+        </table>
+       </td></tr>
       {{/each}}
      </tbody>
     </table>

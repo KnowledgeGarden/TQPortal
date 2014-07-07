@@ -2,66 +2,82 @@
  * Server: the program's entry point
  */
 var express = require("express")
+  , env = require('./core/environment')
   //stuff
   , http  = require("http")
   , path  = require("path")
-  //database
-  , mongoose = require("mongoose")
+  , fs = require('fs')
   //authentication
-  , passport = require("passport")
-  , User = require("./apps/models/account")
-  , LocalStrategy = require("passport-local").Strategy;
-
-var connect = function () {
-  mongoose.connect("mongodb://127.0.0.1:27017/portaldb");
-};
-connect();
-
-//Error handler
-mongoose.connection.on("error", function (err) {
-  console.log(err);
-});
-
-// Reconnect when closed
-mongoose.connection.on("disconnected", function () {
-  connect();
-});
+  , passport = require("passport");
+ 
 ////////////////////////////
-// Authentication support
+//Environment
+// The Environment boots databases and provides logging services
 ////////////////////////////
-require("./config/passport")(passport);
+var Environment = new env(function(err,env) {
+  console.log("Environment started "+Environment.getPort());
+  var UserDatabase = Environment.getUserDatabase();
+  ////////////////////////////
+  // Authentication support
+  ////////////////////////////
+  require("./core/config/passport")(passport, UserDatabase);
+  ////////////////////////////
+  //Express App 
+  ////////////////////////////
 
+  var app = express()
+    , bodyParser = require("body-parser")
+    , cookieParser = require("cookie-parser")
+    , flash = require("connect-flash");
+  //  , logger = require("logger").createLogger("development.log");
 
-////////////////////////////
-//Express App 
-////////////////////////////
+  require("./core/config/express")(app,passport,flash);
+  //placed here due to __dirname; otherwise, can't find /views
+  app.use(express.static(path.join(__dirname, "public")));
+  app.set("views", __dirname + "/views");
+  app.use(express.static(path.join(__dirname, "public")));
 
-var app = express()
- , bodyParser = require("body-parser")
- , cookieParser = require("cookie-parser")
- , flash = require("connect-flash")
- , logger = require("logger").createLogger("development.log");
+  // all environments
+  app.set("port", Environment.getPort());
+  ////////////////////////////
+  // Routes are added to Express from each plugin app
+  // Trailing routes added for 404 errors
+  ////////////////////////////
 
-require("./config/express")(app,passport,flash);
-//placed here due to __dirname; otherwise, can't find /views
-app.use(express.static(path.join(__dirname, "public")));
-app.set("views", __dirname + "/views");
-app.use(express.static(path.join(__dirname, "public")));
+  /**
+   * Fire up an individual app from this <code>file</code>
+   * @param file: a .js app file which exports a function(app,database)
+   */
+  function startApp(file) {
+    var v = file;
+    var p = require('./apps/' + v).plugin;
+    p(app, Environment, passport);
+   }
 
-// all environments
-app.set("port", process.env.PORT || 80);
+  /**
+   * load all *.js files from the /apps directory
+   */
+  function loadApps() {
+    require('fs').readdirSync('./apps').forEach(function (file) {
+      // only load javascript files
+      if (file.indexOf(".js") > -1) {
+        console.log('BURP '+file);
+        startApp(file);
+      }
+    });
+  }
+  // boot the plugin apps
+  loadApps();
+  
+  ////////////////////////////
+  //Server
+  //TODO need to use server and port, not just port
+  ////////////////////////////
 
-////////////////////////////
-// Routes
-////////////////////////////
-require("./routes/routes.js")(app, passport);
+  http.createServer(app).listen(app.get("port"), function() {
+    console.log("Express server listening on port " + app.get("port"));
+  });
 
-////////////////////////////
-//Server
-////////////////////////////
-
-http.createServer(app).listen(app.get("port"), function(){
-  console.log("Express server listening on port " + app.get("port"));
 });
 
 
