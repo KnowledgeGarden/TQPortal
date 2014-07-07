@@ -14,8 +14,8 @@ exports.plugin = function(app, environment, ppt) {
   function isLoggedIn(req, res, next) {
     // if user is authenticated in the session, carry on 
 	console.log('ISLOGGED IN '+req.isAuthenticated());
-    if (req.isAuthenticated())
-      return next();
+    if (req.isAuthenticated()) {return next();}
+      
     // if they aren't redirect them to the home page
     // really should issue an error message
     res.redirect('/');
@@ -29,12 +29,12 @@ exports.plugin = function(app, environment, ppt) {
     var start = 0; //TODO
     var count = -1; //TODO
     BlogModel.listBlogPosts(start,count,credentials,function(err,result) {
-       console.log('ROUTES/blog '+err+' '+result);
-      var posts = [];
+      console.log('ROUTES/blog '+err+' '+result);
       var len = result.length;
-      var p;
-      var m;
-      for (var i = len-1;i>-1;i--) {
+      var p; //the proxy
+      var m; //the individual message
+      var posts = [];
+      for (var i=0;i<len;i++) {
         p = result[i];
         m = {};
         m.locator = p.getLocator();
@@ -44,9 +44,9 @@ exports.plugin = function(app, environment, ppt) {
         m.user = p.getCreatorId();
         posts.push(m);
       }
-      var data = {};
-      data['message']=posts;
-      res.render('blogindex', data); //,
+      var data = {};//the message structure
+      data.message=posts;
+      res.render('blogindex', data);
     });
   });
 		
@@ -54,7 +54,7 @@ exports.plugin = function(app, environment, ppt) {
   app.get('/blog/new', isLoggedIn, function(req,res) {
     res.render('blogform', {title: 'New Article' }); //,
   });
-	    
+
   app.get('/blog/:id', function(req,res) {
     var q = req.params.id;
     console.log('BLOGrout '+q);

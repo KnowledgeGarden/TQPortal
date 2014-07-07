@@ -8,7 +8,7 @@ var types = require('../../core/types')
 
 var TagModel = module.exports = function(environment) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
+	var DataProvider = topicMapEnvironment.getDataProvider();
   var TopicModel = topicMapEnvironment.getTopicModel();
   var replaceAll = rpa.replaceAll;
   var self = this;
@@ -128,7 +128,7 @@ var TagModel = module.exports = function(environment) {
             if (err)
                 error += err;
             //wire this tag's relations
-            self.__wireRelations(theTag, usertopic, doctopic, credentials, function(err,data) {
+            self.__wireRelations(theTag, usertopic, docTopic, credentials, function(err,data) {
             	error += err;
             });
          });
@@ -140,7 +140,7 @@ var TagModel = module.exports = function(environment) {
   
   self.__wireRelations = function(theTag, theDoc, theUser, credentials, callback) {
 	var error='';
-	console.log("TagModel.__wireRelations "+theTag.getLocator()+" "+theDoc.getLocfator()+
+	console.log("TagModel.__wireRelations "+theTag.getLocator()+" "+theDoc.getLocator()+
 			" "+theUser.getLocator());
 	//sourceNode, targetNode,relationTypeLocator, userLocator, smallImagePath,
 	//largeImagePath, isTransclude, isPrivate, callback
