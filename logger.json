@@ -1,0 +1,11 @@
+{
+  "appenders": [
+    {
+      "type": "file",
+      "filename": "./logs/portal.log",
+      "maxLogSize": 20480,
+      "backups": 20,
+      "category": ["relative-logger","Portal"]
+    }
+  ]
+}
