@@ -1,11 +1,14 @@
 /**
  * tag app
  */
-var tagModel = require('./tag/tagmodel');
+var tagModel = require('./tag/tagmodel')
+  , constants = require('../core/constants')
+  , types = require('../core/types');
+
 
 exports.plugin = function(app, environment, ppt) {
-//	var topicMapEnvironment = environment.getTopicMapEnvironment();
-//	var Dataprovider = topicMapEnvironment.getDataProvider();
+  var topicMapEnvironment = environment.getTopicMapEnvironment();
+  var Dataprovider = topicMapEnvironment.getDataProvider();
 //  this.TagModel = new userModel(environment);
 
   /////////////////

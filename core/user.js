@@ -35,10 +35,10 @@ var User = module.exports = function(json) {
     return data['handle'];
   },
   self.setFullName = function(fullName) {
-    data['fullName'] = fullName;
+    data['fullname'] = fullName;
   },
   self.getFullName = function() {
-    return data['fullName'];
+    return data['fullname'];
   },
   self.setHomepage = function(homePage) {
     this.data['homePage'] = homePage;

@@ -1,7 +1,10 @@
 /**
  * User app
  */
-var userModel = require('./user/usermodel');
+var userModel = require('./user/usermodel')
+  , constants = require('../core/constants')
+  , types = require('../core/types');
+
 
 exports.plugin = function(app, environment, ppt) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
