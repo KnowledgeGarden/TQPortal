@@ -94,14 +94,6 @@ var BlogModel =  module.exports = function(environment) {
     var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BLOG_TYPE);
     Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data) {
       console.log("BlogModel.listBlogPosts "+err+" "+data);
-/*		  if (data) {
-			  var len = data.length;
-		      for(var i=0;i<len;i++) {
-		    	  console.log("DPAA "+data[i].getSortDate());
-		      }
-		      //JERE they are in proper order
-
-		  } */
       callback(err,data);
     });
   },

@@ -4,12 +4,14 @@
 var types = require('../../core/types')
   , icons = require('../../core/icons')
   , constants = require('../../core/constants')
+  , properties = require('../../core/properties')
   , rpa = require('../../core/util/stringutil');
 
 var TagModel = module.exports = function(environment) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var DataProvider = topicMapEnvironment.getDataProvider();
   var TopicModel = topicMapEnvironment.getTopicModel();
+  var queryDSL = topicMapEnvironment.getQueryDSL();
   var replaceAll = rpa.replaceAll;
   var self = this;
 	
@@ -120,7 +122,7 @@ var TagModel = module.exports = function(environment) {
       if (theTag === null) {
         //create the tag
     	TopicModel.newInstanceNode(tagLocator, types.TAG_TYPE, label, "",constants.ENGLISH,
-    			constants.SYSTEM_USER, icons.TAG_SM, icons.TAG, false, credentials, function(err, result) {   
+    			usertopic.getLocator(), icons.TAG_SM, icons.TAG, false, credentials, function(err, result) {   
     	  theTag = result;
           console.log('TagModel.__findOrCreateTag-2 '+theTag.toJSON());
           DataProvider.putNode(theTag, function(err, result) {
@@ -157,5 +159,42 @@ var TagModel = module.exports = function(environment) {
     });
   };
   
-  
+  self.listTags = function(start, count, credentials, callback) {
+	    var query = queryDSL.sortedTupleCountTermQuery(properties.INSTANCE_OF,types.TAG_TYPE);
+	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data) {
+	      console.log("TagModel.listTags "+err+" "+data);
+	      callback(err,data);
+	    });
+	  },
+	  
+	  /**
+	   * @param credentials
+	   * @param callback signatur (data)
+	   */
+	  self.fillDatatable = function(credentials, callback) {
+		  var theResult = {};
+		  self.listTags(0,-1,credentials,function(err,result) {
+		      console.log('ROUTES/tag '+err+' '+result);
+		      var data = [];
+		      var len = result.length;
+		      var p; //the proxy
+		      var m; //the individual message
+		      var url;
+		      var posts = [];
+		      for (var i=0;i<len;i++) {
+		        p = result[i];
+		        m = [];
+		        url = "<a href='tag/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
+		        m.push(url);
+		        m.push(p.getCreatorId());
+		        m.push(p.getDate());
+		        data.push(m);
+		      }
+		      theResult.data = data;
+		      console.log();
+		      console.log("TagModel.fillDatatable "+JSON.stringify(theResult));
+		      console.log();
+		    callback(theResult);
+		  });
+	  }
 };

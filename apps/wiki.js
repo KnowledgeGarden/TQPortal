@@ -8,4 +8,12 @@ exports.plugin = function(app, environment, ppt) {
 	var Dataprovider = topicMapEnvironment.getDataProvider();
   this.WikiModel = new wm(environment);
   console.log("Starting Wiki "+this.WikiModel);
+  
+  /////////////////
+  // Routes
+  /////////////////
+  app.get('/wiki', function(req,res) {
+    res.render('wikihome');
+  });
+
 };

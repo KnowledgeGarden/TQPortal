@@ -61,6 +61,41 @@ var UserModel = module.exports = function(environment) {
     Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
       callback(err,result);
     });
-  }
-
+  },
+  
+  self.listUsers = function(start, count, credentials, callback) {
+    Dataprovider.listInstanceNodes(types.USER_TYPE, start,count,credentials, function(err,data) {
+      console.log("UserModel.listInstanceNodes "+err+" "+data);
+      callback(err,data);
+    });
+  },
+	  
+	  /**
+	   * @param credentials
+	   * @param callback signatur (data)
+	   */
+  self.fillDatatable = function(credentials, callback) {
+    var theResult = {};
+    self.listUsers(0,-1,credentials,function(err,result) {
+      console.log('ROUTES/users '+err+' '+result);
+      var data = [];
+      var len = result.length;
+      var p; //the proxy
+      var m; //the individual message
+      var url;
+      var posts = [];
+      for (var i=0;i<len;i++) {
+      p = result[i];
+		        m = [];
+		        url = "<a href='user/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
+		        m.push(url);
+		        data.push(m);
+		      }
+		      theResult.data = data;
+		      console.log();
+		      console.log("TagModel.fillDatatable "+JSON.stringify(theResult));
+		      console.log();
+		    callback(theResult);
+		  });
+	  }
 };
