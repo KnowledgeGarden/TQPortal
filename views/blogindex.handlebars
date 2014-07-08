@@ -5,25 +5,14 @@
 <div class="form-group">
   <div class="col-xs-11" position:"left";>
     <h2><img src="{{image}}"> {{title}}</h2>
-    <table class="table table-striped table-bordered table-fixedheader">
+    <table id="datatable" class="display" cellspacing="0" width="100%">
       <thead>
         <tr>
-          <th>Blog Posts</th>
+          <th width="70%">Subject</th><th>Author</th><th>Date</th>
         </tr>
       </thead>
-      <!-- trying to get scrolling to work here; next is paging -->
-      <tbody style="height:20px">
-      {{#each message}}
-       <tr><td>
-        <table>
-         <tr>
-          <td width="60%"><h4><a href="/blog/{{ locator }}"> {{ label }}</a></h4></td>
-          <td> {{ user }} {{ date }} </td>
-         </tr>
-        </table>
-       </td></tr>
-      {{/each}}
-     </tbody>
+      <tbody>
+      </tbody>
     </table>
   </div>
 </div>

@@ -25,29 +25,7 @@ exports.plugin = function(app, environment, ppt) {
   // Routes
   /////////////////
   app.get('/blog', function(req,res) {
-    var credentials = null; //TODO
-    var start = 0; //TODO
-    var count = -1; //TODO
-    BlogModel.listBlogPosts(start,count,credentials,function(err,result) {
-      console.log('ROUTES/blog '+err+' '+result);
-      var len = result.length;
-      var p; //the proxy
-      var m; //the individual message
-      var posts = [];
-      for (var i=0;i<len;i++) {
-        p = result[i];
-        m = {};
-        m.locator = p.getLocator();
-        //TODO we need a language param in the query
-        m.label = p.getLabel(constants.ENGLISH);
-        m.date = p.getDate();
-        m.user = p.getCreatorId();
-        posts.push(m);
-      }
-      var data = {};//the message structure
-      data.message=posts;
-      res.render('blogindex', data);
-    });
+    res.render('blogindex');
   });
 		
 		

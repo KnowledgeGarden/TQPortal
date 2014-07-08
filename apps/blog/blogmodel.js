@@ -104,7 +104,39 @@ var BlogModel =  module.exports = function(environment) {
 		  } */
       callback(err,data);
     });
-  };
+  },
+  
+  /**
+   * @param credentials
+   * @param callback signatur (data)
+   */
+  self.fillDatatable = function(credentials, callback) {
+	  var theResult = {};
+	  self.listBlogPosts(0,-1,credentials,function(err,result) {
+	      console.log('ROUTES/blog '+err+' '+result);
+	      var data = [];
+	      var len = result.length;
+	      var p; //the proxy
+	      var m; //the individual message
+	      var url;
+	      var posts = [];
+	      for (var i=0;i<len;i++) {
+	        p = result[i];
+	        m = [];
+	        url = "<a href='blog/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
+	        m.push(url);
+	        m.push(p.getCreatorId());
+	        m.push(p.getDate());
+	        data.push(m);
+	      }
+	      theResult.data = data;
+	      console.log();
+	      console.log("BlogModel.fillDatatable "+JSON.stringify(theResult));
+	      console.log();
+	    callback(theResult);
+	  });
+  }
+  
 };
 
 
