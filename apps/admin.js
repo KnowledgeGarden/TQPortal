@@ -5,7 +5,7 @@
 var User = require('../core/user')
   , usermodel = require('./user/usermodel');
 
-exports.plugin = function(app, environment, ppt) {
+exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var userDatabase = environment.getUserDatabase();
@@ -13,13 +13,32 @@ exports.plugin = function(app, environment, ppt) {
 	var passport = ppt;
 	console.log("Starting Admin");
 	
+  function isPrivate(req,res,next) {
+	if (isPrivatePortal) {
+      if (req.isAuthenticated()) {return next();}
+      res.redirect('/login');
+	} else {
+		{return next();}
+	}
+  }
+  function isLoggedIn(req, res, next) {
+	// if user is authenticated in the session, carry on 
+	console.log('ISLOGGED IN '+req.isAuthenticated());
+	if (req.isAuthenticated()) {return next();}
+	// if they aren't redirect them to the home page
+	// really should issue an error message
+	if (isPrivatePortal) {
+      return res.redirect('/login');
+	}
+	res.redirect('/');
+  }
 ///////////////
 // login
 ///////////////
   app.get('/login', function(req, res) {
     res.render('login', { title: 'Login' });
   });
-	  
+  
   app.post('/login', function(req, res, next) {
     console.log('Login: '+req.body.email);
     var bugfix = false;
@@ -115,7 +134,7 @@ exports.plugin = function(app, environment, ppt) {
           });
         }
         return res.redirect('/');
-        });    
+        });
       });
     });
   });

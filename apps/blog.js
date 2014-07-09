@@ -5,26 +5,36 @@ var acls = require('./blog/blogmodel')
   , constants = require('../core/constants')
   , types = require('../core/types');
 
-exports.plugin = function(app, environment, ppt) {
+exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
-  var BlogModel = new acls(environment);
-  console.log("Starting Blog "+this.BlogModel);
+	var BlogModel = new acls(environment);
+	console.log("Starting Blog "+this.BlogModel);
   
-  function isLoggedIn(req, res, next) {
-    // if user is authenticated in the session, carry on 
-	console.log('ISLOGGED IN '+req.isAuthenticated());
-    if (req.isAuthenticated()) {return next();}
-      
-    // if they aren't redirect them to the home page
-    // really should issue an error message
-    res.redirect('/');
-  }
+	function isPrivate(req,res,next) {
+		if (isPrivatePortal) {
+			if (req.isAuthenticated()) {return next();}
+			res.redirect('/login');
+		} else {
+			{return next();}
+		}
+	}
+	function isLoggedIn(req, res, next) {
+		// if user is authenticated in the session, carry on 
+		console.log('ISLOGGED IN '+req.isAuthenticated());
+		if (req.isAuthenticated()) {return next();}
+		// if they aren't redirect them to the home page
+		// really should issue an error message
+		if (isPrivatePortal) {
+			return res.redirect('/login');
+		}
+		res.redirect('/');
+	}
  
   /////////////////
   // Routes
   /////////////////
-  app.get('/blog', function(req,res) {
+  app.get('/blog', isPrivate,function(req,res) {
     res.render('blogindex');
   });
 		
@@ -33,18 +43,19 @@ exports.plugin = function(app, environment, ppt) {
     res.render('blogform', {title: 'New Article' }); //,
   });
 
-  app.get('/blog/:id', function(req,res) {
+  app.get('/blog/:id', isPrivate,function(req,res) {
     var q = req.params.id;
     console.log('BLOGrout '+q);
     var credentials = null; //TODO
     Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-      console.log('BLOGrout-1 '+err+" "+result);
+      console.log('BLOGrout-1 '+err+" "+result.toJSON);
       var title = result.getLabel(constants.ENGLISH);
       var details = result.getDetails(constants.ENGLISH);
       var userid = result.getCreatorId();
       // paint tags
       var tags = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-      
+      console.log("Blogs.XXX "+JSON.stringify(tags));
+     
       var date = result.editedAt;
       var data = {};
       data.title = title;

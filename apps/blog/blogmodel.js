@@ -117,7 +117,8 @@ var BlogModel =  module.exports = function(environment) {
 	        m = [];
 	        url = "<a href='blog/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
 	        m.push(url);
-	        m.push(p.getCreatorId());
+	        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
+	        m.push(url);
 	        m.push(p.getDate());
 	        data.push(m);
 	      }

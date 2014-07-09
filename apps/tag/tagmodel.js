@@ -55,24 +55,6 @@ var TagModel = module.exports = function(environment) {
     };
     //start the loop
     loop();
- /*   if (len > 0) {
-      var t,l;
-      for(var i=0;i<len;i++) {
-        l = tagList[i].trim();
-        console.log('TAG-1 '+t);
-        labels.push(l);
-        t = replaceAll(l, ' ', '_');
-        locator = t+'_TAG';
-        locators.push(locator);
-        //find or create this tag
-        self.__findOrCreateTag(locator,l,usertopic, docLocator,docLabel);
-        if (locators.lengh > 0) {
-          result['locators'] = locators;
-          result['labels'] = labels;
-        }
-      }
-    }
-    callback("",result); */
   },
 	
   self.processTag = function(tagString, usertopic, docTopic, credentials, callback) {
@@ -145,7 +127,7 @@ var TagModel = module.exports = function(environment) {
 	console.log("TagModel.__wireRelations "+theTag.getLocator()+" "+theDoc.getLocator()+
 			" "+theUser.getLocator());
 	//sourceNode, targetNode,relationTypeLocator, userLocator, smallImagePath,
-	//largeImagePath, isTransclude, isPrivate, callback
+	//largeImagePath, isTransclude, isPrivate, credentials, callback
     TopicModel.relateExistingNodes(theUser,theTag,types.TAG_CREATOR_RELATION_TYPE,
     		theUser.getLocator(),
     		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
@@ -186,7 +168,8 @@ var TagModel = module.exports = function(environment) {
 		        m = [];
 		        url = "<a href='tag/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
 		        m.push(url);
-		        m.push(p.getCreatorId());
+		        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
+		        m.push(url);
 		        m.push(p.getDate());
 		        data.push(m);
 		      }

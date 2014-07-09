@@ -1,13 +1,12 @@
 /**
  * about app
  */
-exports.plugin = function(app, environment, ppt) {
+exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 
-	  /////////////////
-	  // Routes
-	  /////////////////
-	  app.get('/about', function(req,res) {
-	    res.render('about');
-	  });
-
-}
+  /////////////////
+  // Routes
+  /////////////////
+  app.get('/about', function(req,res) {
+    res.render('about');
+  });
+};

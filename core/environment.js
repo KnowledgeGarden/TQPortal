@@ -25,6 +25,10 @@ var Environment = module.exports = function(callback) {
   ///////////////////////
   // API
   ///////////////////////
+  
+  self.getIsPrivatePortal = function() {
+    return configProperties.portalIsPrivate;
+  },
   self.getTopicMapEnvironment = function() {
     return TopicMapEnvironment;
   },
@@ -81,7 +85,7 @@ var Environment = module.exports = function(callback) {
         var foo = new idx(function(err, environment) {
           TopicMapEnvironment = environment;
           //fire up the program
-          console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello());
+          console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
           self.logDebug("Portal Environment started ");
           callback("foo","bar");
         });
