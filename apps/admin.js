@@ -34,6 +34,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	res.redirect('/');
   }
 ///////////////
+// LOGOUT
+///////////////
+  app.get('/logout', function(req, res) {
+    req.logout();
+    res.redirect('/');
+  });
+
+///////////////
 // login
 ///////////////
   app.get('/login', function(req, res) {
@@ -139,4 +147,25 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       });
     });
   });
+  ///////////////////////////////
+  //
+  ///////////////////////////////
+  app.get('/admin', isLoggedIn, function(req, res) {
+	  res.render('admin');
+  });
+  
+  app.get('/importdb', isLoggedIn, function(req, res) {
+	  res.render('admin'); //TODO
+  });
+  app.get('/exportdb', isLoggedIn, function(req, res) {
+	  res.render('admin'); //TODO
+  });
+  app.get('/inviteuser', isLoggedIn, function(req, res) {
+	  res.render('admin'); //TODO
+  });
+  //TODO: this needs a database call for data to pass to the view
+  app.get('/listusers', isLoggedIn, function(req, res) {
+	  res.render('admin'); //TODO
+  });
+
 };
