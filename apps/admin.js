@@ -13,7 +13,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var passport = ppt;
 	var isInvitationOnly = environment.getIsInvitationOnly();
 	console.log("Starting Admin");
-	
+
+	function isAdmin(req,res,next) {
+		//TODO write the test
+		// but that demands we have default admin installed
+		isLoggedIn(req,res,next);
+	}
   function isPrivate(req,res,next) {
 	if (isPrivatePortal) {
       if (req.isAuthenticated()) {return next();}
@@ -148,23 +153,23 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     });
   });
   ///////////////////////////////
-  //
+  // Admin functions
   ///////////////////////////////
-  app.get('/admin', isLoggedIn, function(req, res) {
+  app.get('/admin', isAdmin, function(req, res) {
 	  res.render('admin');
   });
   
-  app.get('/importdb', isLoggedIn, function(req, res) {
+  app.get('/importdb', isAdmin, function(req, res) {
 	  res.render('admin'); //TODO
   });
-  app.get('/exportdb', isLoggedIn, function(req, res) {
+  app.get('/exportdb', isAdmin, function(req, res) {
 	  res.render('admin'); //TODO
   });
-  app.get('/inviteuser', isLoggedIn, function(req, res) {
+  app.get('/inviteuser', isAdmin, function(req, res) {
 	  res.render('admin'); //TODO
   });
   //TODO: this needs a database call for data to pass to the view
-  app.get('/listusers', isLoggedIn, function(req, res) {
+  app.get('/listusers', isAdmin, function(req, res) {
 	  res.render('admin'); //TODO
   });
 
