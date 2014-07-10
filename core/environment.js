@@ -25,7 +25,9 @@ var Environment = module.exports = function(callback) {
   ///////////////////////
   // API
   ///////////////////////
-  
+  self.getIsInvitationOnly = function() {
+    return configProperties.invitationOnly;
+  },
   self.getIsPrivatePortal = function() {
     return configProperties.portalIsPrivate;
   },

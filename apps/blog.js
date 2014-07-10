@@ -6,6 +6,7 @@ var acls = require('./blog/blogmodel')
   , types = require('../core/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
+	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var BlogModel = new acls(environment);
@@ -56,15 +57,28 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       var tags = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
       console.log("Blogs.XXX "+JSON.stringify(tags));
      
-      var date = result.editedAt;
+      var date = result.getDate();
       var data = {};
       data.title = title;
       data.body = details;
       data.tags = tags;
+      data.source = result.toJSON();
       data.date = date;
+      data.user = userid;
       data.image = "/images/publication.png";
-      //TODO paint provenance creator Id setup to point to user
       console.log('BLOGrout-2 '+JSON.stringify(data));
+/*NOTE: still a bug 
+BLOGrout-2 {"title":"Watching the winds blow, it seems like the sun might shine,
+ except that it might otherwise rain outside.","body":"But for the limits of san
+ity, we should be thinking in terms of all ells failing. Otherwise, we must then
+ consider what the consequences are, when compared to procrastination and sloth.
+ It seems like one or the other is of great consequence to human kind.\r\n\r\nBu
+t, whereas we are safe and sound here. one cannot tell what the future holds. I
+prefer to think otherwise.","tags":[{"relationType":"TagCreatorRelationType","re
+lationLabel":"TagCreatorRelationType","icon":"/images/tag_sm.png","locator":"Goo
+d_Post_TAG","label":"Good Post"}],"date":"2014-07-09T16:11:30","user":"sammy","i
+mage":"/images/publication.png"}
+ */
       res.render('topic', data);
     });
   });
@@ -85,6 +99,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     console.log('BLOG_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
     _blogsupport(body, usx, function(err,result) {
       console.log('BLOG_NEW_POST-1 '+err+' '+result);
+      //technically, this should return to "/" since Lucene is not ready to display
+      // the new post; you have to refresh the page in any case
       return res.redirect('/blog');
     });
   });

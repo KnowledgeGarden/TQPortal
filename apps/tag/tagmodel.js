@@ -8,6 +8,7 @@ var types = require('../../core/types')
   , rpa = require('../../core/util/stringutil');
 
 var TagModel = module.exports = function(environment) {
+	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var DataProvider = topicMapEnvironment.getDataProvider();
   var TopicModel = topicMapEnvironment.getTopicModel();
@@ -112,7 +113,7 @@ var TagModel = module.exports = function(environment) {
             if (err)
                 error += err;
             //wire this tag's relations
-            self.__wireRelations(theTag, usertopic, docTopic, credentials, function(err,data) {
+            self.__wireRelations(theTag,  docTopic, usertopic,credentials, function(err,data) {
             	error += err;
             });
          });
@@ -128,16 +129,20 @@ var TagModel = module.exports = function(environment) {
 			" "+theUser.getLocator());
 	//sourceNode, targetNode,relationTypeLocator, userLocator, smallImagePath,
 	//largeImagePath, isTransclude, isPrivate, credentials, callback
+	myEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
+	topicMapEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
     TopicModel.relateExistingNodes(theUser,theTag,types.TAG_CREATOR_RELATION_TYPE,
     		theUser.getLocator(),
     		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
       if (err) {error+=err;}
-        TopicModel.relateExistingNodes(theTag,theDoc,types.TAG_DOCUMENT_RELATION_TYPE,
+      myEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
+      topicMapEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
+      TopicModel.relateExistingNodes(theTag,theDoc,types.TAG_DOCUMENT_RELATION_TYPE,
         		theUser.getLocator(),
             		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-          if (err) {error+=err;}
-            callback(error,null);
-        });
+        if (err) {error+=err;}
+          callback(error,null);
+      });
     });
   };
   

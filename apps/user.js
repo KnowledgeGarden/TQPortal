@@ -48,12 +48,16 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var details = result.getDetails(constants.ENGLISH);
 		var userid = result.getCreatorId();
 		// paint tags
-		var tags = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+		var tags = result.listRelationsByRelationType(types.TAG_CREATOR_RELATION_TYPE); //types.TAG_DOCUMENT_RELATION_TYPE);
+		// paint docs
+		var docs = result.listRelationsByRelationType(types.CREATOR_DOCUMENT_RELATION_TYPE);
 		var date = result.editedAt;
 		var data = {};
 		data.title = title;
 		data.body = details;
 		data.tags = tags;
+		data.docs = docs;
+		data.source = result.toJSON();
 		data.date = date;
 		data.image = "/images/person.png";
 		//TODO paint provenance creator Id setup to point to user

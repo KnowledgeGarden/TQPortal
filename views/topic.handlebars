@@ -1,25 +1,56 @@
-<div>
-<div class="form-group">
-  <div class="col-xs-7" position:"left";>
-    <h2><img src="{{image}}"> {{title}}</h2>
-    <textarea id="desc" rows="5" name="body"" class="form-control">{{body}}</textarea>
-  </div>
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#topic">Topic</a></li>
+  <li><a data-toggle="tab" href="#source">Source</a></li>
+  <li><a data-toggle="tab" href="#relations">Relations</a></li>
+</ul>
+
+<div class="tab-content">
+  <div id="topic" class="tab-pane fade in active">
+<div class="blog-post col-xs-7">
+  <h2 class="blog-post-title"><img src="{{image}}">{{title}}</h2>
+  <p class="blog-post-meta"> {{date}} <a href="{{user}}">{{user}}</a></p>
+  <p>{{body}}</p>
 </div>
-<div class="form-group">
- <div class="navbar-right" position:"right";>
-  <div class="form-group">
- <!--  <div class="col-xs-5" > -->
-   <div position:"right";>
-    <h3>Tags</h3>
-    <textarea id="desc" rows="10" name="tags"" class="form-control">
-      {{ #each tags }}
-      <a href="{{documentLocator}}">{{documentLabel}}</a><br/>
-      {{ /#each }}
-    </textarea>
-   </div>
+
+ <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+  <div class="sidebar-module sidebar-module-inset">
+    {{#if tags}}
+    <div class="sidebar-module">
+      <h4>Tags</h4>
+      <ol class="list-unstyled">
+       {{#each tags}}
+         <li><a href="{{locator}}">{{label}}</a></li>
+       {{/each}}
+      </ol>
+    </div>
+    {{/if}}
+    {{#if users}}
+    <div class="sidebar-module">
+      <h4>Users</h4>
+      <ol class="list-unstyled">
+       {{#each users}}
+         <li><a href="{{locator}}">{{label}}</a></li>
+       {{/each}}
+      </ol>
+    </div>
+    {{/if}}
+    {{#if docs}}
+    <div class="sidebar-module">
+      <h4>Documents</h4>
+      <ol class="list-unstyled">
+       {{#each docs}}
+         <li><a href="{{locator}}">{{label}}</a></li>
+       {{/each}}
+      </ol>
+    </div>
+    {{/if}}
   </div>
  </div>
-</div>
-
-
-</div>
+ </div> <!-- /topic -->
+ <div id="source" class="tab-pane fade">
+  <pre>{{source}}</pre>
+ </div>
+ <div id="relations" class="tab-pane fade">
+ <h1>Relations</h1>
+ </div> <!-- /relations -->
+ </div>

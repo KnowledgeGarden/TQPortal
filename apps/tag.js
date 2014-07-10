@@ -47,15 +47,19 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			var title = result.getLabel(constants.ENGLISH);
 			var details = result.getDetails(constants.ENGLISH);
 			var userid = result.getCreatorId();
-			// paint tags
-			var tags = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-			console.log("Tags.XXX "+JSON.stringify(tags));
+			// paint docs
+			var docs = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+	//		console.log("Tags.XXX "+JSON.stringify(docs));
+			// paint users
+			var users = result.listRelationsByRelationType(types.TAG_CREATOR_RELATION_TYPE);
 			var date = result.editedAt;
 			var data = {};
 			data.title = title;
 			data.body = details;
-			data.tags = tags;
+			data.docs = docs;
+			data.users = users;
 			data.date = date;
+			data.source = result.toJSON();
 			data.image = "/images/tag.png";
 			//TODO paint provenance creator Id setup to point to user
 			console.log('TAGrout-2 '+JSON.stringify(data));

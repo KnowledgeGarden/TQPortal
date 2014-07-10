@@ -11,6 +11,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var userDatabase = environment.getUserDatabase();
 	var UserModel = new usermodel(environment);
 	var passport = ppt;
+	var isInvitationOnly = environment.getIsInvitationOnly();
 	console.log("Starting Admin");
 	
   function isPrivate(req,res,next) {
@@ -85,7 +86,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 //signup
 ///////////////
   app.get('/signup', function(req, res){
-    res.render('Signup', { title: 'Signup' });
+    res.render('Signup', { invitationOnly: isInvitationOnly });
   });
  
   app.post('/signup', function(req,res) {
