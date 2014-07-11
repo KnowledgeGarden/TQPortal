@@ -28,8 +28,12 @@ var User = module.exports = function(json) {
   self.getEmail = function() {
     return data['email'];
   },
+  /**
+   * Must setHandle since it creates a credential
+   */
   self.setHandle = function(handle) {
     data['handle'] = handle;
+    self.addCredential(handle);
   },
   self.getHandle = function() {
     return data['handle'];

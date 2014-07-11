@@ -1,1 +1,22 @@
-<h1>List Users</h1>
+<h1>List Users and Edit credentials</h1>
+<div class="col-xs-11" position:"left";>
+ <form id="credentialform" action="/selectuser" method="get">
+  <div class="form-group">
+   <label>Email for Selected User</label>
+   <input type="text" class="form-control" name="email">
+  </div>
+  <button type="submit" class="btn btn-warning btn-lg">Select</button>
+ </form> <br/><hr>
+
+ <div class="form-group">
+    <table id="adminusertable" class="display" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th>Email</th><th>Handle</th><th>Full Name</th><th>Credentials</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</div>

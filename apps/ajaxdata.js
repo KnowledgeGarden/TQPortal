@@ -6,6 +6,7 @@
 
 var acls = require('./blog/blogmodel')
   , tag = require('./tag/tagmodel')
+  , admn = require("./admin/adminmodel")
   , usr = require('./user/usermodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
@@ -13,6 +14,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   var BlogModel = new acls(environment);
   var UserModel = new usr(environment);
   var TagModel = new tag(environment);
+  var AdminModel = new admn(environment);
   console.log("Starting AjaxData");
 	
   /**
@@ -59,5 +61,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       res.json(data);
     });
   });
-
+  
+  app.get('/ajaxadminusers', function(req,res) {
+	AdminModel.fillDatatable(function(data) {
+		console.log("AJAX_DATA GETADMINUSERS "+JSON.stringify(data));
+		try {
+			res.set('Content-type', 'text/json');
+		}  catch (e) { }
+		res.json(data);
+	});
+  });
 };

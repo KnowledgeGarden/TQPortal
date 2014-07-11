@@ -168,10 +168,9 @@
          "paging":   true,
          "ajax" : 'ajaxblog',
          "Columns" : [
-				{ "title": "Subject" },
-				{ "title": "Author" },
-				{ "title": "Date" },
-             ]
+				   { "title": "Subject" },
+				   { "title": "Author" },
+				   { "title": "Date" },]
         });
         //Members
        $('#usertable').dataTable({
@@ -197,7 +196,20 @@
 				{ "title": "Date" },
              ]
         });
-
+        //adminuserslist
+        $('#adminusertable').dataTable({
+         "bProcessing" : true,
+         "bServerSide" : true,
+         "searching": false,
+         "paging":   true,
+         "ajax" : 'ajaxadminusers',
+         "Columns" : [
+        { "title": "Email" },
+        { "title": "Handle" },
+        { "title": "Full Name" },
+        { "title": "Credentials"}]
+        });
+        
       } catch (e) {alert(e);}
         var screenWidth = $(window).width();
         var h = screenWidth / 1.773;

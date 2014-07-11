@@ -15,16 +15,21 @@ var lgr = require('log4js')
  * @param callback: signature(err, result) //not actually used to carry information
  */
 var Environment = module.exports = function(callback) {
-  //create a logging system
-	  var log;
-  var self = this;
-  var configProperties;
-  var database;
-  var userdatabase;
-  var TopicMapEnvironment;
+	//create a logging system
+	var log;
+	var self = this;
+	var configProperties;
+	var database;
+	var userdatabase;
+	var TopicMapEnvironment;
   ///////////////////////
   // API
   ///////////////////////
+  
+  self.getConfigProperties = function() {
+	return configProperties;
+  },
+  
   self.getIsInvitationOnly = function() {
     return configProperties.invitationOnly;
   },
@@ -81,15 +86,19 @@ var Environment = module.exports = function(callback) {
       //now create the user collection
       database.createCollection(constants.USER_COLLECTION, {strict:true}, function(err, collection) {
         console.log('---'+err+" "+collection);
-        //user databasea
-        userdatabase = new udb(database);
-        //now boot the topic map
-        var foo = new idx(function(err, environment) {
-          TopicMapEnvironment = environment;
-          //fire up the program
-          console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
-          self.logDebug("Portal Environment started ");
-          callback("foo","bar");
+        //create invitation collection
+        database.createCollection(constants.INVITATION_COLLECTION, {strict:true}, function(err, collection) {
+            console.log('----'+err+" "+collection);
+            //user databasea
+            userdatabase = new udb(database);
+            //now boot the topic map
+            var foo = new idx(function(err, environment) {
+            	TopicMapEnvironment = environment;
+            	//fire up the program
+            	console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
+            	self.logDebug("Portal Environment started ");
+            	callback("foo","bar");
+            });
         });
       });
     });
