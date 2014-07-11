@@ -8,7 +8,7 @@
   <div id="topic" class="tab-pane fade in active">
 <div class="blog-post col-xs-7">
   <h2 class="blog-post-title"><img src="{{image}}">{{title}}</h2>
-  <p class="blog-post-meta"> {{date}} <a href="{{user}}">{{user}}</a></p>
+  <p class="blog-post-meta"> {{date}} <a href="/user/{{user}}">{{user}}</a></p>
   <p>{{body}}</p>
 </div>
 
@@ -19,7 +19,7 @@
       <h4>Tags</h4>
       <ol class="list-unstyled">
        {{#each tags}}
-         <li><a href="{{locator}}">{{label}}</a></li>
+         <li><a href="/tag/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
        {{/each}}
       </ol>
     </div>
@@ -29,7 +29,7 @@
       <h4>Users</h4>
       <ol class="list-unstyled">
        {{#each users}}
-         <li><a href="{{locator}}">{{label}}</a></li>
+         <li><a href="/user/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
        {{/each}}
       </ol>
     </div>
@@ -39,7 +39,7 @@
       <h4>Documents</h4>
       <ol class="list-unstyled">
        {{#each docs}}
-         <li><a href="{{locator}}">{{label}}</a></li>
+         <li><a href="/blog/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
        {{/each}}
       </ol>
     </div>
