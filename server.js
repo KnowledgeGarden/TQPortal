@@ -73,6 +73,8 @@ var Environment = new env(function(err,env) {
   //Server
   //TODO need to use server and port, not just port
   ////////////////////////////
+  console.log("Server "+app);
+  console.log("Server2 "+app.get("port"));
 
   http.createServer(app).listen(app.get("port"), function() {
     console.log("Express server listening on port " + app.get("port"));

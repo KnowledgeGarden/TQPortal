@@ -1,7 +1,10 @@
 /**
  * Bookmark app
+ * javascript:location.href='http://<serverurl>/bkmrk?url='+           
+ *   encodeURIComponent(location.href)+'&title='+         
+ *   encodeURIComponent(document.title)
  */
-var bkmrk = require('./bookmark/bookmark');
+var bkmrk = require('./bookmark/bookmarkmodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
@@ -28,5 +31,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	}
 	res.redirect('/');
   }
+
+  app.get('/bkmrk', isPrivate, function(req,res) {
+	  res.render('bookmarkindex');
+  });
 
 };

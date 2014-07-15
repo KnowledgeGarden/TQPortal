@@ -1,5 +1,5 @@
 # TQPortal
-A simple node-express-mongoose portal
+A simple node-express-mongoose with topic map portal
 
 In a sense, this portal mimics, as a scaled down prototype of ["https://github.com/KnowledgeGarden/ExpressDerbyPrototype"]("https://github.com/KnowledgeGarden/ExpressDerbyPrototype" "another project.")
 

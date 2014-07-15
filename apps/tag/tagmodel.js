@@ -116,6 +116,12 @@ var TagModel = module.exports = function(environment) {
 					});
 				});
 			});
+		} else {
+			topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
+			//wire this tag's relations
+			self.__wireRelations(theTag,  docTopic, usertopic,credentials, function(err,data) {
+				if (err) {error += err;}
+			});
 		}
 		callback(error,theTag);
 	});
@@ -124,7 +130,7 @@ var TagModel = module.exports = function(environment) {
 
   self.__wireRelations = function(theTag, theDoc, theUser, credentials, callback) {
 	var error='';
-	console.log("TagModel.__wireRelations "+theTag.getLocator()+" "+theDoc.getLocator()+
+	topicMapEnvironment.logDebug("TagModel.__wireRelations "+theTag.getLocator()+" "+theDoc.getLocator()+
 			" "+theUser.getLocator());
 	//sourceNode, targetNode,relationTypeLocator, userLocator, smallImagePath,
 	//largeImagePath, isTransclude, isPrivate, credentials, callback

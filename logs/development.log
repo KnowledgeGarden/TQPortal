@@ -1,18 +1,80 @@
-[2014-07-09 17:02:22.330] [INFO] TopicMap - Environment started
-[2014-07-09 17:02:22.334] [DEBUG] TopicMap - Environment.started
-[2014-07-09 17:03:03.611] [DEBUG] TopicMap - TagModel.__wireRelations-1 TagCreatorRelationType 8fce9630-07c5-11e4-8d15-519cb7f20539 New_Tag_TAG
-[2014-07-09 17:03:03.667] [DEBUG] TopicMap - TagModel.__wireRelations-1 TagCreatorRelationType 8fce9630-07c5-11e4-8d15-519cb7f20539 Sucks_TAG
-[2014-07-09 17:03:04.155] [DEBUG] TopicMap - TagModel.__wireRelations-2 TagDocumentRelationType New_Tag_TAG sammy
-[2014-07-09 17:03:04.201] [DEBUG] TopicMap - TagModel.__wireRelations-2 TagDocumentRelationType Sucks_TAG sammy
-[2014-07-09 17:16:23.566] [INFO] TopicMap - Environment started
-[2014-07-09 17:16:23.568] [DEBUG] TopicMap - Environment.started
-[2014-07-09 17:17:44.802] [DEBUG] TopicMap - TagModel.__wireRelations-1 TagCreatorRelationType sara Sara's_Tag_TAG
-[2014-07-09 17:17:44.917] [DEBUG] TopicMap - TagModel.__wireRelations-2 TagDocumentRelationType Sara's_Tag_TAG 9d3bb620-07c7-11e4-a71d-85944f12ae13
-[2014-07-09 17:18:50.281] [INFO] TopicMap - Environment started
-[2014-07-09 17:18:50.284] [DEBUG] TopicMap - Environment.started
-[2014-07-09 17:29:09.422] [INFO] TopicMap - Environment started
-[2014-07-09 17:29:09.425] [DEBUG] TopicMap - Environment.started
-[2014-07-09 17:35:21.252] [DEBUG] TopicMap - TagModel.__wireRelations-1 TagCreatorRelationType sara Sara's_Second_Tag_TAG
-[2014-07-09 17:35:21.446] [DEBUG] TopicMap - TagModel.__wireRelations-2 TagDocumentRelationType Sara's_Second_Tag_TAG 12efc850-07ca-11e4-861b-7fd93526a025
-[2014-07-09 17:55:35.425] [INFO] TopicMap - Environment started
-[2014-07-09 17:55:35.428] [DEBUG] TopicMap - Environment.started
+[2014-07-15 14:21:01.453] [INFO] TopicMap - Environment started
+[2014-07-15 14:21:01.456] [DEBUG] TopicMap - Environment.started
+[2014-07-15 14:21:28.544] [DEBUG] TopicMap - ES.search {"sort":{"srtDt":{"order":"desc"}},"query":{"field":{"inOf":"BlogNodeType"}}}
+[2014-07-15 14:22:00.653] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"jackpark"}
+[2014-07-15 14:22:00.698] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"BlogNodeType"}
+[2014-07-15 14:22:00.730] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"Bitchen_TAG"}
+[2014-07-15 14:22:00.737] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"Good_Post_TAG"}
+[2014-07-15 14:22:00.753] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"0f0f5ca0-0c66-11e4-9f95-99955859906f"}
+[2014-07-15 14:22:00.760] [ERROR] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"Good_Post_TAG","query":{},"pathname":"/topics/core/Good_Post_TAG","method":"GET"}
+[2014-07-15 14:22:00.773] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"TagNodeType"}
+[2014-07-15 14:22:00.796] [DEBUG] TopicMap - TagModel.__findOrCreateTag found {"lox":"Bitchen_TAG","crtr":"jackpark","sIco":"/images/tag_sm.png","lIco":"/images/tag.png","crDt":"2014-07-15T14:12:36","srtDt":1405458756072,"lEdDt":"2014-07-15T14:12:36","isPrv":"false","label":["Bitchen"],"inOf":"TagNodeType","trCl":["TagNodeType","TypeType","ClassType","NodeType"],"tpL":[{"relationType":"TagCreatorRelationType","relationLabel":"TagCreatorRelationType","icon":"/images/person_sm.png","locator":"jackpark","label":"Jack Park"},{"relationType":"TagDocumentRelationType","relationLabel":"TagDocumentRelationType","icon":"/images/publication_sm.png","locator":"be77e970-0c64-11e4-a7a8-a710dd01f0a9","label":"First Topic"}],"tpC":2}
+[2014-07-15 14:22:00.821] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"CreatorDocumentRelationType"}
+[2014-07-15 14:22:00.849] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Good_Post_TAG"}
+[2014-07-15 14:22:00.882] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackparkCreatorDocumentRelationType0f0f5ca0-0c66-11e4-9f95-99955859906f"}
+[2014-07-15 14:22:00.896] [DEBUG] TopicMap - TagModel.__wireRelations Good_Post_TAG 0f0f5ca0-0c66-11e4-9f95-99955859906f jackpark
+[2014-07-15 14:22:00.899] [DEBUG] TopicMap - TagModel.__wireRelations-1 TagCreatorRelationType jackpark Good_Post_TAG
+[2014-07-15 14:22:00.914] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"TagCreatorRelationType"}
+[2014-07-15 14:22:00.942] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackpark"}
+[2014-07-15 14:22:00.972] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackparkTagCreatorRelationTypeGood_Post_TAG"}
+[2014-07-15 14:22:00.985] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"0f0f5ca0-0c66-11e4-9f95-99955859906f"}
+[2014-07-15 14:22:01.018] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackpark"}
+[2014-07-15 14:22:01.023] [DEBUG] TopicMap - TopicModel.relateExistingNodes jackpark 0f0f5ca0-0c66-11e4-9f95-99955859906f CreatorDocumentRelationType
+[2014-07-15 14:22:01.041] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Good_Post_TAG"}
+[2014-07-15 14:22:01.051] [DEBUG] TopicMap - TopicModel.relateExistingNodes jackpark Good_Post_TAG TagCreatorRelationType
+[2014-07-15 14:22:01.053] [DEBUG] TopicMap - TagModel.__wireRelations-2 TagDocumentRelationType Good_Post_TAG 0f0f5ca0-0c66-11e4-9f95-99955859906f
+[2014-07-15 14:22:01.072] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"TagDocumentRelationType"}
+[2014-07-15 14:22:01.109] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Good_Post_TAGTagDocumentRelationType0f0f5ca0-0c66-11e4-9f95-99955859906f"}
+[2014-07-15 14:22:01.132] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Good_Post_TAG"}
+[2014-07-15 14:22:01.150] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"0f0f5ca0-0c66-11e4-9f95-99955859906f"}
+[2014-07-15 14:22:01.164] [DEBUG] TopicMap - TopicModel.relateExistingNodes Good_Post_TAG 0f0f5ca0-0c66-11e4-9f95-99955859906f TagDocumentRelationType
+[2014-07-15 14:22:01.285] [DEBUG] TopicMap - ES.search {"sort":{"srtDt":{"order":"desc"}},"query":{"field":{"inOf":"BlogNodeType"}}}
+[2014-07-15 14:22:04.161] [DEBUG] TopicMap - ES.search {"sort":{"srtDt":{"order":"desc"}},"query":{"field":{"inOf":"BlogNodeType"}}}
+[2014-07-15 14:22:06.314] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"0f0f5ca0-0c66-11e4-9f95-99955859906f"}
+[2014-07-15 14:23:57.349] [INFO] TopicMap - Environment started
+[2014-07-15 14:24:38.512] [INFO] TopicMap - Environment started
+[2014-07-15 14:24:38.515] [DEBUG] TopicMap - Environment.started
+[2014-07-15 14:24:57.492] [DEBUG] TopicMap - ES.search {"sort":{"srtDt":{"order":"desc"}},"query":{"field":{"inOf":"BlogNodeType"}}}
+[2014-07-15 14:25:27.078] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"jackpark"}
+[2014-07-15 14:25:27.130] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"BlogNodeType"}
+[2014-07-15 14:25:27.157] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"Fourth_Post_TAG"}
+[2014-07-15 14:25:27.163] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"Bitchen_TAG"}
+[2014-07-15 14:25:27.180] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"8a1a89b0-0c66-11e4-9c04-cfde3e2efc67"}
+[2014-07-15 14:25:27.188] [ERROR] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"Fourth_Post_TAG","query":{},"pathname":"/topics/core/Fourth_Post_TAG","method":"GET"}
+[2014-07-15 14:25:27.203] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"TagNodeType"}
+[2014-07-15 14:25:27.227] [DEBUG] TopicMap - TagModel.__findOrCreateTag found {"lox":"Bitchen_TAG","crtr":"jackpark","sIco":"/images/tag_sm.png","lIco":"/images/tag.png","crDt":"2014-07-15T14:12:36","srtDt":1405458756072,"lEdDt":"2014-07-15T14:12:36","isPrv":"false","label":["Bitchen"],"inOf":"TagNodeType","trCl":["TagNodeType","TypeType","ClassType","NodeType"],"tpL":[{"relationType":"TagCreatorRelationType","relationLabel":"TagCreatorRelationType","icon":"/images/person_sm.png","locator":"jackpark","label":"Jack Park"},{"relationType":"TagDocumentRelationType","relationLabel":"TagDocumentRelationType","icon":"/images/publication_sm.png","locator":"be77e970-0c64-11e4-a7a8-a710dd01f0a9","label":"First Topic"}],"tpC":2}
+[2014-07-15 14:25:27.230] [DEBUG] TopicMap - TagModel.__wireRelations Bitchen_TAG 8a1a89b0-0c66-11e4-9c04-cfde3e2efc67 jackpark
+[2014-07-15 14:25:27.232] [DEBUG] TopicMap - TagModel.__wireRelations-1 TagCreatorRelationType jackpark Bitchen_TAG
+[2014-07-15 14:25:27.249] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"TagCreatorRelationType"}
+[2014-07-15 14:25:27.273] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"CreatorDocumentRelationType"}
+[2014-07-15 14:25:27.301] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Fourth_Post_TAG"}
+[2014-07-15 14:25:27.331] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackparkTagCreatorRelationTypeBitchen_TAG"}
+[2014-07-15 14:25:27.364] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackparkCreatorDocumentRelationType8a1a89b0-0c66-11e4-9c04-cfde3e2efc67"}
+[2014-07-15 14:25:27.401] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackpark"}
+[2014-07-15 14:25:27.406] [DEBUG] TopicMap - TagModel.__wireRelations Fourth_Post_TAG 8a1a89b0-0c66-11e4-9c04-cfde3e2efc67 jackpark
+[2014-07-15 14:25:27.408] [DEBUG] TopicMap - TagModel.__wireRelations-1 TagCreatorRelationType jackpark Fourth_Post_TAG
+[2014-07-15 14:25:27.425] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"TagCreatorRelationType"}
+[2014-07-15 14:25:27.458] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackpark"}
+[2014-07-15 14:25:27.490] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackparkTagCreatorRelationTypeFourth_Post_TAG"}
+[2014-07-15 14:25:27.504] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"8a1a89b0-0c66-11e4-9c04-cfde3e2efc67"}
+[2014-07-15 14:25:27.519] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Bitchen_TAG"}
+[2014-07-15 14:25:27.558] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"jackpark"}
+[2014-07-15 14:25:27.563] [DEBUG] TopicMap - TopicModel.relateExistingNodes jackpark 8a1a89b0-0c66-11e4-9c04-cfde3e2efc67 CreatorDocumentRelationType
+[2014-07-15 14:25:27.569] [DEBUG] TopicMap - TopicModel.relateExistingNodes jackpark Bitchen_TAG TagCreatorRelationType
+[2014-07-15 14:25:27.571] [DEBUG] TopicMap - TagModel.__wireRelations-2 TagDocumentRelationType Bitchen_TAG 8a1a89b0-0c66-11e4-9c04-cfde3e2efc67
+[2014-07-15 14:25:27.589] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"TagDocumentRelationType"}
+[2014-07-15 14:25:27.622] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Bitchen_TAGTagDocumentRelationType8a1a89b0-0c66-11e4-9c04-cfde3e2efc67"}
+[2014-07-15 14:25:27.634] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Fourth_Post_TAG"}
+[2014-07-15 14:25:27.661] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Bitchen_TAG"}
+[2014-07-15 14:25:27.668] [DEBUG] TopicMap - TopicModel.relateExistingNodes jackpark Fourth_Post_TAG TagCreatorRelationType
+[2014-07-15 14:25:27.671] [DEBUG] TopicMap - TagModel.__wireRelations-2 TagDocumentRelationType Fourth_Post_TAG 8a1a89b0-0c66-11e4-9c04-cfde3e2efc67
+[2014-07-15 14:25:27.708] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"TagDocumentRelationType"}
+[2014-07-15 14:25:27.802] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"8a1a89b0-0c66-11e4-9c04-cfde3e2efc67"}
+[2014-07-15 14:25:27.847] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Fourth_Post_TAGTagDocumentRelationType8a1a89b0-0c66-11e4-9c04-cfde3e2efc67"}
+[2014-07-15 14:25:27.889] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"Fourth_Post_TAG"}
+[2014-07-15 14:25:27.916] [DEBUG] TopicMap - TopicModel.relateExistingNodes Bitchen_TAG 8a1a89b0-0c66-11e4-9c04-cfde3e2efc67 TagDocumentRelationType
+[2014-07-15 14:25:27.939] [DEBUG] TopicMap - ES.index {"_index":"topics","_type":"core","_id":"8a1a89b0-0c66-11e4-9c04-cfde3e2efc67"}
+[2014-07-15 14:25:27.973] [DEBUG] TopicMap - TopicModel.relateExistingNodes Fourth_Post_TAG 8a1a89b0-0c66-11e4-9c04-cfde3e2efc67 TagDocumentRelationType
+[2014-07-15 14:25:27.992] [DEBUG] TopicMap - ES.search {"sort":{"srtDt":{"order":"desc"}},"query":{"field":{"inOf":"BlogNodeType"}}}
+[2014-07-15 14:25:33.114] [DEBUG] TopicMap - ES.search {"sort":{"srtDt":{"order":"desc"}},"query":{"field":{"inOf":"BlogNodeType"}}}
+[2014-07-15 14:25:34.759] [DEBUG] TopicMap - ES.getDocument {"_index":"topics","_type":"core","_id":"8a1a89b0-0c66-11e4-9c04-cfde3e2efc67"}

@@ -17,9 +17,9 @@ var types = require('../../core/types')
 var BlogModel =  module.exports = function(environment) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
-  var TopicModel = topicMapEnvironment.getTopicModel();
-  var TagModel = new tagmodel(environment);
-  var queryDSL = topicMapEnvironment.getQueryDSL();
+	var TopicModel = topicMapEnvironment.getTopicModel();
+	var TagModel = new tagmodel(environment);
+	var queryDSL = topicMapEnvironment.getQueryDSL();
   console.log("BlogModel");
 //  this.types = types;
 //  this.icons = icons;

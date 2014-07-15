@@ -172,6 +172,18 @@
 				   { "title": "Author" },
 				   { "title": "Date" },]
         });
+      //Blogs
+       $('#wikitable').dataTable({
+         "bProcessing" : true,
+         "bServerSide" : true,
+         "searching": false,
+         "paging":   true,
+         "ajax" : 'ajaxwiki',
+         "Columns" : [
+           { "title": "Subject" },
+           { "title": "Author" },
+           { "title": "Date" },]
+        });
         //Members
        $('#usertable').dataTable({
          "bProcessing" : true,
@@ -246,7 +258,9 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Applications <b class="caret"></b></a>
               <ul class="dropdown-menu">
             	<li><a href="/blog">Blog</a></li>
+              <li><a href="/bookmark">Bookmark</a></li>
               <li><a href="/conversation">Conversation</a></li>
+              <li><a href="/issue">Issue</a></li>
               <li><a href="/tag">Tag</a></li>
             	<li><a href="/user">User</a></li>
              	<li><a href="/wiki">Wiki</a></li>

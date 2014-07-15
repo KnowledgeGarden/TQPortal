@@ -5,6 +5,7 @@ var lgr = require('log4js')
   ,fs = require('fs')
   //topicmap
   ,idx = require('../node_modules/tqtopicmap/index')
+  ,tmenv = require('../node_modules/tqtopicmap/lib/environment')
   //database
   , mongo = require('mongodb')
    , udb = require('./userdatabase')
@@ -65,13 +66,14 @@ var Environment = module.exports = function(callback) {
   ///////////////////////
   //Populate the environment
   ///////////////////////
-  
+	var path = __dirname+"/../config/config.json";
+	var path1 = __dirname+"/../config/logger.json";
   //read the config file
-  fs.readFile("./config.json", function(err, configfile) {
+  fs.readFile(/*"./config.json"*/path, function(err, configfile) {
     configProperties = JSON.parse(configfile);
     // build the databases and dataprovider
     var MongoClient = mongo.MongoClient;
-    lgr.configure("./logger.json");
+    lgr.configure(/*"./logger.json"*/path1);
     log = lgr.getLogger("Portal");
     log.setLevel('ERROR');
     //bring up mongo
@@ -92,7 +94,7 @@ var Environment = module.exports = function(callback) {
             //user databasea
             userdatabase = new udb(database);
             //now boot the topic map
-            var foo = new idx(function(err, environment) {
+            var foo = new idx(function(err, environment) { //new tmenv(function(err, environment) {
             	TopicMapEnvironment = environment;
             	//fire up the program
             	console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
