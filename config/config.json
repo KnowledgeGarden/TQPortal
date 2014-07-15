@@ -4,5 +4,5 @@
 	"defaultadminemail":"admin@topicquests.org",
 	"defaultadminpwd":"testuser!",
 	"portalIsPrivate": false,
-	"invitationOnly": true
+	"invitationOnly": false
 }

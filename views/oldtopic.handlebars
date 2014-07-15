@@ -1,0 +1,25 @@
+<div>
+<div class="form-group">
+  <div class="col-xs-7" position:"left";>
+    <h2><img src="{{image}}"> {{title}}</h2>
+    <textarea id="desc" rows="5" name="body"" class="form-control">{{body}}</textarea>
+  </div>
+</div>
+<div class="form-group">
+ <div class="navbar-right" position:"right";>
+  <div class="form-group">
+ <!--  <div class="col-xs-5" > -->
+   <div position:"right";>
+    <h3>Tags</h3>
+    <textarea id="desc" rows="10" name="tags"" class="form-control">
+      {{#each tags}}
+      <a href="{{locator}}">{{label}}</a><br/>
+      {{/each}}
+    </textarea>
+   </div>
+  </div>
+ </div>
+</div>
+
+
+</div>
