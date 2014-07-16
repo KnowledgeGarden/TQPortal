@@ -1,10 +1,11 @@
 /**
  * Wiki model
  */
-var types = require('../../core/types')
-  , icons = require('../../core/icons')
-  , properties = require('../../core/properties')
-  , constants = require('../../core/constants')
+var constants = require('../../core/constants')
+  , types = require('../../node_modules/tqtopicmap/lib/types')
+  , icons = require('../../node_modules/tqtopicmap/lib/icons')
+  , properties = require('../../node_modules/tqtopicmap/lib/properties')
+ 
   , uuid = require('../../core/util/uuidutil')
   , tagmodel = require('../tag/tagmodel');
 

@@ -3,8 +3,10 @@
  * For managing documents such as books, stories, etc, 
  */
 
-var types = require('../../core/types')
-  , icons = require('../../core/icons')
+var types = require('../../node_modules/tqtopicmap/lib/types')
+, icons = require('../../node_modules/tqtopicmap/lib/icons')
+, properties = require('../../node_modules/tqtopicmap/lib/properties')
+
   , constants = require('../../core/constants');
 
 var DocumentModel = module.exports = function(environment) {

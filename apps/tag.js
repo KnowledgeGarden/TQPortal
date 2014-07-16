@@ -3,7 +3,7 @@
  */
 var tagModel = require('./tag/tagmodel')
   , constants = require('../core/constants')
-  , types = require('../core/types');
+ , types = require('../node_modules/tqtopicmap/lib/types');
 
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {

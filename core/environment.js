@@ -5,7 +5,7 @@ var lgr = require('log4js')
   ,fs = require('fs')
   //topicmap
   ,idx = require('../node_modules/tqtopicmap/index')
-  ,tmenv = require('../node_modules/tqtopicmap/lib/environment')
+//  ,tmenv = require('../node_modules/tqtopicmap/lib/environment')
   //database
   , mongo = require('mongodb')
    , udb = require('./userdatabase')

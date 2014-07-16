@@ -1,11 +1,12 @@
 /**
  * TagModel
  */
-var types = require('../../core/types')
-  , icons = require('../../core/icons')
+var types = require('../../node_modules/tqtopicmap/lib/types')
+, icons = require('../../node_modules/tqtopicmap/lib/icons')
+, properties = require('../../node_modules/tqtopicmap/lib/properties')
+
   , constants = require('../../core/constants')
-  , properties = require('../../core/properties')
-  , rpa = require('../../core/util/stringutil');
+   , rpa = require('../../core/util/stringutil');
 
 var TagModel = module.exports = function(environment) {
 	var myEnvironment = environment;

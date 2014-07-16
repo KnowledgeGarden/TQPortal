@@ -7,9 +7,10 @@
  * <em>relations</em> with the blog's Topic
  * </p>
  */
-var types = require('../../core/types')
-  , icons = require('../../core/icons')
-  , properties = require('../../core/properties')
+var types = require('../../node_modules/tqtopicmap/lib/types')
+, icons = require('../../node_modules/tqtopicmap/lib/icons')
+, properties = require('../../node_modules/tqtopicmap/lib/properties')
+
   , constants = require('../../core/constants')
   , uuid = require('../../core/util/uuidutil')
   , tagmodel = require('../tag/tagmodel');
@@ -91,7 +92,7 @@ var BlogModel =  module.exports = function(environment) {
   },
   
   self.listBlogPosts = function(start, count, credentials, callback) {
-    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BLOG_TYPE);
+    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BLOG_TYPE,start,count);
     Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data) {
       console.log("BlogModel.listBlogPosts "+err+" "+data);
       callback(err,data);
@@ -104,7 +105,7 @@ var BlogModel =  module.exports = function(environment) {
    */
   self.fillDatatable = function(credentials, callback) {
 	  var theResult = {};
-	  self.listBlogPosts(0,-1,credentials,function(err,result) {
+	  self.listBlogPosts(0,100,credentials,function(err,result) {
 	      console.log('ROUTES/blog '+err+' '+result);
 	      var data = [];
 	      var len = result.length;

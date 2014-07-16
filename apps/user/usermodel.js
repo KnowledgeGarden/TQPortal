@@ -5,8 +5,9 @@
  * <p>User's handle must be unique and is used as the locator for that topic</p>
  */
 
-var types = require('../../core/types')
-  , icons = require('../../core/icons')
+var types = require('../../node_modules/tqtopicmap/lib/types')
+  , icons = require('../../node_modules/tqtopicmap/lib/icons')
+  , properties = require('../../node_modules/tqtopicmap/lib/properties')
   , constants = require('../../core/constants');
 
 var UserModel = module.exports = function(environment) {

@@ -2,7 +2,7 @@
  * Wiki app
  */
 var wm = require('./wiki/wikimodel')
-  , types = require('../core/types')
+ , types = require('../node_modules/tqtopicmap/lib/types')
   , constants = require('../core/constants')
 ;
 

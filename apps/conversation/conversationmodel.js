@@ -4,8 +4,10 @@
  * or actual IBIS trees
  */
 
-var types = require('../../core/types')
-  , icons = require('../../core/icons')
+var  types = require('../../node_modules/tqtopicmap/lib/types')
+, icons = require('../../node_modules/tqtopicmap/lib/icons')
+, properties = require('../../node_modules/tqtopicmap/lib/properties')
+
   , constants = require('../../core/constants');
 
 var ConversationModel = module.exports = function(environment) {

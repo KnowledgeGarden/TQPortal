@@ -1,13 +1,13 @@
 /**
  * adminmodel
  */
-var types = require('../../core/types')
-  , icons = require('../../core/icons')
-  , properties = require('../../core/properties')
-  , constants = require('../../core/constants')
-  , uuid = require('../../core/util/uuidutil')
-  , User = require('../../core/user')
-  , tagmodel = require('../tag/tagmodel');
+var types = require('../../node_modules/tqtopicmap/lib/types')
+	, icons = require('../../node_modules/tqtopicmap/lib/icons')
+	, properties = require('../../node_modules/tqtopicmap/lib/properties')
+	, constants = require('../../core/constants')
+	, uuid = require('../../core/util/uuidutil')
+	, User = require('../../core/user')
+	, tagmodel = require('../tag/tagmodel');
 
 var AdminModel =  module.exports = function(environment) {
 	var userDatabase = environment.getUserDatabase();
