@@ -1,0 +1,38 @@
+<div class="home col-xs-7">
+  <center>
+<h1>TopicQuests Experimental Portal</h1>
+   <img src="/images/tree-1_sm.jpg"><br/>
+   <h3>"In every deliberation, we must consider the impact on the seventh generation..."</h3><b>Great Law of the Iroquois</b>
+  </center>
+</div>
+
+ <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+  <div class="sidebar-module sidebar-module-inset">
+    <div class="sidebar-module">
+      <h4>Recent Tags</h4>
+      <ol class="list-unstyled">
+       {{#each tags}}
+         <li><a href="/tag/{{locator}}">{{label}}</a></li>
+       {{/each}}
+      </ol>
+    </div>
+    <div class="sidebar-module">
+      <h4>Recent Blog Posts</h4>
+      <ol class="list-unstyled">
+       {{#each blogs}}
+         <li><a href="/blog/{{locator}}">{{label}}</a></li>
+       {{/each}}
+      </ol>
+    </div>
+
+    <div class="sidebar-module">
+      <h4>Recent Wiki Topics</h4>
+      <ol class="list-unstyled">
+       {{#each wikis}}
+         <li><a href="/wiki/{{locator}}">{{label}}</a></li>
+       {{/each}}
+      </ol>
+    </div>
+  </div>
+ </div>
+ 

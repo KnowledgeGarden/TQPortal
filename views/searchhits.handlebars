@@ -1,0 +1,7 @@
+<h1>Search Results</h1>
+
+ <h2>Query: {{ query }} </h2>
+ {{#each hits}}
+  <li><a href="{{ locator }}">{{ label }}</a></li>
+ {{/each}}
+
