@@ -38,11 +38,15 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		}
 		res.redirect('/');
 	}
+	/////////////////
+	// Menu
+	/////////////////
+	environment.addApplicationToMenu("/issue","Issue");
 	  /////////////////
 	  // Routes
 	  /////////////////
 	  app.get('/issue', isPrivate,function(req,res) {
-	    res.render('issuehome');
+	    res.render('issuehome',environment.getCoreUIData(req));
 	  });
 
 };

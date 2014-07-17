@@ -5,10 +5,11 @@ var lgr = require('log4js')
   ,fs = require('fs')
   //topicmap
   ,idx = require('../node_modules/tqtopicmap/index')
-//  ,tmenv = require('../node_modules/tqtopicmap/lib/environment')
   //database
   , mongo = require('mongodb')
-   , udb = require('./userdatabase')
+  , udb = require('./userdatabase')
+  //misc
+  , rbuf = require('./util/ringbuffer')
   , constants = require('./constants')
  ;
 
@@ -18,15 +19,95 @@ var lgr = require('log4js')
 var Environment = module.exports = function(callback) {
 	//create a logging system
 	var log;
-	var self = this;
 	var configProperties;
 	var database;
 	var userdatabase;
 	var TopicMapEnvironment;
+	var blogRing;
+	var wikiRing;
+	var tagRing;
+	var bookmarkRing;
+	var appMenu = [];
+	var self = this;
   ///////////////////////
   // API
   ///////////////////////
-  
+	/////////////////////////
+	// Application UI
+	/////////////////////////
+	self.addApplicationToMenu = function(url, name) {
+		if (!appMenu) {appMenu = [];}
+		var urx = {};
+		urx.url = url;
+		urx.name = name;
+		appMenu.push(urx);
+	},
+	self.getApplicationMenu = function() {
+		return appMenu;
+	},
+	
+	self.getCoreUIData = function(request) {
+		var result = {};
+		result.appmenu = appMenu;
+		var isAdmin = false;
+		var isAuth = request.isAuthenticated();
+		console.log("Environment.getCoreUIData "+isAuth);
+		if (isAuth) {
+			var usx = request.user;
+			var creds = usx.credentials;
+			console.log("Environment.checkIsAdmin "+creds.length+" "+creds);
+			for(var i=0;i<creds.length;i++) {
+				console.log("Admin.isAdmin-1 "+creds[i]+" "+constants.ADMIN_CREDENTIALS);
+				if (creds[i].trim() === constants.ADMIN_CREDENTIALS) {
+					isAdmin = true;
+					break;
+				}
+			}
+		}
+		result.isAdmin = isAdmin;
+		result.isAuthenticated = isAuth;
+		result.isNotAuthenticated = !isAuth;
+		return result;
+	}
+	/////////////////////////
+	// Recent events recording
+	/////////////////////////
+	self.addRecentTag = function(locator,label) {
+		var d = new Date().getTime();
+		TopicMapEnvironment.logDebug("Environment.addRecentTag "+locator+" "+label);
+		var d = new Date().getTime();
+		tagRing.add(locator,label,d);
+		TopicMapEnvironment.logDebug("Environment.addRecentTag-1 "+tagRing.size());
+	},
+	self.addRecentBlog = function(locator,label) {
+		var d = new Date().getTime();
+		blogRing.add(locator,label,d);
+		TopicMapEnvironment.logDebug("Environment.addRecentBlog "+blogRing.size());
+	},
+	self.addRecentWiki = function(locator,label) {
+		var d = new Date().getTime();
+		wikiRing.add(locator,label,d);
+		TopicMapEnvironment.logDebug("Environment.addRecentWiki "+wikiRing.size());
+	},
+	self.addRecentBookmark = function(locator,label) {
+		var d = new Date().getTime();
+		bookmarkRing.add(locator,label,d);
+		TopicMapEnvironment.logDebug("Environment.addRecentBookmark "+wikiRing.size());
+	},
+	
+	self.listRecentTags = function() {
+		return tagRing.getReversedData();
+	},
+	self.listRecentBlogs = function() {
+		return blogRing.getReversedData();
+	},
+	self.listRecentWikis = function() {
+		return wikiRing.getReversedData();
+	},
+	self.listRecentBookmarks = function() {
+		return bookmarkRing.getReversedData();
+	},
+
   self.getConfigProperties = function() {
 	return configProperties;
   },
@@ -96,9 +177,14 @@ var Environment = module.exports = function(callback) {
             //now boot the topic map
             var foo = new idx(function(err, environment) { //new tmenv(function(err, environment) {
             	TopicMapEnvironment = environment;
+            	blogRing = new rbuf(20, "blog", TopicMapEnvironment);
+            	wikiRing= new rbuf(20, "wiki", TopicMapEnvironment);
+            	tagRing= new rbuf(20,"tag", TopicMapEnvironment);
+            	bookmarkRing = new rbuf(20,"bookmark",TopicMapEnvironment);
             	//fire up the program
             	console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
             	self.logDebug("Portal Environment started ");
+            	TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
             	callback("foo","bar");
             });
         });

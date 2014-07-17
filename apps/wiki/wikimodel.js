@@ -10,8 +10,10 @@ var constants = require('../../core/constants')
   , tagmodel = require('../tag/tagmodel');
 
 var WikiModel =  module.exports = function(environment) {
+	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
+	var queryDSL = topicMapEnvironment.getQueryDSL();
 	var TopicModel = topicMapEnvironment.getTopicModel();
 	var TagModel = new tagmodel(environment);
 	var self = this;
@@ -35,7 +37,9 @@ var WikiModel =  module.exports = function(environment) {
     			wiki.title, wiki.body, constants.ENGLISH, userLocator,
     			icons.PUBLICATION_SM, icons.PUBLICATION, false, credentials, function(err, article) {
     		console.log('WikiModel.create-2 '+article.toJSON());
-    		// now deal with tags
+    		topicMapEnvironment.logDebug("WikiModel adding ring "+myEnvironment);
+			myEnvironment.addRecentWiki(article.getLocator(),wiki.title);
+  		// now deal with tags
     		var tags = wiki.tags;
     		if (tags.indexOf(',') > -1) {
     			var tagList = tags.split(',');
@@ -47,7 +51,8 @@ var WikiModel =  module.exports = function(environment) {
     				Dataprovider.putNode(article, function(err,data) {
     					console.log('ARTICLES_CREATE-3 '+err);	  
     					if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-    					console.log('ARTICLES_CREATE-3b '+userTopic);	  
+    					console.log('ARTICLES_CREATE-3b '+userTopic);	 
+
     					TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
     							userTopic.getLocator(),
     							icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
@@ -79,7 +84,8 @@ var WikiModel =  module.exports = function(environment) {
   },
 
   	self.listWikiPosts = function(start, count, credentials, callback) {
-	  Dataprovider.listInstanceNodes(types.WIKI_TYPE, start,count,credentials, function(err,data) {
+	  var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.WIKI_TYPE,start,count);
+	  Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data) {
 		  console.log("WikiModel.listBlogPosts "+err+" "+data);
 		  callback(err,data);
 	  });
@@ -91,7 +97,7 @@ var WikiModel =  module.exports = function(environment) {
 	   */
 	  self.fillDatatable = function(credentials, callback) {
 		  var theResult = {};
-		  self.listWikiPosts(0,-1,credentials,function(err,result) {
+		  self.listWikiPosts(0,100,credentials,function(err,result) {
 		      console.log('ROUTES/blog '+err+' '+result);
 		      var data = [];
 		      var len = result.length;

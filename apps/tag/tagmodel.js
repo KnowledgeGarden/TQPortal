@@ -110,6 +110,8 @@ var TagModel = module.exports = function(environment) {
 				console.log('TagModel.__findOrCreateTag-2 '+theTag.toJSON());
 				DataProvider.putNode(theTag, function(err, result) {
 					console.log("TagModel.__findOrCreateTag-3 "+err+" "+result);
+					myEnvironment.addRecentTag(tagLocator,label);
+					topicMapEnvironment.logDebug("TagModel just added to RingBuffer");
 					if (err) {error += err;}
 					//wire this tag's relations
 					self.__wireRelations(theTag,  docTopic, usertopic,credentials, function(err,data) {

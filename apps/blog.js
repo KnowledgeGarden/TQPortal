@@ -12,6 +12,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var BlogModel = new acls(environment);
 	console.log("Starting Blog "+this.BlogModel);
   
+	
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
@@ -32,16 +33,20 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		res.redirect('/');
 	}
  
+	/////////////////
+	// Menu
+	/////////////////
+	myEnvironment.addApplicationToMenu("/blog","Blog");
   /////////////////
   // Routes
   /////////////////
   app.get('/blog', isPrivate,function(req,res) {
-    res.render('blogindex');
+    res.render('blogindex',environment.getCoreUIData(req));
   });
 		
 		
   app.get('/blog/new', isLoggedIn, function(req,res) {
-    res.render('blogform', {title: 'New Article' }); //,
+    res.render('blogform', environment.getCoreUIData(req)); //,
   });
 
   app.get('/blog/:id', isPrivate,function(req,res) {
@@ -58,7 +63,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       console.log("Blogs.XXX "+JSON.stringify(tags));
      
       var date = result.getDate();
-      var data = {};
+      var data = environment.getCoreUIData(req);
       data.title = title;
       data.body = details;
       data.tags = tags;

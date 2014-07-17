@@ -31,11 +31,15 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     }
     res.redirect('/');
   }
+	/////////////////
+	// Menu
+	/////////////////
+	environment.addApplicationToMenu("/user","User");
   /////////////////
   // Routes
   /////////////////
   app.get('/user', isPrivate,function(req,res) {
-    res.render('userindex');
+    res.render('userindex',environment.getCoreUIData(req));
   });
 		
   app.get('/user/:id', isPrivate,function(req,res) {

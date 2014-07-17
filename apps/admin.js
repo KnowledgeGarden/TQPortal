@@ -68,7 +68,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	// login
 	///////////////
 	app.get('/login', function(req, res) {
-		res.render('login', { title: 'Login' });
+		res.render('login', environment.getCoreUIData(req));
 	});
   
 	app.post('/login', function(req, res, next) {
@@ -118,7 +118,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	//signup
 	///////////////
 	app.get('/signup', function(req, res){
-		res.render('Signup', { invitationOnly: isInvitationOnly });
+		var data = environment.getCoreUIData(req);
+		data.invitationOnly = isInvitationOnly;
+		res.render('Signup', data);
 	});
 
 	var __doPostSignup = function(req, res) {
@@ -203,18 +205,18 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Admin functions
   ///////////////////////////////
   app.get('/admin', isAdmin, function(req, res) {
-	res.render('admin');
+	res.render('admin',environment.getCoreUIData(req));
   });
   
   app.get('/importdb', isAdmin, function(req, res) {
-	res.render('admin'); //TODO
+	res.render('admin',environment.getCoreUIData(req)); //TODO
   });
   app.get('/exportdb', isAdmin, function(req, res) {
 	res.render('admin'); //TODO
   });
   
   app.get('/inviteuser', isAdmin, function(req, res) {
-	res.render('inviteuser');
+	res.render('inviteuser',environment.getCoreUIData(req));
   });
   
   app.post('/inviteuser', isAdmin, function(req,res) {
@@ -232,7 +234,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (data) {
 			console.log(JSON.stringify(data));
 		}
-		res.render('listusers'); //TODO
+		res.render('listusers',environment.getCoreUIData(req)); //TODO
 	});
   });
 
@@ -242,7 +244,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	AdminModel.getUser(email, function(err,data) {
 		console.log("Admin.selectuser-1 "+err+" "+data);
 		//TODO watch for null
-		var d = {};
+		var d = environment.getCoreUIData(req)
 		d.email = data.email;
 		d.credentials = data.credentials;
 		res.render('editcredentials',d);

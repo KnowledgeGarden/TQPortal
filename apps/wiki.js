@@ -31,11 +31,15 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     }
     res.redirect('/');
   }
+	/////////////////
+	// Menu
+	/////////////////
+	environment.addApplicationToMenu("/wiki","Wiki");
   /////////////////
   // Routes
   /////////////////
   app.get('/wiki', isPrivate,function(req,res) {
-    res.render('wikihome');
+    res.render('wikihome', environment.getCoreUIData(req));
   });
   app.get('/wiki/:id', isPrivate,function(req,res) {
 	  var usx = req.user;

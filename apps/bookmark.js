@@ -31,9 +31,20 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	}
 	res.redirect('/');
   }
+  function __get(req) {
+	  return environment.getCoreUIData(req);
+  }
 
-  app.get('/bkmrk', isPrivate, function(req,res) {
-	  res.render('bookmarkindex');
+	/////////////////
+	// Menu
+	/////////////////
+	environment.addApplicationToMenu("/bookmark","Bookmark");
+
+	/////////////////
+	// Routes
+	/////////////////
+  app.get('/bookmark', isPrivate, function(req,res) {
+	  res.render('bookmarkindex', __get(req));
   });
 
 };

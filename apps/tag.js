@@ -30,12 +30,16 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		}
 		res.redirect('/');
 	}
+	/////////////////
+	// Menu
+	/////////////////
+	environment.addApplicationToMenu("/tag","Tag");
 
 	/////////////////
 	// Routes
 	/////////////////
 	app.get('/tag', isPrivate,function(req,res) {
-		res.render('tagindex');
+		res.render('tagindex',environment.getCoreUIData(req));
 	});
 		
 	app.get('/tag/:id', isPrivate,function(req,res) {
@@ -53,7 +57,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			// paint users
 			var users = result.listRelationsByRelationType(types.TAG_CREATOR_RELATION_TYPE);
 			var date = result.editedAt;
-			var data = {};
+			var data = environment.getCoreUIData(req);
 			data.title = title;
 			data.body = details;
 			data.docs = docs;

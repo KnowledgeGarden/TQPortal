@@ -28,16 +28,20 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     }
     res.redirect('/');
   }
+	/////////////////
+	// Menu
+	/////////////////
+	environment.addApplicationToMenu("/conversation","Conversation");
   /////////////////
   // Routes
   /////////////////
   app.get('/conversation', isPrivate, function(req,res) {
-    res.render('conversationindex');
+    res.render('conversationindex',environment.getCoreUIData(req));
   });
 
   app.get('/conversation/new', isLoggedIn, function(req,res) {
 	  //TODO must setup a map node
-	    res.render('blogform', {title: 'New Article' }); //,
+	    res.render('blogform', environment.getCoreUIData(req)); //,
   });
   
   app.get('/conversation/:id', isPrivate,function(req,res) {
@@ -54,7 +58,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	      console.log("Conversation.XXX "+JSON.stringify(tags));
 	     
 	      var date = result.getDate();
-	      var data = {};
+	      var data = environment.getCoreUIData(req);
 	      data.title = title;
 	      data.body = details;
 	      data.tags = tags;

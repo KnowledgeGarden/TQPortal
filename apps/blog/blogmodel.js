@@ -16,6 +16,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
   , tagmodel = require('../tag/tagmodel');
 
 var BlogModel =  module.exports = function(environment) {
+	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var TopicModel = topicMapEnvironment.getTopicModel();
@@ -49,6 +50,7 @@ var BlogModel =  module.exports = function(environment) {
       		blog.title, blog.body, constants.ENGLISH, userLocator,
       		icons.PUBLICATION_SM, icons.PUBLICATION, false, credentials, function(err, article) {
     	  console.log('BlogModel.create-2 '+article.toJSON());
+			myEnvironment.addRecentBlog(article.getLocator(),blog.title);
     	     // now deal with tags
           var tags = blog.tags;
           if (tags.indexOf(',') > -1) {
@@ -62,6 +64,7 @@ var BlogModel =  module.exports = function(environment) {
                 console.log('ARTICLES_CREATE-3 '+err);	  
                 if (err) {console.log('ARTICLES_CREATE-3a '+err)}
                 console.log('ARTICLES_CREATE-3b '+userTopic);	  
+
                 TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
                 		userTopic.getLocator(),
                       		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
