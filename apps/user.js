@@ -7,6 +7,7 @@ var userModel = require('./user/usermodel')
 
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
+	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
   this.UserModel = new userModel(environment);
@@ -39,7 +40,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Routes
   /////////////////
   app.get('/user', isPrivate,function(req,res) {
-    res.render('userindex',environment.getCoreUIData(req));
+    res.render('userindex',myEnvironment.getCoreUIData(req));
   });
 		
   app.get('/user/:id', isPrivate,function(req,res) {
@@ -56,7 +57,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		// paint docs
 		var docs = result.listRelationsByRelationType(types.CREATOR_DOCUMENT_RELATION_TYPE);
 		var date = result.editedAt;
-		var data = {};
+		var data = myEnvironment.getCoreUIData(req);
 		data.title = title;
 		data.body = details;
 		data.tags = tags;

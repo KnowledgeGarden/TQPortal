@@ -7,6 +7,7 @@ var wm = require('./wiki/wikimodel')
 ;
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
+	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
   this.WikiModel = new wm(environment);
@@ -58,7 +59,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	      console.log("Wiki.XXX "+JSON.stringify(tags));
 	     
 	      var date = result.getDate();
-	      var data = {};
+	      var data = myEnvironment.getCoreUIData(req);
 	      data.title = title;
 	      data.body = details;
 	      data.tags = tags;

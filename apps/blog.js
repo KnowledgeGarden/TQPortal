@@ -41,12 +41,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Routes
   /////////////////
   app.get('/blog', isPrivate,function(req,res) {
-    res.render('blogindex',environment.getCoreUIData(req));
+    res.render('blogindex',myEnvironment.getCoreUIData(req));
   });
 		
 		
   app.get('/blog/new', isLoggedIn, function(req,res) {
-    res.render('blogform', environment.getCoreUIData(req)); //,
+    res.render('blogform', myEnvironment.getCoreUIData(req)); //,
   });
 
   app.get('/blog/:id', isPrivate,function(req,res) {
@@ -63,7 +63,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       console.log("Blogs.XXX "+JSON.stringify(tags));
      
       var date = result.getDate();
-      var data = environment.getCoreUIData(req);
+      var data = myEnvironment.getCoreUIData(req);
       data.title = title;
       data.body = details;
       data.tags = tags;

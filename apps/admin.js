@@ -120,7 +120,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	app.get('/signup', function(req, res){
 		var data = environment.getCoreUIData(req);
 		data.invitationOnly = isInvitationOnly;
-		res.render('Signup', data);
+		res.render('signup', data);
 	});
 
 	var __doPostSignup = function(req, res) {
