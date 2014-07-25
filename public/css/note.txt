@@ -1,0 +1,3 @@
+jbootstrap.min.css + bootswatch.min.css are required for the
+Journal theme: http://bootswatch.com/journal/
+To return to core bootstrap, switch main.handlebars to call bootstrap.min.css
