@@ -45,10 +45,10 @@ var User = module.exports = function(json) {
     return data['fullname'];
   },
   self.setHomepage = function(homePage) {
-    this.data['homePage'] = homePage;
+    this.data['homepage'] = homePage;
   },
   self.getHomepage = function() {
-    return data['homePage'];
+    return data['homepage'];
   },
   self.setAvatar = function(avatar) {
     data['avatar'] = avatar;

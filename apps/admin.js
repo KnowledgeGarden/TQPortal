@@ -122,7 +122,19 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		data.invitationOnly = isInvitationOnly;
 		res.render('signup', data);
 	});
-
+	
+	app.post('/validate', function(req, res) {
+		var handle = req.body.vhandle;
+		console.log("Validating "+handle);
+		AdminModel.handleExists(handle, function(err,truth) {
+			console.log("Validating-1 "+truth);
+			var data = environment.getCoreUIData(req);
+			data.invitationOnly = isInvitationOnly;
+			if (!truth) {data.hndl = handle;}
+			res.render('signup', data);
+		});
+	});
+	
 	var __doPostSignup = function(req, res) {
 		var handle = req.body.handle;
 		var email = req.body.email;
@@ -142,9 +154,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				return res.redirect('/HandleExists');
 			}
 		});
+		var handle = req.body.handle;
 		//build a user
 		var credentials = [];
-		credentials.push(constants.SYSTEM_USER);
+		credentials.push(handle);
 		console.log('SIGNUP-C');
 		var xuser = new User({
 			fullname : req.body.fullname,
@@ -155,7 +168,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			//leave handle out: set next
 		});
 		//note: handle is username: must be unique
-		xuser.setHandle(req.body.handle);
+		xuser.setHandle(handle);
 		console.log('SIGNUP-XXX '+xuser.getEmail());
 		xuser.setPassword(req.body.password, function (err) {
 			console.log('Saving '+ JSON.stringify(xuser.getData()));

@@ -17,6 +17,32 @@ var WikiModel =  module.exports = function(environment) {
 	var TopicModel = topicMapEnvironment.getTopicModel();
 	var TagModel = new tagmodel(environment);
 	var self = this;
+	
+	  /**
+	   * Update an existing wiki entry; no tags included
+	   */
+	  self.update = function(blog,user,callback) {
+		  topicMapEnvironment.logDebug("WIKI.UPDATE "+JSON.stringify(blog));
+		  var credentials = user.credentials;
+		  var lox = blog.locator;
+		  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+			  var error = '';
+			  if (err) {error += err;}
+			  var title = blog.title;
+			  var body = blog.body;
+	    	  var lang = blog.language;
+	    	  var comment = "an edit"; //TODO add comment field to form
+	    	  if (!lang) {lang = "en";}
+	    	  result.updateSubject(title,lang,user.handle,comment);
+	    	  result.updateBody(body,lang,user.handle,comment);
+	    	  result.setLastEditDate(new Date());
+	    	  Dataprovider.putNode(result, function(err,data) {
+	    		  if (err) {error += err;}
+	    		  callback(error,data);
+	    	  });
+		  });
+	  },
+
   /**
    * Create a new wiki topic
    * @param wiki: a JSON object filled in
@@ -27,6 +53,7 @@ var WikiModel =  module.exports = function(environment) {
     var userLocator = user.handle; // It's supposed to be user.handle;
     //first, fetch this user's topic
     var credentials = user.credentials;
+    var language = constants.ENGLISH; //TODO
     var userTopic;
     Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
     	userTopic = result;
@@ -34,8 +61,11 @@ var WikiModel =  module.exports = function(environment) {
     	// create the blog post
     	console.log("FOO "+types.WIKI_TYPE);
     	TopicModel.newInstanceNode(uuid.newUUID(), types.WIKI_TYPE,
-    			wiki.title, wiki.body, constants.ENGLISH, userLocator,
+    			"","", language, userLocator,
     			icons.PUBLICATION_SM, icons.PUBLICATION, false, credentials, function(err, article) {
+    		//model wiki topic as AIR
+    		article.setSubject(wiki.title,language,userLocator);
+    		article.setBody(wiki.body,language,userLocator);
     		console.log('WikiModel.create-2 '+article.toJSON());
     		topicMapEnvironment.logDebug("WikiModel adding ring "+myEnvironment);
 			myEnvironment.addRecentWiki(article.getLocator(),wiki.title);
@@ -99,7 +129,7 @@ var WikiModel =  module.exports = function(environment) {
 		  var theResult = {};
 		  self.listWikiPosts(0,100,credentials,function(err,result) {
 		      console.log('ROUTES/blog '+err+' '+result);
-		      var data = [];
+              var data = [];
 		      var len = result.length;
 		      var p; //the proxy
 		      var m; //the individual message
@@ -108,7 +138,7 @@ var WikiModel =  module.exports = function(environment) {
 		      for (var i=0;i<len;i++) {
 		        p = result[i];
 		        m = [];
-		        url = "<a href='wiki/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
+		        url = "<a href='wiki/"+p.getLocator()+"'>"+p.getSubject(constants.ENGLISH).theText+"</a>";
 		        m.push(url);
 		        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
 		        m.push(url);

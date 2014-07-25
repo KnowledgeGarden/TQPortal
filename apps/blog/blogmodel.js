@@ -28,6 +28,31 @@ var BlogModel =  module.exports = function(environment) {
   var self = this;
 
   /**
+   * Update an existing blog entry; no tags included
+   */
+  self.update = function(blog,user,credentials,callback) {
+	  topicMapEnvironment.logDebug("BLOG.UPDATE "+JSON.stringify(blog));
+	  var lox = blog.locator;
+	  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+		  var error = '';
+		  if (err) {error += err;}
+		  var title = blog.title;
+		  var body = blog.body;
+    	  var lang = blog.language;
+    	  var comment = "an edit"; //TODO add comment field to form
+    	  if (!lang) {lang = "en";}
+    	  result.updateSubject(title,lang,user.handle,comment);
+    	  result.updateBody(body,lang,user.handle,comment);
+    	  result.setLastEditDate(new Date());
+
+    	  Dataprovider.putNode(result, function(err,data) {
+    		  if (err) {error += err;}
+    		  callback(error,data);
+    	  });
+	  });
+  },
+  
+  /**
    * Create a new blog post
    * @param blog: a JSON object with appropriate values set
    * @param user: a JSON object of the user from the session
@@ -35,7 +60,7 @@ var BlogModel =  module.exports = function(environment) {
    * @param callback: signature (err, result): result = _id of new object
    */
   self.create = function (blog, user, credentials, callback) {
-//	  console.log('BM '+JSON.stringify(user));
+	  console.log('BMXXXX '+JSON.stringify(blog));
 	// some really wierd shit: the User object for the user database stores
 	// as user.handle, but passport seems to muck around and return user.username
     var userLocator = user.handle; // It's supposed to be user.handle;
@@ -46,14 +71,21 @@ var BlogModel =  module.exports = function(environment) {
       console.log('BlogModel.create-1 '+userLocator+' | '+userTopic);
       // create the blog post
       console.log("FOO "+types.BLOG_TYPE);
+      //NOTE: we are creating an AIR, which uses subject&body, not label&details
       TopicModel.newInstanceNode(uuid.newUUID(), types.BLOG_TYPE,
-      		blog.title, blog.body, constants.ENGLISH, userLocator,
+      		"", "", constants.ENGLISH, userLocator,
       		icons.PUBLICATION_SM, icons.PUBLICATION, false, credentials, function(err, article) {
-    	  console.log('BlogModel.create-2 '+article.toJSON());
+    	  var lang = blog.language;
+    	  if (!lang) {lang = "en";}
+    	  var subj = blog.title;
+    	  var body = blog.body;
+    	  article.setSubject(subj,lang,userLocator);
+    	  article.setBody(body,lang,userLocator);
+    //	  console.log('BlogModel.create-2 '+article.toJSON());
 			myEnvironment.addRecentBlog(article.getLocator(),blog.title);
     	     // now deal with tags
           var tags = blog.tags;
-          if (tags.indexOf(',') > -1) {
+          if (tags.length > 0 && tags.indexOf(',') > -1) {
             var tagList = tags.split(',');
             TagModel.processTagList(tagList, userTopic, article, credentials, function(err,result) {
               console.log('NEW_POST-1 '+result);
@@ -119,7 +151,7 @@ var BlogModel =  module.exports = function(environment) {
 	      for (var i=0;i<len;i++) {
 	        p = result[i];
 	        m = [];
-	        url = "<a href='blog/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
+	        url = "<a href='blog/"+p.getLocator()+"'>"+p.getSubject(constants.ENGLISH).theText+"</a>";
 	        m.push(url);
 	        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
 	        m.push(url);
@@ -127,9 +159,9 @@ var BlogModel =  module.exports = function(environment) {
 	        data.push(m);
 	      }
 	      theResult.data = data;
-	      console.log();
-	      console.log("BlogModel.fillDatatable "+JSON.stringify(theResult));
-	      console.log();
+	    //  console.log();
+	    //  console.log("BlogModel.fillDatatable "+JSON.stringify(theResult));
+	    //  console.log();
 	    callback(theResult);
 	  });
   }

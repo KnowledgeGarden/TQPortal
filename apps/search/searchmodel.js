@@ -48,6 +48,9 @@ var SearchModel = module.exports = function(environment) {
 					loc = p.getLocator();
 					typ = p.getNodeType();
 					lab = p.getLabel(language);
+					if (!lab) {
+						lab = p.getSubject(language).theText;
+					}
 					//now figure out the node type
 					if (typ === types.WIKI_TYPE) {
 						urx = "/wiki/";
@@ -56,7 +59,7 @@ var SearchModel = module.exports = function(environment) {
 					} else if (typ === types.TAG_TYPE) {
 						urx = "/tag/";
 					} else if (typ === types.USER_TYPE) {
-						urx = "user";
+						urx = "/user/";
 					} else {
 						//here's where we crash and burn
 						topicMapEnvironment.logError("SearchModel unknown type: "+typ);

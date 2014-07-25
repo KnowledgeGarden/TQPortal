@@ -23,10 +23,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    * Support the blogindex.handlebars view
    */
   app.get('/ajaxblog', function(req, res) {
-    console.log("AJAX_DATA GETBLOG "+JSON.stringify(req.body));
+//    console.log("AJAX_DATA GETBLOG "+JSON.stringify(req.body));
     var credentials = null;
     BlogModel.fillDatatable(credentials, function(data) {
-      console.log("AJAX_DATA GETBLOG "+JSON.stringify(data));
+ //     console.log("AJAX_DATA GETBLOG "+JSON.stringify(data));
       try {
         res.set('Content-type', 'text/json');
       }  catch (e) { }
@@ -37,10 +37,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    * Support the wikihome.handlebars view
    */
   app.get('/ajaxwiki', function(req, res) {
-    console.log("AJAX_DATA GETWIKI "+JSON.stringify(req.body));
+ //   console.log("AJAX_DATA GETWIKI "+JSON.stringify(req.body));
     var credentials = null;
     WikiModel.fillDatatable(credentials, function(data) {
-      console.log("AJAX_DATA GETWIKI "+JSON.stringify(data));
+//      console.log("AJAX_DATA GETWIKI "+JSON.stringify(data));
       try {
         res.set('Content-type', 'text/json');
       }  catch (e) { }

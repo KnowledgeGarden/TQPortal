@@ -5,6 +5,15 @@
   {{#if invitationOnly}}
   <h3>Signup is by invitation only: requires your email to be on the invitation list.</h3>
   {{/if}}
+  <form action="/validate" method="post">
+      <div class="form-group">
+      <label>Handle must be unique. Validate Handle here. If chosen value is available, it will return in the Handle field below.</label>
+      <input type="text" class="form-control" name="vhandle">
+      <button type="submit" class="btn btn-warning btn-lg">Validate</button>
+    </div>
+  
+  </form>
+  <hr>
 	<form action="/signup" method="post">
 		<div class="form-group">
 			<label>Email</label>
@@ -16,7 +25,7 @@
 		</div>
 		<div class="form-group">
 			<label>Handle</label>
-			<input type="text" class="form-control" name="handle">
+			<input type="text" class="form-control" name="handle" value="{{ hndl }}">
 		</div>
 		<div class="form-group">
 			<label>Avatar</label>

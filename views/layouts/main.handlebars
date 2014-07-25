@@ -3,9 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <title>TopicQuests Foundation</title>
-     <link href="/css/bootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
-     <link href="/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" />
+     <link href="/css/jbootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
+     <link href="/css/bootswatch.min.css" media="all" rel="stylesheet" type="text/css" />
+    <link href="/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" /> 
      <link href="/css/jquery.dataTables.css" media="all" rel="stylesheet" type="text/css" />
+     <link href="/css/summernote.css" media="all" rel="stylesheet" type="text/css" />
+     
 <style>  
   body {
     padding-top: 50px;
@@ -13,13 +16,12 @@
     padding-bottom: 20px;
   }
   #wrap {
-  min-height: 100%
+    min-height: 100%
   }
   #main {
-  overflow:auto;
-  padding-bottom:150px; /* this needs to be bigger than footer height*/
-}
-}
+    overflow:auto;
+    padding-bottom:150px; /* this needs to be bigger than footer height*/
+  }
   
   <!--http://jsfiddle.net/drueter/yqgB5/3/ -->
   table.table-fixedheader>tbody {
@@ -36,7 +38,7 @@
     width: 100%;
   }
 </style>
-    <style>
+<style>
         #slides {
             display: none;
         }
@@ -103,19 +105,11 @@
         #slides a:active {
             color: #0094ff;
         }
-    </style>
-    <!-- End SlidesJS Optional-->
-
-    <!-- SlidesJS Required: These styles are required if you'd like a responsive slideshow -->
-    <style>
-        #slides {
-            display: none;
-        }
-    </style>
+  </style>
   <script src="/js/jquery-1.11.1.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="/js/jquery.slides.min.js"></script>
   <script src="/js/jquery.dataTables.js"></script>
-    <script>
+  <script>
         $(document).keyup(function (event) {
 
             /* left arrow 37
@@ -165,9 +159,54 @@
                 end: 3
             });
         });
-    </script>
+  </script>
   <script>
     jQuery(document).ready(function ($) {
+      //rich text
+      $('.sidenote').summernote({
+        height: 100,
+        toolbar: false
+         });
+         
+      //topicnote is the topic.handlebars view
+     $('.topicnote').summernote({
+        height: 300,
+        toolbar: [
+    //[groupname, [button list]]
+     
+    ['misc', ['fullscreen']]
+  ]
+         });
+      //summernote is for blogform.handlebars and wikiform.handlebars
+      $('#summernote').summernote({
+        height: 300,
+          onImageUpload: function(files, editor, $editable) {
+         // alert(files[0].name);
+            sendFile(files[0], editor, $editable);
+          }
+        });
+
+      
+      //Deal with image uploading
+      function sendFile(file, editor, welEditable) {
+            data = new FormData();
+            data.append("files", file);
+            $.ajax({
+                data: data,
+                type: "POST",
+                url: "/upload",
+                cache: false,
+                contentType: false,
+                processData: false,
+                error: function(err) {
+                 alert("Error "+err);
+                },
+                success: function(url) {
+             //     alert("Success "+url);
+                  editor.insertImage(welEditable, url);
+                }
+            });
+        }
       //datatables
       try { 
       //Blogs
@@ -314,5 +353,6 @@
  </footer>
  </div>
  <script src="/js/bootstrap.js"></script>
+ <script src="/js/summernote.js"></script>
 </body>
 </html>

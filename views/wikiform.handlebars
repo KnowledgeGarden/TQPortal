@@ -1,12 +1,11 @@
-        <div class="main-content">
-          <div class="main-head">
-            <h1>New WikiTopic</h1>
-            <hr>
-          </div>
-          <div class="row">
-            <div class="col-md-8">
+   <h1>{{formtitle}}</h1>
+  <hr>
+ <div class="blog-post col-xs-9">
+    {{#if canEdit}}
+    <a hrev="/blog/edit/{{editLocator}}><b>Edit</b></a><br/>
+    {{/if}}
               <form method="post" action="/wiki"  role="form" class="form-horizontal"> <!-- enctype="multipart/form-data" cannot be used -->
-                <input type="hidden" name="_csrf" value="">
+                <input type="hidden" name="locator" value="{{locator}}">
                 <div class="form-group">
                   <label for="title" class="col-sm-2 control-label">Title</label>
                   <div class="col-sm-10">
@@ -16,24 +15,22 @@
                <div class="form-group">
                   <label for="desc" class="col-sm-2 control-label">Body</label>
                   <div class="col-sm-10">
-                    <textarea id="desc" rows="5" name="body" placeholder="Enter the article description" class="form-control"></textarea>
+                    <textarea id="summernote" rows="5" name="body" placeholder="Enter the article description" class="form-control">{{body}}</textarea>
                   </div>
                 </div>
+                {{#if isNotEdit}}
                 <div class="form-group">
                   <label for="tags" class="col-sm-2 control-label">Tags</label>
                   <div class="col-sm-10">
                     <input id="tags" type="text" name="tags" value="" placeholder="Enter the tags" class="form-control">
                   </div>
                 </div>
+                {{/if}}
                 <div class="form-group">
                   <div class="col-sm-offset-2 col-sm-10">
-                    <button type="submit" class="btn btn-primary">Save</button>&nbsp;<a href="/articles" title="cancel" class="btn">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save</button>&nbsp;<a href="/" title="cancel" class="btn">Cancel</a>
                   </div>
                 </div>
               </form>
-            </div>
-            <div class="col-md-4">
-            </div>
-          </div>
-        </div>
-      </div>
+ </div>
+  <!--     </div> -->

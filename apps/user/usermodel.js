@@ -18,6 +18,27 @@ var UserModel = module.exports = function(environment) {
   var self = this;
 	
   /**
+   * Update an existing user entry
+   */
+  self.update = function(userbody,user,credentials,callback) {
+	  topicMapEnvironment.logDebug("USER.UPDATE "+JSON.stringify(userbody));
+	  var lox = userbody.locator;
+	  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+		  var error = '';
+		  if (err) {error += err;}
+		  var body = userbody.body;
+    	  var lang = userbody.language;
+    	  var comment = "an edit"; //TODO add comment field to form
+    	  if (!lang) {lang = "en";}
+    	  result.updateBody(body,lang,user.handle,comment);
+    	  Dataprovider.putNode(result, function(err,data) {
+    		  if (err) {error += err;}
+    		  callback(error,data);
+    	  });
+	  });
+  },
+
+  /**
    * Create a new user Topic from an authenticated User object
    * @param user = User, the authentication user, not the topic user
    * @param callback signature (err,data)
@@ -26,7 +47,9 @@ var UserModel = module.exports = function(environment) {
     //NOTE: user.handle is also the topic's locator
     //must be unique
     console.log('USER.newUserTopic- '+JSON.stringify(user.getData()));
-    var credentials = null; //TODO
+    var language = "en"; //TODO
+    var credentials = []; 
+    credentials.push(user.getHandle());
     // In fact, we already check for valid and unique handle in routes.js
     console.log('USER.newUserTopic-1 '+user.getHandle());
     self.findUser(user.getHandle(), credentials, function(err,result) {
@@ -38,10 +61,16 @@ var UserModel = module.exports = function(environment) {
         //create a new user
     	var usr;
         topicModel.newInstanceNode(user.getHandle(), types.USER_TYPE,
-        		user.getFullName(),"","en",constants.SYSTEM_USER,
+        		"","","en",user.getHandle(),
         		icons.PERSON_ICON_SM,icons.PERSON_ICON, false, credentials, function(err,result) {
             console.log('USER.newUserTopic-3 '+err+' '+result.toJSON());
         	usr = result;
+        	// model users as AIR objects
+        	usr.setSubject(user.getFullName(),language, user.getHandle());
+        	//model user's home page in this topic
+        	if (user.getHomepage()) {
+        		usr.setResourceUrl(user.getHomepage());
+        	}
           Dataprovider.putNode(usr, function(err,data) {
             console.log('UserModel.newUserTopic+ '+usr.getLocator()+" "+err);
             callback(err,null);
@@ -88,7 +117,7 @@ var UserModel = module.exports = function(environment) {
       for (var i=0;i<len;i++) {
       p = result[i];
 		        m = [];
-		        url = "<a href='user/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
+		        url = "<a href='user/"+p.getLocator()+"'>"+p.getSubject(constants.ENGLISH).theText+"</a>";
 		        m.push(url);
 		        data.push(m);
 		      }

@@ -4,7 +4,7 @@
     "test": "./node_modules/.bin/eslint apps config lib routes server.js"
   },
   "name": "TQPortal",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A Landing Page for TopicQuests",
   "main": "server.js",
   "author": "park",
@@ -33,12 +33,15 @@
     "racer-browserchannel": "~0.2.1",
     "livedb": "~0.4.4",
     "mongodb": "~1.4.7",
-    "log4js": "~0.6.15"
+    "log4js": "~0.6.15",
+    "fileupload": "~0.3.0",
+    "multer": "~0.1.3",
+    "easyimage": "~1.0.0"
   },
   "devDependencies": {
     "eslint": "^0.6.2"
   },
   "non-npmDependencies": {
-    "tqtopicmap": "0.2.3+"
+    "tqtopicmap": "0.4.0+"
   }
 }
