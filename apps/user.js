@@ -3,6 +3,8 @@
  */
 var userModel = require('./user/usermodel')
   , constants = require('../core/constants')
+  , common = require('./common/commonmodel')
+
  , types = require('../node_modules/tqtopicmap/lib/types');
 
 
@@ -11,6 +13,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var UserModel = new userModel(environment);
+	var CommonModel = environment.getCommonModel();
   console.log("Starting User "+UserModel);
   //TODO lots!
 	var self = this;
@@ -66,7 +69,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   app.get('/user/edit/:id', isLoggedIn, function(req,res) {
 		var q = req.params.id;
 		var usx = req.user;
-		var credentials = null;
+		var credentials = [];
 		if (usx) {credentials = usx.credentials;}
 		var data =  myEnvironment.getCoreUIData(req);
 		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
@@ -80,14 +83,42 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			res.render('userform', data); //,
 		});
 	  });
-  
+  app.get('/user/ajaxtopicnode/:id', function(req, res) {
+	    var q = req.params.id;
+	    console.log('AJAXTOPICNODE '+q);
+	    var credentials = [];
+	    if (req.user) { credentials = req.user.credentials;}
+	    //get all parents
+	    CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
+	        try {
+	            res.set('Content-type', 'text/json');
+	          }  catch (e) { }
+	          res.json(result);
+
+	    });
+});
+app.get('/user/ajaxptopicnode/:id', function(req, res) {
+	    var q = req.params.id;
+	    console.log('AJAXTOPICNODE '+q);
+	    var credentials = [];
+	    if (req.user) { credentials = req.user.credentials;}
+	    //get just my children
+	    CommonModel.fillConversationTable(false, false,q,q,credentials,function(err,result) {
+	        try {
+	            res.set('Content-type', 'text/json');
+	          }  catch (e) { }
+	          res.json(result);
+
+	    });
+});
+
   var _usersupport = function(body,usx, callback) {
 	var credentials = usx.credentials;
 	  UserModel.update(body, usx, credentials, function(err,result) {
           callback(err,result);
       });
-
-  }
+  };
+  
   app.post('/user', isLoggedIn, function(req,res) {
 	var body = req.body;
 	var usx = req.user;
@@ -103,7 +134,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   app.get('/user/:id', isPrivate,function(req,res) {
 	var q = req.params.id;
 	console.log('USERrout '+q);
-	var credentials = null;
+	var credentials = [];
     var usr = req.user;
     if (usr) { credentials = usr.credentials;}
 	Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
@@ -119,6 +150,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var data = myEnvironment.getCoreUIData(req);
   	    var canEdit = self.canEdit(result,credentials);
   	    data.canEdit = canEdit;
+    	  data.myLocator = q;
+
 	    data.editLocator = "/user/edit/"+result.getLocator();
  	    if (result.getResourceUrl()) {
   	    	data.url = result.getResourceUrl();

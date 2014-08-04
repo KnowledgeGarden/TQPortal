@@ -16,6 +16,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
   , tagmodel = require('../tag/tagmodel');
 
 var BlogModel =  module.exports = function(environment) {
+	var CommonModel = environment.getCommonModel();
 	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
@@ -139,30 +140,11 @@ var BlogModel =  module.exports = function(environment) {
    * @param callback signatur (data)
    */
   self.fillDatatable = function(credentials, callback) {
-	  var theResult = {};
 	  self.listBlogPosts(0,100,credentials,function(err,result) {
 	      console.log('ROUTES/blog '+err+' '+result);
-	      var data = [];
-	      var len = result.length;
-	      var p; //the proxy
-	      var m; //the individual message
-	      var url;
-	      var posts = [];
-	      for (var i=0;i<len;i++) {
-	        p = result[i];
-	        m = [];
-	        url = "<a href='blog/"+p.getLocator()+"'>"+p.getSubject(constants.ENGLISH).theText+"</a>";
-	        m.push(url);
-	        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
-	        m.push(url);
-	        m.push(p.getDate());
-	        data.push(m);
-	      }
-	      theResult.data = data;
-	    //  console.log();
-	    //  console.log("BlogModel.fillDatatable "+JSON.stringify(theResult));
-	    //  console.log();
-	    callback(theResult);
+    	  CommonModel.fillDatatable(result, "blog/", function(data) {
+    		  callback(data);
+    	  });
 	  });
   }
   

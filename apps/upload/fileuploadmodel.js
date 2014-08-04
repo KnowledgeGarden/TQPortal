@@ -3,7 +3,7 @@
  * @see https://github.com/domharrington/fileupload
  */
 
-var fu = require('fileupload');
+
 
 var UploadModel = module.exports = function(environment) {
 	var myEnvironment = environment;

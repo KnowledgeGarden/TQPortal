@@ -39,11 +39,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /////////////////
   app.get('/', isPrivate, function(req, res) {
     //changing this value allows changing landing page
+	  var sess = req.session;
+	console.log("CLIPBOARD: "+sess.clipboard);
     var idx = 'recenthome';
     var data = __get(req);
     data.tags = HomeModel.listRecentTags();
     data.blogs = HomeModel.listRecentBlogs();
     data.wikis = HomeModel.listRecentWikis();
+    data.conv = HomeModel.listRecentConversations();
     console.log("GETHOME "+JSON.stringify(data));
     res.render(idx, data);
 	  

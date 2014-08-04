@@ -3,11 +3,13 @@
  */
 var wm = require('./wiki/wikimodel')
  , types = require('../node_modules/tqtopicmap/lib/types')
+, common = require('./common/commonmodel')
   , constants = require('../core/constants')
 ;
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment;
+	var CommonModel = environment.getCommonModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
   this.WikiModel = new wm(environment);
@@ -65,7 +67,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   app.get('/wiki/edit/:id', isLoggedIn, function(req,res) {
 	var q = req.params.id;
 	var usx = req.user;
-    var credentials = null;
+    var credentials = [];
 	if (usx) {credentials = usx.credentials;}
 	var data =  myEnvironment.getCoreUIData(req);
 	data.formtitle = "Edit Topic";
@@ -81,16 +83,54 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		res.render('wikiform', data); //,
 	});
   });
+  app.get('/wiki/ajaxtopicnode/:id', function(req, res) {
+	    var q = req.params.id;
+	    console.log('AJAXTOPICNODE '+q);
+	    var credentials = [];
+	    if (req.user) { credentials = req.user.credentials;}
+	    CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
+	        try {
+	            res.set('Content-type', 'text/json');
+	          }  catch (e) { }
+	          res.json(result);
+
+	    });
+  });
+  app.get('/wiki/ajaxptopicnode/:id', function(req, res) {
+	    var q = req.params.id;
+	    console.log('AJAXTOPICNODE '+q);
+	    var credentials = [];
+	    if (req.user) { credentials = req.user.credentials;}
+	    var contxt = req.query.contextLocator;
+	    CommonModel.fillConversationTable(false, false,q,contxt,credentials,function(err,result) {
+	        try {
+	            res.set('Content-type', 'text/json');
+	          }  catch (e) { }
+	          res.json(result);
+
+	    });
+  });
 
   app.get('/wiki/:id', isPrivate,function(req,res) {
 	  var usx = req.user;
 	    var q = req.params.id;
 	    console.log('WIKIrout '+q);
-	    var credentials = null;
-	    	if (usx) {credentials = usx.credentials;}
+	    var credentials = [];
+	    if (usx) {credentials = usx.credentials;}
 	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
 	      console.log('WIKIrout-1 '+err+" "+JSON.stringify(result)); //result.toJSON);
-	      console.log('WIKIrout-1a '+err+" "+result.toJSON()); //result.toJSON);
+	    //  console.log('WIKIrout-1a '+err+" "+result.toJSON()); //result.toJSON);
+		    var contextLocator;
+		    if (req.query.contextLocator) {
+		    	contextLocator = req.query.contextLocator;
+		    } else {
+		    	//if it's a map node, use that
+		    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+		    		contextLocator = result.getLocator();
+		    	}
+		    	//TODO
+		    	//Otherwise, grab some context from the node
+		    }
 	      var data = myEnvironment.getCoreUIData(req);
 	      var title = result.getSubject(constants.ENGLISH).theText;
 	      var details = result.getBody(constants.ENGLISH).theText;
@@ -102,7 +142,15 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     	  data.canEdit = canEdit;
     	  data.isNotEdit = true;
     	  data.editLocator = "/wiki/edit/"+result.getLocator();
-	     
+    	  data.myLocatorXP = q+"?contextLocator="+contextLocator;
+	      if (credentials.length > 0 && req.session.clipboard === "") {
+	    	  data.transclude = "yes";
+	      }
+	      if (contextLocator) {
+	    	  data.contextLocator = contextLocator;
+	    	  //TODO this must be used in the transclude button
+	      }
+
 	      var date = result.getLastEditDate();
 	      data.title = title;
 	      data.body = details;
@@ -110,8 +158,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	      data.source = result.toJSON();
 	      data.date = date;
 	      data.user = userid;
+	   	  data.locator = q;
+    	  data.myLocator = q;
 
-	      data.image = "/images/publication.png";
+	      data.image = result.getImage();
 	      console.log('WIKIrout-2 '+JSON.stringify(data));
 	      res.render('topic', data);
 	    });
@@ -120,7 +170,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   app.get('/wiki/edit/:id', isLoggedIn, function(req,res) {
 		var q = req.params.id;
 		var usx = req.user;
-		var credentials = null;
+		var credentials = [];
 		if (usx) {credentials = usx.credentials;}
 		var data =  myEnvironment.getCoreUIData(req);
 		data.formtitle = "Edit Topic";

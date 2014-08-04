@@ -11,6 +11,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
   , constants = require('../../core/constants');
 
 var UserModel = module.exports = function(environment) {
+	var CommonModel = environment.getCommonModel();
   var topicMapEnvironment = environment.getTopicMapEnvironment();
   var Dataprovider = topicMapEnvironment.getDataProvider();
   var topicModel = topicMapEnvironment.getTopicModel();
@@ -105,27 +106,11 @@ var UserModel = module.exports = function(environment) {
 	   * @param callback signatur (data)
 	   */
   self.fillDatatable = function(credentials, callback) {
-    var theResult = {};
     self.listUsers(0,-1,credentials,function(err,result) {
       console.log('ROUTES/users '+err+' '+result);
-      var data = [];
-      var len = result.length;
-      var p; //the proxy
-      var m; //the individual message
-      var url;
-      var posts = [];
-      for (var i=0;i<len;i++) {
-      p = result[i];
-		        m = [];
-		        url = "<a href='user/"+p.getLocator()+"'>"+p.getSubject(constants.ENGLISH).theText+"</a>";
-		        m.push(url);
-		        data.push(m);
-		      }
-		      theResult.data = data;
-		      console.log();
-		      console.log("TagModel.fillDatatable "+JSON.stringify(theResult));
-		      console.log();
-		    callback(theResult);
-		  });
-	  }
+	  CommonModel.fillDatatable(result, "user/", function(data) {
+		  callback(data);
+	  });
+	});
+  }
 };

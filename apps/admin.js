@@ -60,6 +60,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	// LOGOUT
 	///////////////
 	app.get('/logout', function(req, res) {
+		req.session.clipboard = "";
 		req.logout();
 		res.redirect('/');
 	});
@@ -77,6 +78,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//Do the authentication using passport local strategy
 		passport.authenticate('local', function(err, user, info) {
 			console.log('Login2: '+err+' '+user+' '+info);
+			
 			//in node_modules/passport/middleware/authenticate.js
 			// there is a strange event in which, if the authentication
 			// succeeds, it makes more than one callback to here, the second
@@ -103,6 +105,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				//this could be anything contained in the message in info
 				return res.redirect('/NoSuchUser');   //TODO
 			}
+			//Initialize a user's clipboard
+			var sess = req.session;
+			sess.clipboard = "";
 			//Tell the session this user is logged in
 			// required for "isLoggedIn" to work
 			req.logIn(user, function(err) {

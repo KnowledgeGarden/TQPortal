@@ -4,8 +4,7 @@
  * @see https://github.com/domharrington/fileupload
  * @see https://github.com/expressjs/multer
  */
-var fu = require('fileupload')
-  , img = require('easyimage')
+var img = require('easyimage')
   , multer = require('multer');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
@@ -27,7 +26,6 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var baseURL = "/uploads/";
 	var dirname = __dirname+"/../public/uploads/";
 	console.log("Uploads dir: "+dirname);
-	//var uploader = fu.createFileUpload(dirname).middleware;
 	app.use(multer({
         dest: dirname,
         rename: function (fieldname, filename) {

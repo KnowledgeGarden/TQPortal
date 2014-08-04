@@ -10,6 +10,7 @@ var constants = require('../../core/constants')
   , tagmodel = require('../tag/tagmodel');
 
 var WikiModel =  module.exports = function(environment) {
+	var CommonModel = environment.getCommonModel();
 	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
@@ -36,6 +37,28 @@ var WikiModel =  module.exports = function(environment) {
 	    	  result.updateSubject(title,lang,user.handle,comment);
 	    	  result.updateBody(body,lang,user.handle,comment);
 	    	  result.setLastEditDate(new Date());
+	    	  Dataprovider.putNode(result, function(err,data) {
+	    		  if (err) {error += err;}
+	    		  callback(error,data);
+	    	  });
+		  });
+	  },
+	  
+	  self.update = function(blog,user,credentials,callback) {
+		  topicMapEnvironment.logDebug("Bookmark.UPDATE "+JSON.stringify(blog));
+		  var lox = blog.locator;
+		  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+			  var error = '';
+			  if (err) {error += err;}
+			  var title = blog.title;
+			  var body = blog.body;
+	    	  var lang = blog.language;
+	    	  var comment = "an edit"; //TODO add comment field to form
+	    	  if (!lang) {lang = "en";}
+	    	  result.updateSubject(title,lang,user.handle,comment);
+	    	  result.updateBody(body,lang,user.handle,comment);
+	    	  result.setLastEditDate(new Date());
+
 	    	  Dataprovider.putNode(result, function(err,data) {
 	    		  if (err) {error += err;}
 	    		  callback(error,data);
@@ -126,30 +149,11 @@ var WikiModel =  module.exports = function(environment) {
 	   * @param callback signatur (data)
 	   */
 	  self.fillDatatable = function(credentials, callback) {
-		  var theResult = {};
-		  self.listWikiPosts(0,100,credentials,function(err,result) {
-		      console.log('ROUTES/blog '+err+' '+result);
-              var data = [];
-		      var len = result.length;
-		      var p; //the proxy
-		      var m; //the individual message
-		      var url;
-		      var posts = [];
-		      for (var i=0;i<len;i++) {
-		        p = result[i];
-		        m = [];
-		        url = "<a href='wiki/"+p.getLocator()+"'>"+p.getSubject(constants.ENGLISH).theText+"</a>";
-		        m.push(url);
-		        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
-		        m.push(url);
-		        m.push(p.getDate());
-		        data.push(m);
-		      }
-		      theResult.data = data;
-		      console.log();
-		      console.log("WikiModel.fillDatatable "+JSON.stringify(theResult));
-		      console.log();
-		    callback(theResult);
+          self.listWikiPosts(0,100,credentials,function(err,result) {
+		      console.log('ROUTES/bookmark '+err+' '+result);
+			  CommonModel.fillDatatable(result, "wiki/", function(data) {
+				  callback(data);
+			  });
 		  });
 	  }
 };

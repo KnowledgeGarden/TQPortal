@@ -22,5 +22,8 @@ console.log("Starting HomeModel");
 	},
 	self.listRecentWikis = function() {
 		return environment.listRecentWikis();
+	},
+	self.listRecentConversations = function() {
+		return environment.listRecentConversations();
 	}
 };

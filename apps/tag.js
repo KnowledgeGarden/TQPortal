@@ -3,13 +3,14 @@
  */
 var tagModel = require('./tag/tagmodel')
   , constants = require('../core/constants')
+  , common = require('./common/commonmodel')
  , types = require('../node_modules/tqtopicmap/lib/types');
 
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
-//  this.TagModel = new userModel(environment);
+	var CommonModel = environment.getCommonModel();
 
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
@@ -45,7 +46,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	app.get('/tag/:id', isPrivate,function(req,res) {
 		var q = req.params.id;
 		console.log('TAGrout '+q);
-		var credentials = null; //TODO
+		var credentials = []; 
+		if (req.user) {credentials = req.user.credentials;}
 		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
 			console.log('TAGrout-1 '+err+" "+result);
 			var title = result.getLabel(constants.ENGLISH);
@@ -65,10 +67,42 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			data.date = date;
 			data.source = result.toJSON();
 			data.image = "/images/tag.png";
+		  	  data.myLocator = q;
+
 			//TODO paint provenance creator Id setup to point to user
 			console.log('TAGrout-2 '+JSON.stringify(data));
 			res.render('topic', data);
 		});
 	});
-  
+
+	app.get('/tag/ajaxtopicnode/:id', function(req, res) {
+		    var q = req.params.id;
+		    console.log('AJAXTOPICNODE '+q);
+		    var credentials = [];
+		    if (req.user) { credentials = req.user.credentials;}
+		    //get all parents
+		   CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
+		        try {
+		            res.set('Content-type', 'text/json');
+		          }  catch (e) { }
+		          res.json(result);
+
+		   });
+	});
+
+	app.get('/tag/ajaxptopicnode/:id', function(req, res) {
+		    var q = req.params.id;
+		    console.log('AJAXTOPICNODE '+q);
+		    var credentials = [];
+		    if (req.user) { credentials = req.user.credentials;}
+		    //get just my children
+		    CommonModel.fillConversationTable(false, false,q,q,credentials,function(err,result) {
+		        try {
+		            res.set('Content-type', 'text/json');
+		          }  catch (e) { }
+		          res.json(result);
+
+		    });
+	});
+
 };

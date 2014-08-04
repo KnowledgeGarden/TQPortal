@@ -219,7 +219,7 @@
          "Columns" : [
 				   { "title": "Subject" },
 				   { "title": "Author" },
-				   { "title": "Date" },]
+				   { "title": "Date" }]
         });
       //Blogs
        $('#wikitable').dataTable({
@@ -231,7 +231,59 @@
          "Columns" : [
            { "title": "Subject" },
            { "title": "Author" },
-           { "title": "Date" },]
+           { "title": "Date" }]
+        });
+      //Conversations
+       $('#conversationtable').dataTable({
+         "bProcessing" : true,
+         "bServerSide" : true,
+         "searching": false,
+         "paging":   true,
+         "ajax" : 'ajaxconversation',
+         "Columns" : [
+           { "title": "Subject" },
+           { "title": "Author" },
+           { "title": "Date" }]
+        });
+        //table for conversation node where node is parent
+       $('#connodetable').dataTable({
+         "bProcessing" : true,
+         "bServerSide" : true,
+         "searching": false,
+         "paging":   true,
+         "ajax" : 'ajaxptopicnode/{{myLocatorXP}}',
+         "Columns" : [
+           { "title": "Subject" }]
+        });
+        //table for conversation node where node is child
+        $('#cconnodetable').dataTable({
+         "bProcessing" : true,
+         "bServerSide" : true,
+         "searching": false,
+         "paging":   true,
+         "ajax" : 'ajaxtopicnode/{{myLocator}}',
+         "Columns" : [
+           { "title": "Subject" }]
+        });
+       //table for topic node where parent
+        $('#contopictable').dataTable({
+         "bProcessing" : true,
+         "bServerSide" : true,
+         "searching": false,
+         "paging":   true,
+         "ajax" : 'ajaxptopicnode/{{myLocatorXP}}',
+         "Columns" : [
+           { "title": "Subject" }]
+        });
+       //table for topic node where node is child
+        $('#ccontopictable').dataTable({
+         "bProcessing" : true,
+         "bServerSide" : true,
+         "searching": false,
+         "paging":   true,
+         "ajax" : 'ajaxtopicnode/{{myLocator}}',
+         "Columns" : [
+           { "title": "Subject" }]
         });
         //Members
        $('#usertable').dataTable({

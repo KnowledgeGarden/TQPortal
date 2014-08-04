@@ -8,6 +8,7 @@ var bkmrk = require('./bookmark/bookmarkmodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
+	var CommonModel = environment.getCommonModel();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
   this.BookmarkModel = new bkmrk(environment);
   console.log("Starting Bookmark "+this.BookmarkModel);

@@ -1,6 +1,8 @@
 <ul class="nav nav-tabs">
   <li class="active"><a data-toggle="tab" href="#topic">Topic</a></li>
   <li><a data-toggle="tab" href="#list">List View</a></li>
+  <li><a data-toggle="tab" title="Conversations in which I am the parent node" href="#pconv">P-Conversation</a></li>
+  <li><a data-toggle="tab" title="Conversations in which I am a child node" href="#cconv">C-Conversation</a></li>
   <li><a data-toggle="tab" href="#relations">Relations</a></li>
   <li><a data-toggle="tab" href="#source">Source</a></li>
 </ul>
@@ -20,6 +22,18 @@
     <a href="{{editLocator}}"><b>Edit</b></a>
     {{/if}}
     </p>
+    {{#if transclude}}
+    <form method="post" action="/conversation/remember"  role="form" class="form-horizontal">
+                <input type="hidden" name="transcludeLocator" value="{{transcludeLocator}}">
+                <input type="hidden" name="myLocator" value="{{myLocator}}">
+                <input type="hidden" name="contextLocator" value="{{contextLocator}}">
+      <div class="form-group">
+       <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="btn btn-primary">Remember This Node For Transclusion</button>
+       </div>
+      </div>
+    </form>
+    {{/if}}
     <textarea  rows="5" name="body" class="form-control topicnote"> {{ body }}</textarea>
    
    </div>
@@ -27,9 +41,8 @@
  <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
   <div class="sidebar-module sidebar-module-inset">
     {{#if tags}}
-    <div class="sidebar-module">
-      <h4>Tags</h4>
-      <textarea  rows="5" name="body" class="form-control sidenote"> 
+       <h4>Tags</h4>
+    <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each tags}}
          <li><a href="/tag/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
@@ -39,9 +52,8 @@
     </div>
     {{/if}}
     {{#if users}}
-    <div class="sidebar-module">
       <h4>Users</h4>
-      <textarea  rows="5" name="body" class="form-control sidenote"> 
+    <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each users}}
          <li><a href="/user/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
@@ -51,9 +63,8 @@
     </div>
     {{/if}}
     {{#if docs}}
-    <div class="sidebar-module">
       <h4>Documents</h4>
-      <textarea  rows="5" name="body" class="form-control sidenote"> 
+    <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each docs}}
          <li><a href="/blog/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
@@ -72,9 +83,8 @@
     <p class="blog-post-meta"> {{date}} <a href="/user/{{user}}">{{user}}</a></p>
     <textarea  rows="5" name="body" class="form-control topicnote"> {{ body }}</textarea>
     {{#if tags}}
-    <div class="sidebar-module">
-      <h4>Tags</h4>
-      <textarea  rows="5" name="body" class="form-control sidenote"> 
+    <h4>Tags</h4>
+    <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each tags}}
          <li><a href="/tag/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
@@ -84,9 +94,8 @@
     </div>
     {{/if}}
     {{#if users}}
-    <div class="sidebar-module">
-      <h4>Users</h4>
-      <textarea  rows="5" name="body" class="form-control sidenote"> 
+    <h4>Users</h4>
+    <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each users}}
          <li><a href="/user/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
@@ -96,9 +105,8 @@
     </div>
     {{/if}}
     {{#if docs}}
-    <div class="sidebar-module">
-      <h4>Documents</h4>
-       <textarea  rows="5" name="body" class="form-control sidenote"> 
+    <h4>Documents</h4>
+    <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each docs}}
          <li><a href="/blog/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
@@ -109,6 +117,36 @@
     {{/if}}
    </div>
  </div> <!-- /list -->
+ <div id="cconv" class="tab-pane fade">
+  <table id="ccontopictable" class="display" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th>Subject</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+  </table>
+ </div> <!-- /cconv -->
+ <div id="pconv" class="tab-pane fade">
+  {{#if isAuthenticated}}
+   <div class="form-group">
+    <form method="post" action="/conversation/new/{{locator}}"  role="form" class="form-horizontal">
+     <input type="hidden" name="locator" value="{{locator}}">
+     <button type="submit" class="btn btn-btn-success btn-small">New Conversation</button>
+    </form>
+  </div>
+  {{/if}}
+  <table id="contopictable" class="display" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th>Subject</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+  </table>
+ </div> <!-- /pconv -->
  
  <div id="source" class="tab-pane fade">
   <pre>{{source}}</pre>

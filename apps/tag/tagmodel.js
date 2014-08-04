@@ -10,6 +10,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
 
 var TagModel = module.exports = function(environment) {
 	var myEnvironment = environment;
+	var CommonModel = environment.getCommonModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var DataProvider = topicMapEnvironment.getDataProvider();
 	var TopicModel = topicMapEnvironment.getTopicModel();
@@ -168,30 +169,11 @@ var TagModel = module.exports = function(environment) {
    * @param callback signatur (data)
    */
   self.fillDatatable = function(credentials, callback) {
-	var theResult = {};
 	self.listTags(0,-1,credentials,function(err,result) {
 		console.log('ROUTES/tag '+err+' '+result);
-		var data = [];
-		var len = result.length;
-		var p; //the proxy
-		var m; //the individual message
-		var url;
-		var posts = [];
-		for (var i=0;i<len;i++) {
-			p = result[i];
-			m = [];
-			url = "<a href='tag/"+p.getLocator()+"'>"+p.getLabel(constants.ENGLISH)+"</a>";
-			m.push(url);
-			url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
-			m.push(url);
-			m.push(p.getDate());
-			data.push(m);
-		}
-		theResult.data = data;
-		console.log();
-		console.log("TagModel.fillDatatable "+JSON.stringify(theResult));
-		console.log();
-		callback(theResult);
+  	  CommonModel.fillDatatable(result, "tag/", function(data) {
+		  callback(data);
+	  });
 	});
   }
 };

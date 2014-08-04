@@ -11,6 +11,7 @@ var lgr = require('log4js')
   //misc
   , rbuf = require('./util/ringbuffer')
   , constants = require('./constants')
+  , cm = require('../apps/common/commonmodel')
  ;
 
 /**
@@ -22,10 +23,12 @@ var Environment = module.exports = function(callback) {
 	var configProperties;
 	var database;
 	var userdatabase;
+	var CommonModel;
 	var TopicMapEnvironment;
 	var blogRing;
 	var wikiRing;
 	var tagRing;
+	var conversationRing;
 	var bookmarkRing;
 	var appMenu = [];
 	var self = this;
@@ -68,7 +71,11 @@ var Environment = module.exports = function(callback) {
 		result.isAuthenticated = isAuth;
 		result.isNotAuthenticated = !isAuth;
 		return result;
-	}
+	},
+	
+	self.getCommonModel = function() {
+		return CommonModel;
+	},
 	/////////////////////////
 	// Recent events recording
 	/////////////////////////
@@ -94,6 +101,11 @@ var Environment = module.exports = function(callback) {
 		bookmarkRing.add(locator,label,d);
 		TopicMapEnvironment.logDebug("Environment.addRecentBookmark "+wikiRing.size());
 	},
+	self.addRecentConversation = function(locator,label) {
+		var d = new Date().getTime();
+		conversationRing.add(locator,label,d);
+		TopicMapEnvironment.logDebug("Environment.addRecentConversation "+wikiRing.size());
+	},
 	
 	self.listRecentTags = function() {
 		return tagRing.getReversedData();
@@ -106,6 +118,9 @@ var Environment = module.exports = function(callback) {
 	},
 	self.listRecentBookmarks = function() {
 		return bookmarkRing.getReversedData();
+	},
+	self.listRecentConversations = function() {
+		return conversationRing.getReversedData();
 	},
 
   self.getConfigProperties = function() {
@@ -177,10 +192,14 @@ var Environment = module.exports = function(callback) {
             //now boot the topic map
             var foo = new idx(function(err, environment) { //new tmenv(function(err, environment) {
             	TopicMapEnvironment = environment;
+            	//It is a fact that anything constructed below cannot call this Environment
+            	// since it is not yet finished building
+            	CommonModel = new cm(this, TopicMapEnvironment);
             	blogRing = new rbuf(20, "blog", TopicMapEnvironment);
             	wikiRing= new rbuf(20, "wiki", TopicMapEnvironment);
             	tagRing= new rbuf(20,"tag", TopicMapEnvironment);
             	bookmarkRing = new rbuf(20,"bookmark",TopicMapEnvironment);
+            	conversationRing = new rbuf(20,"conversation",TopicMapEnvironment);
             	//fire up the program
             	console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
             	self.logDebug("Portal Environment started ");

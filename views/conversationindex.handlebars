@@ -1,7 +1,9 @@
 <h1>Conversation Central!!</h1>
+{{#if isAuthenticated}}
 <div class="form-group">
-  <a href="/conversation/new" class="btn btn-btn-success btn-small">New Conversation</a><br />
+  <a href="/conversation/new"><button type="submit" class="btn btn-btn-success btn-small">New Conversation</button></a><br />
 </div>
+{{/if}}
 <div class="form-group">
   <div class="col-xs-11" position:"left";>
     <h2><img src="{{image}}"> {{title}}</h2>

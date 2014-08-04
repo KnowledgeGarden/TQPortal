@@ -8,37 +8,43 @@
 
  <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
   <div class="sidebar-module sidebar-module-inset">
-    <div class="sidebar-module">
-      <h4>Recent Tags</h4>
-      <textarea  rows="5" name="body" class="form-control sidenote"> 
+    <h4>Recent Tags</h4>
+    <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each tags}}
          <li><a href="/tag/{{locator}}">{{label}}</a></li>
        {{/each}}
       </ol>
       </textarea>
-    </div>
-    <div class="sidebar-module">
-      <h4>Recent Blog Posts</h4>
-      <textarea  rows="5" name="body" class="form-control sidenote"> 
+    </div><br/>
+    <h4>Recent Blog Posts</h4>
+    <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each blogs}}
          <li><a href="/blog/{{locator}}">{{label}}</a></li>
        {{/each}}
       </ol>
       </textarea>
-    </div>
+    </div><br/>
 
-    <div class="sidebar-module">
-      <h4>Recent Wiki Topics</h4>
-      <textarea  rows="5" name="body" class="form-control sidenote"> 
+   <h4>Recent Wiki Topics</h4>
+   <div class="sidebar-module pre-scrollable">
       <ol class="list-unstyled">
        {{#each wikis}}
          <li><a href="/wiki/{{locator}}">{{label}}</a></li>
        {{/each}}
       </ol>
-      </textarea>
+    </div><br/>
+    
+    <h4>Recent Conversations</h4>
+    <div class="sidebar-module  pre-scrollable">
+       <ol class="list-unstyled">
+       {{#each conv}}
+         <li><a href="/conversation/{{locator}}">{{label}}</a></li>
+       {{/each}}
+      </ol>
     </div>
+    
   </div>
  </div>
  

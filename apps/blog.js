@@ -3,10 +3,12 @@
  */
 var acls = require('./blog/blogmodel')
   , constants = require('../core/constants')
+, common = require('./common/commonmodel')
   , types = require('../node_modules/tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment;
+	var CommonModel = environment.getCommonModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var BlogModel = new acls(environment);
@@ -74,7 +76,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   app.get('/blog/edit/:id', isLoggedIn, function(req,res) {
 	var q = req.params.id;
 	var usx = req.user;
-	var credentials = null;
+	var credentials = [];
 	if (usx) {credentials = usx.credentials;}
 	var data =  myEnvironment.getCoreUIData(req);
 	data.formtitle = "Edit Article";
@@ -90,20 +92,64 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		res.render('blogform', data); //,
 	});
   });
+  
+  app.get('/blog/ajaxtopicnode/:id', function(req, res) {
+	    var q = req.params.id;
+	    console.log('AJAXTOPICNODE '+q);
+	    var credentials = [];
+	    if (req.user) { credentials = req.user.credentials;}
+	    //get all parents
+	    CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
+	        try {
+	            res.set('Content-type', 'text/json');
+	          }  catch (e) { }
+	          res.json(result);
+
+	    });
+  });
+  app.get('/blog/ajaxptopicnode/:id', function(req, res) {
+	    var q = req.params.id;
+	    console.log('AJAXTOPICNODE '+q);
+	    var credentials = [];
+	    if (req.user) { credentials = req.user.credentials;}
+	    var contxt = req.query.contextLocator;
+	    //get just my children
+	    CommonModel.fillConversationTable(false, false,q,contxt,credentials,function(err,result) {
+	        try {
+	            res.set('Content-type', 'text/json');
+	          }  catch (e) { }
+	          res.json(result);
+
+	    });
+  });
 
   app.get('/blog/:id', isPrivate,function(req,res) {
     var q = req.params.id;
     console.log('BLOGrout '+q);
-    var credentials = null;
+    var credentials = [];
     var usr = req.user;
     if (usr) { credentials = usr.credentials;}
     Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
       console.log('BLOGrout-1 '+err+" "+result);
       var data = myEnvironment.getCoreUIData(req);
       if (result) {
+		    var contextLocator;
+		    if (req.query.contextLocator) {
+		    	contextLocator = req.query.contextLocator;
+		    } else {
+		    	//if it's a map node, use that
+		    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+		    		contextLocator = result.getLocator();
+		    	}
+		    	//TODO
+		    	//Otherwise, grab some context from the node
+		    }
     	  //This is an AIR
     	  var title = result.getSubject(constants.ENGLISH).theText;
-    	  var details = result.getBody(constants.ENGLISH).theText;
+	      var details = "";
+	      if (result.getBody(constants.ENGLISH)) {
+	    	  details = result.getBody(constants.ENGLISH).theText;
+	      }
     	  var userid = result.getCreatorId();
     	  // paint tags
     	  var tags = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
@@ -113,6 +159,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     	  data.isNotEdit = true;
     	  data.editLocator = "/blog/edit/"+result.getLocator();
     	  var date = result.getLastEditDate();
+    	  data.locator = q;
     	  data.title = title;
     	  data.body = details;
     	  data.tags = tags;
@@ -120,7 +167,18 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     	  data.date = date;
     	  console.log("BLOGrout-X "+data.canEdit+" "+data.editLocator);
     	  data.user = userid;
-    	  data.image = "/images/publication.png";
+    	  data.image = result.getImage();
+    	  //TODO NOT sure we want to transclude blog posts
+    	  data.myLocator = q;
+    	  data.myLocatorXP = q+"?contextLocator="+contextLocator;
+	      if (credentials.length > 0 && req.session.clipboard === "") {
+	    	  data.transclude = "yes";
+	      }
+	      if (contextLocator) {
+	    	  data.contextLocator = contextLocator;
+	    	  //TODO this must be used in the transclude button
+	      }
+
     	  console.log('BLOGrout-2 '+JSON.stringify(data));
       }
       res.render('topic', data);
