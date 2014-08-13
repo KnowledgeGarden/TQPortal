@@ -25,5 +25,9 @@ console.log("Starting HomeModel");
 	},
 	self.listRecentConversations = function() {
 		return environment.listRecentConversations();
+	},
+	self.listRecentBookmarks = function() {
+		return environment.listRecentBookmarks();
 	}
+
 };

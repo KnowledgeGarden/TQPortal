@@ -15,12 +15,12 @@
     {{#if user}}
       {{date}} <a href="/user/{{user}}">{{user}}</a>
     {{/if}}
-    {{#if url}}
-      <a href="{{url}}"><b>URL</b></a>
-    {{/if}}     
     {{#if canEdit}}
     <a href="{{editLocator}}"><b>Edit</b></a>
     {{/if}}
+    {{#if url}}
+      <br/><a href="{{url}}"><b>URL: {{url}}</b></a>
+    {{/if}}     
     </p>
     {{#if transclude}}
     <form method="post" action="/conversation/remember"  role="form" class="form-horizontal">
@@ -73,6 +73,17 @@
       </textarea>
     </div>
     {{/if}}
+    {{#if annotations}}
+       <h4>Annotations</h4>
+    <div class="sidebar-module pre-scrollable">
+      <ol class="list-unstyled">
+       {{#each annotations}}
+         <li><a href="/bookmark/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
+       {{/each}}
+      </ol>
+      </textarea>
+    </div>
+    {{/if}}
   </div>
  </div>
  </div> <!-- /topic -->
@@ -110,6 +121,17 @@
       <ol class="list-unstyled">
        {{#each docs}}
          <li><a href="/blog/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
+       {{/each}}
+      </ol>
+      </textarea>
+    </div>
+    {{/if}}
+    {{#if annotations}}
+       <h4>Annotations</h4>
+    <div class="sidebar-module pre-scrollable">
+      <ol class="list-unstyled">
+       {{#each annotations}}
+         <li><a href="/bookmark/{{locator}}"><img src="{{icon}}"> {{label}}</a></li>
        {{/each}}
       </ol>
       </textarea>

@@ -2,91 +2,160 @@
  * Bookmark model
  */
 var types = require('../../node_modules/tqtopicmap/lib/types')
-, icons = require('../../node_modules/tqtopicmap/lib/icons')
-, properties = require('../../node_modules/tqtopicmap/lib/properties')
+  , icons = require('../../node_modules/tqtopicmap/lib/icons')
+  , properties = require('../../node_modules/tqtopicmap/lib/properties')
 
   , constants = require('../../core/constants')
   , uuid = require('../../core/util/uuidutil')
   , tagmodel = require('../tag/tagmodel');
 
 var BookmarkModel =  module.exports = function(environment) {
+	var myEnvironment = environment;
+	var CommonModel = environment.getCommonModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var TopicModel = topicMapEnvironment.getTopicModel();
 	var TagModel = new tagmodel(environment);
+	var queryDSL = topicMapEnvironment.getQueryDSL();
 	var self = this;
   
 	self.getBookmarkByURL = function(url, credentials, callback) {
 		Dataprovider.getNodeByURL(url,credentials, function(err,data) {
 			console.log('BookmarkModel.getNodeByURL '+url+" "+err+" "+data);
 		});
-	}
+	},
 	
+	self.createPositionAndTags = function(bookmarkNode, blog, userTopic, credentials, callback) {
+		topicMapEnvironment.logDebug("BBBB "+JSON.stringify(userTopic));
+		//TODO create the position node
+		//copy from conversationmodel (move to common model?)
+		//Deal with tags
+  	  var lang = blog.language;
+	    var url = blog.url;
+
+	  if (!lang) {lang = "en";}
+		var error = '';
+		topicMapEnvironment.logDebug("BookmarkModel.createPositionAndTags "+bookmarkNode.toJSON());
+		//contextLocator, parentNode,newLocator, 
+		//nodeType, subject, body, language, smallIcon, largeIcon,
+		//  credentials, userLocator, isPrivate, callback
+		TopicModel.createTreeNode(bookmarkNode.getLocator(),bookmarkNode,"",types.ISSUE_TYPE,
+	    		  blog.subject, blog.body, lang, icons.POSITION_SM, icons.POSITION,
+	    		  credentials, userTopic.getLocator(), false, function(err,data) {
+			var positionNode = data;
+			positionNode.setResourceUrl(url);
+			  myEnvironment.addRecentConversation(positionNode.getLocator(),blog.subject);
+			if (err) {error += err;}
+	        var tags = blog.tags;
+	        if (tags.length > 0 && tags.indexOf(',') > -1) {
+	          var tagList = tags.split(',');
+	          TagModel.processTagList(tagList, userTopic, positionNode, credentials, function(err,result) {
+	            console.log('NEW_POST-1 '+result);
+	            //result could be an empty list;
+	            //TagModel already added Tag_Doc and Doc_Tag relations
+	            console.log("ARTICLES_CREATE_2 "+JSON.stringify(positionNode));
+	            Dataprovider.putNode(positionNode, function(err,data) {
+	              console.log('ARTICLES_CREATE-3 '+err);	  
+	  			  if (err) {error += err;}
+	              if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+	              console.log('ARTICLES_CREATE-3b '+userTopic);	  
+	
+	              TopicModel.relateExistingNodesAsPivots(userTopic,positionNode,types.CREATOR_DOCUMENT_RELATION_TYPE,
+	              		userTopic.getLocator(),
+	                    		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	      			if (err) {error += err;}
+	                  if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+		              callback(error,positionNode.getLocator());
+	               }); //r1
+	            }); //putnode 		  
+	      	  }); // processtaglist
+	        } else {
+	          TagModel.processTag(tags, userTopic, positionNode, credentials, function(err,result) {
+	  			  if (err) {error += err;}
+	            console.log('NEW_POST-2 '+result);
+	            //result is a list of tags already related to doc and user
+	            console.log("ARTICLES_CREATE_22 "+JSON.stringify(positionNode));
+	            Dataprovider.putNode(positionNode, function(err,data) {
+	              console.log('ARTICLES_CREATE-33 '+err);	  
+	  			  if (err) {error += err;}
+	              if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
+	              TopicModel.relateExistingNodesAsPivots(userTopic,positionNode,types.CREATOR_DOCUMENT_RELATION_TYPE,
+	              		userTopic.getLocator(),
+	                  		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+		  			  if (err) {error += err;}
+	                  if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+		              callback(error,positionNode.getLocator());
+	               }); //r1
+	            }); //putNode
+	          });//processTags
+	        } // else	
+		});
+	},
+	/**
+	 * This is a bookmark. A bookmark for this URL might already exist.
+	 * If so, we simply add a new AIR to it. Bookmark form has URL, title, subject, body, tags.
+	 * If the bookmark doesn't exist, create it.
+	 * Given the bookmark, then create a Position node with it as the conversation root.
+	 */
 	  self.create = function (blog, user, credentials, callback) {
 		  console.log('BOOKMARK.create '+JSON.stringify(blog));
 		// some really wierd shit: the User object for the user database stores
 		// as user.handle, but passport seems to muck around and return user.username
 	    var userLocator = user.handle; // It's supposed to be user.handle;
 	    //first, fetch this user's topic
-	    var userTopic;
-	    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
-	      userTopic = result;
-	      console.log('BookmarkModel.create-1 '+userLocator+' | '+userTopic);
-	      // create the blog post
-	      console.log("FOO "+types.BLOG_TYPE);
-	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
-	      TopicModel.newInstanceNode(uuid.newUUID(), types.BOOKMARK_TYPE,
-	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.BOOKMARK_SM, icons.BOOKMARK, false, credentials, function(err, article) {
-	    	  var lang = blog.language;
-	    	  if (!lang) {lang = "en";}
-	    	  var subj = blog.title;
-	    	  var body = blog.body;
-	    	  article.setSubject(subj,lang,userLocator);
-	    	  article.setBody(body,lang,userLocator);
-	    //	  console.log('BlogModel.create-2 '+article.toJSON());
-				myEnvironment.addRecentBlog(article.getLocator(),blog.title);
-	    	     // now deal with tags
-	          var tags = blog.tags;
-	          if (tags.length > 0 && tags.indexOf(',') > -1) {
-	            var tagList = tags.split(',');
-	            TagModel.processTagList(tagList, userTopic, article, credentials, function(err,result) {
-	              console.log('NEW_POST-1 '+result);
-	              //result could be an empty list;
-	              //TagModel already added Tag_Doc and Doc_Tag relations
-	              console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-	              Dataprovider.putNode(article, function(err,data) {
-	                console.log('ARTICLES_CREATE-3 '+err);	  
-	                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-	                console.log('ARTICLES_CREATE-3b '+userTopic);	  
-
-	                TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                      callback(err,article.getLocator());
-	                 }); //r1
-	              }); //putnode 		  
-	        	}); // processtaglist
-	          } else {
-	            TagModel.processTag(tags, userTopic, article, credentials, function(err,result) {
-	              console.log('NEW_POST-2 '+result);
-	              //result is a list of tags already related to doc and user
-	              console.log("ARTICLES_CREATE_22 "+JSON.stringify(article));
-	              Dataprovider.putNode(article, function(err,data) {
-	                console.log('ARTICLES_CREATE-33 '+err);	  
-	                if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
-	                TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	                		userTopic.getLocator(),
-	                    		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                      callback(err,article.getLocator());
-	                 }); //r1
-	              }); //putNode
-	            });//processTags
-	          } // else      	
-	      });
-	    });
+	    var url = blog.url;
+	    var userTopic
+	      , bookmarkTopic;
+	    var error = '';
+	    //get the user
+	    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,utpx) {
+	      userTopic = utpx;
+	      if (err) {error+=err;}
+	      topicMapEnvironment.logDebug('BookmarkModel.create- '+userLocator+' | '+userTopic.toJSON());
+	      //see if the bookmark exists
+	      Dataprovider.getNodeByURL(url, credentials, function(err,dNode) {
+		      if (err) {error+=err;}
+		      var lox;
+		      //test data to see if it's a proxy
+		      try {
+		    	  lox = dNode.getLocator();
+		      } catch (err) {}
+		      topicMapEnvironment.logDebug("BookmarkModel.create-1 "+url+" "+lox);
+		      if (lox) {
+		    	  bookmarkTopic = dNode;
+		    	  //MAKE POSITION
+		    	  //TAGS to Bookmark and Position
+		    	  self.createPositionAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
+				      if (err) {error+=err;}
+		    		  callback(error,result);
+		    	  });
+		      } else {
+		    	  //create the bookmark
+			      TopicModel.newInstanceNode(uuid.newUUID(), types.BOOKMARK_TYPE,
+				      		"", "", constants.ENGLISH, userLocator,
+				      		icons.BOOKMARK_SM, icons.BOOKMARK, false, credentials, function(err, article) {
+			    	  topicMapEnvironment.logDebug("BookmarkModel.create-2 "+err+" "+article);
+				      if (err) {error+=err;}
+				      bookmarkTopic = article;
+			    	  var lang = blog.language;
+			    	  if (!lang) {lang = "en";}
+			    	  var subj = blog.title;
+			    	  article.setSubject(subj,lang,userLocator);
+			    	  article.setResourceUrl(url);
+					  myEnvironment.addRecentBookmark(bookmarkTopic.getLocator(),blog.title);
+					  Dataprovider.putNode(bookmarkTopic, function(err,data) {
+					      if (err) {error+=err;}
+				    	  //MAKE POSITION
+				    	  //TAGS to Bookmark and Position
+				    	  self.createPositionAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
+						      if (err) {error+=err;}
+				    		  callback(error,result);
+				    	  });						  
+					  });
+			      });
+			  }
+		    }); //getNodeByURL  	  
+	      }); //getNodeByLocator
 	  },
 	  
 	  self.listBlogPosts = function(start, count, credentials, callback) {
@@ -103,7 +172,7 @@ var BookmarkModel =  module.exports = function(environment) {
 	   */
 	  self.fillDatatable = function(credentials, callback) {
 		  self.listBlogPosts(0,100,credentials,function(err,result) {
-		      console.log('ROUTES/blog '+err+' '+result);
+		      console.log('ROUTES/bookmark '+err+' '+result);
 	    	  CommonModel.fillDatatable(result, "bookmark/", function(data) {
 	    		  callback(data);
 	    	  });

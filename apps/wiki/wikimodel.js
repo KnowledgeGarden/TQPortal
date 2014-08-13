@@ -106,7 +106,7 @@ var WikiModel =  module.exports = function(environment) {
     					if (err) {console.log('ARTICLES_CREATE-3a '+err)}
     					console.log('ARTICLES_CREATE-3b '+userTopic);	 
 
-    					TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+    					TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
     							userTopic.getLocator(),
     							icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
     						if (err) {console.log('ARTICLES_CREATE-3d '+err);}
@@ -123,7 +123,7 @@ var WikiModel =  module.exports = function(environment) {
     				Dataprovider.putNode(article, function(err,data) {
     					console.log('ARTICLES_CREATE-33 '+err);	  
     					if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
-    					TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+    					TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
     							userTopic.getLocator(),
     							icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
     						if (err) {console.log('ARTICLES_CREATE-3d '+err);}

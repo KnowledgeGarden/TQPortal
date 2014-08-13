@@ -46,6 +46,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	app.get('/tag/:id', isPrivate,function(req,res) {
 		var q = req.params.id;
 		console.log('TAGrout '+q);
+		//there may be a ringing from the lists, so we trap it here
+		if (q === "ajaxptopicnode") {return;}
 		var credentials = []; 
 		if (req.user) {credentials = req.user.credentials;}
 		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
@@ -54,10 +56,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			var details = result.getDetails(constants.ENGLISH);
 			var userid = result.getCreatorId();
 			// paint docs
-			var docs = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+			var docs = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
 	//		console.log("Tags.XXX "+JSON.stringify(docs));
 			// paint users
-			var users = result.listRelationsByRelationType(types.TAG_CREATOR_RELATION_TYPE);
+			var users = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE);
 			var date = result.editedAt;
 			var data = environment.getCoreUIData(req);
 			data.title = title;

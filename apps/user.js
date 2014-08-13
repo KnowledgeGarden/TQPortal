@@ -134,6 +134,8 @@ app.get('/user/ajaxptopicnode/:id', function(req, res) {
   app.get('/user/:id', isPrivate,function(req,res) {
 	var q = req.params.id;
 	console.log('USERrout '+q);
+	//there may be a ringing from the lists, so we trap it here
+	if (q === "ajaxptopicnode") {return;}
 	var credentials = [];
     var usr = req.user;
     if (usr) { credentials = usr.credentials;}
@@ -143,9 +145,9 @@ app.get('/user/ajaxptopicnode/:id', function(req, res) {
 		
 		var userid = result.getCreatorId();
 		// paint tags
-		var tags = result.listRelationsByRelationType(types.TAG_CREATOR_RELATION_TYPE); //types.TAG_DOCUMENT_RELATION_TYPE);
+		var tags = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE); //types.TAG_DOCUMENT_RELATION_TYPE);
 		// paint docs
-		var docs = result.listRelationsByRelationType(types.CREATOR_DOCUMENT_RELATION_TYPE);
+		var docs = result.listPivotsByRelationType(types.CREATOR_DOCUMENT_RELATION_TYPE);
 		var date = result.editedAt;
 		var data = myEnvironment.getCoreUIData(req);
   	    var canEdit = self.canEdit(result,credentials);

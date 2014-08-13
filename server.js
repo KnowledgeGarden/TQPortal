@@ -79,6 +79,8 @@ var Environment = new env(function(err,env) {
   http.createServer(app).listen(app.get("port"), function() {
     console.log("Express server listening on port " + app.get("port"));
   });
+  //add a socket for chat rooms
+  var io = require('socket.io')(http);
 
 });
 

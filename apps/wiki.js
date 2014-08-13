@@ -136,7 +136,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	      var details = result.getBody(constants.ENGLISH).theText;
 	      var userid = result.getCreatorId();
 	      // paint tags
-	      var tags = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+	      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
 	      console.log("Wiki.XXX "+JSON.stringify(tags));
     	  var canEdit = self.canEdit(result,credentials);
     	  data.canEdit = canEdit;

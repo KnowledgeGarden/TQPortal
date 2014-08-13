@@ -5,7 +5,7 @@
     <title>TopicQuests Foundation</title>
      <link href="/css/jbootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
      <link href="/css/bootswatch.min.css" media="all" rel="stylesheet" type="text/css" />
-    <link href="/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" /> 
+     <link href="/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" /> 
      <link href="/css/jquery.dataTables.css" media="all" rel="stylesheet" type="text/css" />
      <link href="/css/summernote.css" media="all" rel="stylesheet" type="text/css" />
      
@@ -221,7 +221,20 @@
 				   { "title": "Author" },
 				   { "title": "Date" }]
         });
-      //Blogs
+       //Bookmark
+       $('#bookmarktable').dataTable({
+         "bProcessing" : true,
+         "bServerSide" : true,
+         "searching": false,
+         "paging":   true,
+         "ajax" : 'ajaxbookmark',
+         "Columns" : [
+           { "title": "Subject" },
+           { "title": "Author" },
+           { "title": "Date" }]
+        });
+ 
+      //Wiki
        $('#wikitable').dataTable({
          "bProcessing" : true,
          "bServerSide" : true,
@@ -404,6 +417,7 @@
  <img src="/images/TopicQuestsLogo_sm.png">
  </footer>
  </div>
+ <!-- <script src="/socket.io/socket.io.js"></script> -->
  <script src="/js/bootstrap.js"></script>
  <script src="/js/summernote.js"></script>
 </body>

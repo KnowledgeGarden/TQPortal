@@ -152,7 +152,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	      }
     	  var userid = result.getCreatorId();
     	  // paint tags
-    	  var tags = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+    	  var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
     	  console.log("Blogs.XXX "+JSON.stringify(tags));
     	  var canEdit = self.canEdit(result,credentials);
     	  data.canEdit = canEdit;
@@ -160,6 +160,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     	  data.editLocator = "/blog/edit/"+result.getLocator();
     	  var date = result.getLastEditDate();
     	  data.locator = q;
+    	  if (result.getResourceUrl()) {
+    		  data.url = result.getResourceUrl();
+    	  }
     	  data.title = title;
     	  data.body = details;
     	  data.tags = tags;

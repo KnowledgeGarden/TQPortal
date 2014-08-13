@@ -10,6 +10,7 @@ var acls = require('./blog/blogmodel')
   , admn = require("./admin/adminmodel")
   , wiki = require("./wiki/wikimodel")
   , conv = require("./conversation/conversationmodel")
+  , bkmk = require("./bookmark/bookmarkmodel")
   , usr = require('./user/usermodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
@@ -20,6 +21,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   var TagModel = new tag(environment);
   var AdminModel = new admn(environment);
   var ConversationModel = new conv(environment);
+  var BookmarkModel = new bkmk(environment);
   console.log("Starting AjaxData");
 	
   /**
@@ -38,6 +40,21 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       res.json(data);
     });
   });
+  
+  app.get('/ajaxbookmark', function(req, res) {
+//    console.log("AJAX_DATA GETBLOG "+JSON.stringify(req.body));
+    var credentials = [];
+    var usr = req.user;
+    if (usr) {credentials = usr.credentials;}
+    BookmarkModel.fillDatatable(credentials, function(data) {
+ //     console.log("AJAX_DATA GETBLOG "+JSON.stringify(data));
+      try {
+        res.set('Content-type', 'text/json');
+      }  catch (e) { }
+      res.json(data);
+    });
+  });
+
   /**
    * Support the wikihome.handlebars view
    */

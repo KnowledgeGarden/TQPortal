@@ -140,13 +140,13 @@ var TagModel = module.exports = function(environment) {
 	//largeImagePath, isTransclude, isPrivate, credentials, callback
 	//myEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
 	topicMapEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
-	TopicModel.relateExistingNodes(theUser,theTag,types.TAG_CREATOR_RELATION_TYPE,
+	TopicModel.relateExistingNodesAsPivots(theUser,theTag,types.TAG_CREATOR_RELATION_TYPE,
 			theUser.getLocator(),
 			icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
 		if (err) {error+=err;}
 		//myEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
 		topicMapEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
-		TopicModel.relateExistingNodes(theTag,theDoc,types.TAG_DOCUMENT_RELATION_TYPE,
+		TopicModel.relateExistingNodesAsPivots(theTag,theDoc,types.TAG_DOCUMENT_RELATION_TYPE,
 				theUser.getLocator(),
 				icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
 			if (err) {error+=err;}

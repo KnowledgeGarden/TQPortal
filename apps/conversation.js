@@ -173,11 +173,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	      }
 	      var userid = result.getCreatorId();
 	      // paint tags
-	      var tags = result.listRelationsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+	      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
 	      console.log("Conversation.XXX "+JSON.stringify(tags));
 	     
 	      var date = result.getLastEditDate();
 	      var data = environment.getCoreUIData(req);
+    	  if (result.getResourceUrl()) {
+    		  data.url = result.getResourceUrl();
+    	  }
     	  var canEdit = self.canEdit(result,credentials);
     	  data.canEdit = canEdit;
     	  data.isNotEdit = true;

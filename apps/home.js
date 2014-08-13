@@ -47,6 +47,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     data.blogs = HomeModel.listRecentBlogs();
     data.wikis = HomeModel.listRecentWikis();
     data.conv = HomeModel.listRecentConversations();
+    data.bkmks = HomeModel.listRecentBookmarks();
     console.log("GETHOME "+JSON.stringify(data));
     res.render(idx, data);
 	  
