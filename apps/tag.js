@@ -8,6 +8,7 @@ var tagModel = require('./tag/tagmodel')
 
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
+	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var CommonModel = environment.getCommonModel();
@@ -42,69 +43,75 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	app.get('/tag', isPrivate,function(req,res) {
 		res.render('tagindex',environment.getCoreUIData(req));
 	});
-		
-	app.get('/tag/:id', isPrivate,function(req,res) {
-		var q = req.params.id;
-		console.log('TAGrout '+q);
-		//there may be a ringing from the lists, so we trap it here
-		if (q === "ajaxptopicnode") {return;}
-		var credentials = []; 
-		if (req.user) {credentials = req.user.credentials;}
-		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-			console.log('TAGrout-1 '+err+" "+result);
-			var title = result.getLabel(constants.ENGLISH);
-			var details = result.getDetails(constants.ENGLISH);
-			var userid = result.getCreatorId();
-			// paint docs
-			var docs = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-	//		console.log("Tags.XXX "+JSON.stringify(docs));
-			// paint users
-			var users = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE);
-			var date = result.editedAt;
-			var data = environment.getCoreUIData(req);
-			data.title = title;
-			data.body = details;
-			data.docs = docs;
-			data.users = users;
-			data.date = date;
-			data.source = result.toJSON();
-			data.image = "/images/tag.png";
-		  	  data.myLocator = q;
-
-			//TODO paint provenance creator Id setup to point to user
-			console.log('TAGrout-2 '+JSON.stringify(data));
-			res.render('topic', data);
-		});
-	});
-
-	app.get('/tag/ajaxtopicnode/:id', function(req, res) {
+	
+	app.get("/tag/ajaxfetch/:id", isPrivate, function(req,res) {
 		    var q = req.params.id;
-		    console.log('AJAXTOPICNODE '+q);
+			var lang = req.query.language;
+		    console.log('TAGajax '+q+" "+lang);
 		    var credentials = [];
-		    if (req.user) { credentials = req.user.credentials;}
-		    //get all parents
-		   CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
-		        try {
-		            res.set('Content-type', 'text/json');
-		          }  catch (e) { }
-		          res.json(result);
+		    var usr = req.user;
+		    if (usr) { credentials = usr.credentials;}
+		    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+		      console.log('TAGrout-1 '+err+" "+result);
+		      var data = myEnvironment.getCoreUIData(req);
+				    var contextLocator;
+				    if (req.query.contextLocator) {
+				    	contextLocator = req.query.contextLocator;
+				    } else {
+				    	//if it's a map node, use that
+				    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+				    		contextLocator = result.getLocator();
+				    	}
+				    	//TODO
+				    	//Otherwise, grab some context from the node
+				    }
+			    	  var canEdit = false;
+			    	  var clipboard = req.session.clipboard;
+			    	  
+			    	  var editLocator = "/tag/edit/"+result.getLocator();
+			    	  
 
-		   });
-	});
+				      var docs = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+				      if (!docs) {
+				    	  docs = [];
+				      }
+				      var users = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE);
+				      if (!users) {
+				    	  users = [];
+				      }
+		      CommonModel.generateViewFirstData(result, [], docs,users,credentials, canEdit, data, contextLocator, "/tag/", clipboard, lang, function(json) {
+				  //get all parents
+				  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
+					  if (cresult) {
+						  json.ccontable = cresult;
+					  }
+					  //get just my parents in particular context
+					  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+						  if (presult) {
+							  json.pcontable = presult;
+						  }
+					      console.log("XXXX "+JSON.stringify(json));
+					      	
+					        try {
+					            res.set('Content-type', 'text/json');
+					          }  catch (e) { }
+					          res.json(json);
+					  });
 
-	app.get('/tag/ajaxptopicnode/:id', function(req, res) {
-		    var q = req.params.id;
-		    console.log('AJAXTOPICNODE '+q);
-		    var credentials = [];
-		    if (req.user) { credentials = req.user.credentials;}
-		    //get just my children
-		    CommonModel.fillConversationTable(false, false,q,q,credentials,function(err,result) {
-		        try {
-		            res.set('Content-type', 'text/json');
-		          }  catch (e) { }
-		          res.json(result);
-
+				  });
+		    	  
+		      });
 		    });
-	});
+		      
+	  });		
+	app.get('/tag/:id', isPrivate,function(req,res) {
+	    var q = req.params.id;
+	    console.log('TAGrout '+q);
+	    var data = myEnvironment.getCoreUIData(req);
+	    data.query = "/tag/ajaxfetch/"+q;
+	    data.language = "en";
+	    data.type = "foo";
+	    res.render('vf_topic', data);
+  });
 
 };

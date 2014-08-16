@@ -33,6 +33,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		return result;
 	};
 	
+	
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
@@ -93,101 +94,79 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
   });
   
-  app.get('/blog/ajaxtopicnode/:id', function(req, res) {
+  app.get("/blog/ajaxfetch/:id", isPrivate, function(req,res) {
 	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
+		var lang = req.query.language;
+	    console.log('BLOGajax '+q+" "+lang);
 	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    //get all parents
-	    CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
+	    var usr = req.user;
+	    if (usr) { credentials = usr.credentials;}
+	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+	      console.log('BLOGrout-1 '+err+" "+result);
+	      var data = myEnvironment.getCoreUIData(req);
+			    var contextLocator;
+			    if (req.query.contextLocator) {
+			    	contextLocator = req.query.contextLocator;
+			    } else {
+			    	//if it's a map node, use that
+			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+			    		contextLocator = result.getLocator();
+			    	}
+			    	//TODO
+			    	//Otherwise, grab some context from the node
+			    }
+		    	  var canEdit = self.canEdit(result,credentials);
+		    	  var clipboard = req.session.clipboard;
+		    	  
+		    	  var editLocator = "/blog/edit/"+result.getLocator();
+		    	  
 
+			      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+			      if (!tags) {
+			    	  tags = [];
+			      }
+
+	      CommonModel.generateViewFirstData(result, tags, [],[],credentials, canEdit, data, contextLocator, "/blog/", clipboard, lang, function(json) {
+	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
+	    	  json.myLocator = q;
+			  //get all parents
+			  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
+				  if (cresult) {
+					  json.ccontable = cresult;
+				  }
+				  //get just my parents in particular context
+				  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+					  if (presult) {
+						  json.pcontable = presult;
+					  }
+				      console.log("XXXX "+JSON.stringify(json));
+				      	
+				        try {
+				            res.set('Content-type', 'text/json');
+				          }  catch (e) { }
+				          res.json(json);
+				  });
+
+			  });
+	    	  
+	      });
 	    });
+	      
   });
-  app.get('/blog/ajaxptopicnode/:id', function(req, res) {
-	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
-	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    var contxt = req.query.contextLocator;
-	    //get just my children
-	    CommonModel.fillConversationTable(false, false,q,contxt,credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
-
-	    });
-  });
-
+  
+  /**
+   * Fill ViewFirst
+   */
   app.get('/blog/:id', isPrivate,function(req,res) {
-    var q = req.params.id;
-    console.log('BLOGrout '+q);
-    var credentials = [];
-    var usr = req.user;
-    if (usr) { credentials = usr.credentials;}
-    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-      console.log('BLOGrout-1 '+err+" "+result);
-      var data = myEnvironment.getCoreUIData(req);
-      if (result) {
-		    var contextLocator;
-		    if (req.query.contextLocator) {
-		    	contextLocator = req.query.contextLocator;
-		    } else {
-		    	//if it's a map node, use that
-		    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
-		    		contextLocator = result.getLocator();
-		    	}
-		    	//TODO
-		    	//Otherwise, grab some context from the node
-		    }
-    	  //This is an AIR
-    	  var title = result.getSubject(constants.ENGLISH).theText;
-	      var details = "";
-	      if (result.getBody(constants.ENGLISH)) {
-	    	  details = result.getBody(constants.ENGLISH).theText;
-	      }
-    	  var userid = result.getCreatorId();
-    	  // paint tags
-    	  var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-    	  console.log("Blogs.XXX "+JSON.stringify(tags));
-    	  var canEdit = self.canEdit(result,credentials);
-    	  data.canEdit = canEdit;
-    	  data.isNotEdit = true;
-    	  data.editLocator = "/blog/edit/"+result.getLocator();
-    	  var date = result.getLastEditDate();
-    	  data.locator = q;
-    	  if (result.getResourceUrl()) {
-    		  data.url = result.getResourceUrl();
-    	  }
-    	  data.title = title;
-    	  data.body = details;
-    	  data.tags = tags;
-    	  data.source = result.toJSON();
-    	  data.date = date;
-    	  console.log("BLOGrout-X "+data.canEdit+" "+data.editLocator);
-    	  data.user = userid;
-    	  data.image = result.getImage();
-    	  //TODO NOT sure we want to transclude blog posts
-    	  data.myLocator = q;
-    	  data.myLocatorXP = q+"?contextLocator="+contextLocator;
-	      if (credentials.length > 0 && req.session.clipboard === "") {
-	    	  data.transclude = "yes";
-	      }
-	      if (contextLocator) {
-	    	  data.contextLocator = contextLocator;
-	    	  //TODO this must be used in the transclude button
-	      }
-
-    	  console.log('BLOGrout-2 '+JSON.stringify(data));
-      }
-      res.render('topic', data);
-    });
+	    var q = req.params.id;
+	    console.log('BLOGrout '+q);
+	    var data = myEnvironment.getCoreUIData(req);
+	    data.query = "/blog/ajaxfetch/"+q;
+	    data.language = "en";
+	    data.type = "foo";
+	    res.render('vf_topic', data);
   });
-
+  
   /**
    * Function which ties the app-embedded route back to here
    */

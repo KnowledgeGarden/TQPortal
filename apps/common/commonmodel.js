@@ -26,7 +26,13 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		      for (var i=0;i<len;i++) {
 		        p = proxyList[i];
 		        m = [];
-		        url = "<a href='"+urx+p.getLocator()+"'>"+p.getSubject(constants.ENGLISH).theText+"</a>";
+		        var subj = "";
+		        if (p.getSubject(constants.ENGLISH)) {
+		        	subj = p.getSubject(constants.ENGLISH).theText;
+		        } else {
+		        	subj = p.getLabel(constants.ENGLISH);
+		        }
+		        url = "<a href='"+urx+p.getLocator()+"'>"+subj+"</a>";
 		        m.push(url);
 		        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
 		        m.push(url);
@@ -53,7 +59,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	  self.fillConversationTable = function(isConversation, isChild, locator,contextLocator,credentials,callback) {
 		  var TheResult = {};
 		  Dataprovider.getNodeByLocator(locator,credentials, function(err,data) {
-			  console.log("CommonModel.fillConversationTable- "+err+" "+data);
+			  topicMapEnvironment.logDebug("CommonModel.fillConversationTable- "+err+" "+data);
 			  var snappers;
 			  if (isChild) {
 				  if (isConversation) {
@@ -76,7 +82,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 					snappers = data.listChildNodes();
 				  }
 			  }
-			  topicMapEnvironment.logDebug("CommonModel.fillConversationTable- "+isChild+" "+snappers+" "+data.toJSON());
+			  topicMapEnvironment.logDebug("CommonModel.fillConversationTable-1 "+isChild+" "+snappers+" "+data.toJSON());
 			  console.log("CommonModel.fillConversationTable-1 "+isChild+" "+snappers);
 		      var p; //the struct
 		      var m; //the individual message
@@ -102,6 +108,90 @@ var CommonModel = module.exports = function(environment, tmenv) {
 			  topicMapEnvironment.logDebug("CommonModel.fillConversationTable+ "+isChild+" "+JSON.stringify(TheResult));
 			  return callback(err,TheResult);
 		  });
+	  },
+	  
+	  /**
+	   * 
+	   * @param theNode to be painted
+	   * @param tagList can be []
+	   * @param docList can be []
+	   * @param userList can be []
+	   * @param credentials
+	   * @param canEdit  boolean
+	   * @param coreData for this user and this request
+	   * @param contextLocator
+	   * @param app = "/blog/", "/bookmark/" etc
+	   * @param language
+	   * @callback signature (result) which is the data to paint
+	   */
+	  self.generateViewFirstData = function(theNode, tagList, docList, userList, credentials, 
+			  canEdit, coreData, contextLocator, app, clipboard, language, callback) {
+		  var data = coreData;
+		  var q = theNode.getLocator();
+    	  data.canEdit = canEdit;
+    	  data.isNotEdit = true;
+    	  var editLocator = app+"edit/"+q;
+    	  var date = theNode.getLastEditDate();
+    	  data.locator = q;
+    	  if (theNode.getResourceUrl()) {
+    		  data.url = "<a href=\""+theNode.getResourceUrl()+"\"><b>URL:&nbsp;"+theNode.getResourceUrl()+"</b></a>";
+    	  }
+    	  
+    	  console.log("ZZZZ "+language+" | "+JSON.stringify(theNode.getSubject(language)));
+    	  var title = "";
+    	  if (theNode.getSubject(language)) {
+    		  title = theNode.getSubject(language).theText;
+    	  } else if (theNode.getLabel("language")) {
+    		  title = theNode.getLabel("language");
+    	  }
+    	  data.title = "<h2 class=\"blog-post-title\"><img src="+theNode.getImage()+">&nbsp;"+title+"</h2>"
+	      var details = "";
+	      if (theNode.getBody(language)) {
+	    	  details = theNode.getBody(language).theText;
+	      } else if (theNode.getDetails(language)) {
+	    	  details = theNode.getDetails(language);
+	      }
+    	  data.body = details;
+    //	  data.tags = tags;
+    	  var edithtml = "";
+    	  if (canEdit) {
+    		  edithtml = "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\""+editLocator+"\"><b>Edit</b></a>";
+    	  }
+    	  data.user = theNode.getLastEditDate()+"&nbsp;&nbsp;<a href=\"/user/"+theNode.getCreatorId()+"\">"+theNode.getCreatorId()+"</a>"+edithtml;
+    	  
+	      if (contextLocator) {
+	    	  data.contextLocator = contextLocator;
+	    	  //TODO this must be used in the transclude button
+	      }
+	      data.source = theNode.toJSON();
+	      var transcludehtml="";
+	      if (credentials.length > 0 && clipboard === "") {
+	    	  transcludehtml = 
+	    		  "<form method=\"post\" action=\"/conversation/remember\"  role=\"form\" class=\"form-horizontal\">";
+	    	  transcludehtml +=
+	    		  "<input type=\"hidden\" name=\"transcludeLocator\" value=\"\">";
+	    	  transcludehtml +=
+	    		  "<input type=\"hidden\" name=\"myLocator\" value=\""+q+"\">";
+	    	  transcludehtml +=	  
+	    		  "<input type=\"hidden\" name=\"contextLocator\" value=\""+contextLocator+"\">";
+	    	  transcludehtml +=
+	    		  "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
+	    	  transcludehtml +=
+	    		  "<button type=\"submit\" class=\"btn btn-primary\">Remember This Node For Transclusion</button>";
+	    	  transcludehtml += "</div></div></form>";
+	      }
+	      data.transclude = transcludehtml;
+	      if (tagList.length > 0) {
+	    	  data.tags = tagList;
+	      }
+	      if (userList.length > 0) {
+	    	  data.users = userList;
+	      }
+	      if (docList.length > 0) {
+	    	  data.documents = docList;
+	      }
+
+	      return callback(data);
 	  }
 	  
 };

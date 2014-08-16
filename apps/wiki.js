@@ -83,89 +83,80 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		res.render('wikiform', data); //,
 	});
   });
-  app.get('/wiki/ajaxtopicnode/:id', function(req, res) {
+  
+  app.get("/wiki/ajaxfetch/:id", isPrivate, function(req,res) {
 	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
+		var lang = req.query.language;
+	    console.log('WIKIajax '+q+" "+lang);
 	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
-
-	    });
-  });
-  app.get('/wiki/ajaxptopicnode/:id', function(req, res) {
-	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
-	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    var contxt = req.query.contextLocator;
-	    CommonModel.fillConversationTable(false, false,q,contxt,credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
-
-	    });
-  });
-
-  app.get('/wiki/:id', isPrivate,function(req,res) {
-	  var usx = req.user;
-	    var q = req.params.id;
-	    console.log('WIKIrout '+q);
-	    var credentials = [];
-	    if (usx) {credentials = usx.credentials;}
+	    var usr = req.user;
+	    if (usr) { credentials = usr.credentials;}
 	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-	      console.log('WIKIrout-1 '+err+" "+JSON.stringify(result)); //result.toJSON);
-	    //  console.log('WIKIrout-1a '+err+" "+result.toJSON()); //result.toJSON);
-		    var contextLocator;
-		    if (req.query.contextLocator) {
-		    	contextLocator = req.query.contextLocator;
-		    } else {
-		    	//if it's a map node, use that
-		    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
-		    		contextLocator = result.getLocator();
-		    	}
-		    	//TODO
-		    	//Otherwise, grab some context from the node
-		    }
+	      console.log('WIKIrout-1 '+err+" "+result);
 	      var data = myEnvironment.getCoreUIData(req);
-	      var title = result.getSubject(constants.ENGLISH).theText;
-	      var details = result.getBody(constants.ENGLISH).theText;
-	      var userid = result.getCreatorId();
-	      // paint tags
-	      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-	      console.log("Wiki.XXX "+JSON.stringify(tags));
-    	  var canEdit = self.canEdit(result,credentials);
-    	  data.canEdit = canEdit;
-    	  data.isNotEdit = true;
-    	  data.editLocator = "/wiki/edit/"+result.getLocator();
-    	  data.myLocatorXP = q+"?contextLocator="+contextLocator;
-	      if (credentials.length > 0 && req.session.clipboard === "") {
-	    	  data.transclude = "yes";
-	      }
-	      if (contextLocator) {
-	    	  data.contextLocator = contextLocator;
-	    	  //TODO this must be used in the transclude button
-	      }
+			    var contextLocator;
+			    if (req.query.contextLocator) {
+			    	contextLocator = req.query.contextLocator;
+			    } else {
+			    	//if it's a map node, use that
+			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+			    		contextLocator = result.getLocator();
+			    	}
+			    	//TODO
+			    	//Otherwise, grab some context from the node
+			    }
+		    	  var canEdit = self.canEdit(result,credentials);
+		    	  var clipboard = req.session.clipboard;
+		    	  
+		    	  var editLocator = "/wiki/edit/"+result.getLocator();
+		    	  
 
-	      var date = result.getLastEditDate();
-	      data.title = title;
-	      data.body = details;
-	      data.tags = tags;
-	      data.source = result.toJSON();
-	      data.date = date;
-	      data.user = userid;
-	   	  data.locator = q;
-    	  data.myLocator = q;
+			      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+			      if (!tags) {
+			    	  tags = [];
+			      }
 
-	      data.image = result.getImage();
-	      console.log('WIKIrout-2 '+JSON.stringify(data));
-	      res.render('topic', data);
+	      CommonModel.generateViewFirstData(result, tags, [],[],credentials, canEdit, data, contextLocator, "/wiki/", clipboard, lang, function(json) {
+	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
+	    	  json.myLocator = q;
+			  //get all parents
+			  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
+				  if (cresult) {
+					  json.ccontable = cresult;
+				  }
+				  //get just my parents in particular context
+				  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+					  if (presult) {
+						  json.pcontable = presult;
+					  }
+				      console.log("XXXX "+JSON.stringify(json));
+				      	
+				        try {
+				            res.set('Content-type', 'text/json');
+				          }  catch (e) { }
+				          res.json(json);
+				  });
+
+			  });
+	    	  
+	      });
 	    });
-	  });
+	      
+  });
+  
+  /**
+   * Fill ViewFirst
+   */
+  app.get('/wiki/:id', isPrivate,function(req,res) {
+	    var q = req.params.id;
+	    console.log('BLOGrout '+q);
+	    var data = myEnvironment.getCoreUIData(req);
+	    data.query = "/wiki/ajaxfetch/"+q;
+	    data.language = "en";
+	    data.type = "foo";
+	    res.render('vf_topic', data);
+  });
+
   
   app.get('/wiki/edit/:id', isLoggedIn, function(req,res) {
 		var q = req.params.id;

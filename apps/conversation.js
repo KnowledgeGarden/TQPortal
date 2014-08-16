@@ -144,103 +144,100 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			res.render('conversationform', data); //,
 		});
   });
-
-  app.get('/conversation/:id', isPrivate,function(req,res) {
+  app.get("/conversation/ajaxfetch/:id", isPrivate, function(req,res) {
 	    var q = req.params.id;
-	    //passed in by ?context="..."
+		var lang = req.query.language;
+	    console.log('CONVERSATIONajax '+q+" "+lang);
 	    var credentials = [];
 	    var usr = req.user;
 	    if (usr) { credentials = usr.credentials;}
 	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-	      console.log('CONVERSATIonrout-1 '+err+" "+result.toJSON());
-	      //This stuff about contextLocator is crucial
-		    var contextLocator;
-		    if (req.query.contextLocator) {
-		    	contextLocator = req.query.contextLocator;
-		    } else {
-		    	//if it's a map node, use that
-		    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
-		    		contextLocator = result.getLocator();
-		    	}
-		    	//TODO
-		    	//Otherwise, grab some context from the node
-		    }
-		    topicMapEnvironment.logDebug("Conversation.getConversation "+q+" | "+contextLocator);
-	      var title = result.getSubject(constants.ENGLISH).theText;
-	      var details = "";
-	      if (result.getBody(constants.ENGLISH)) {
-	    	  details = result.getBody(constants.ENGLISH).theText;
-	      }
-	      var userid = result.getCreatorId();
-	      // paint tags
-	      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-	      console.log("Conversation.XXX "+JSON.stringify(tags));
-	     
-	      var date = result.getLastEditDate();
-	      var data = environment.getCoreUIData(req);
-    	  if (result.getResourceUrl()) {
-    		  data.url = result.getResourceUrl();
-    	  }
-    	  var canEdit = self.canEdit(result,credentials);
-    	  data.canEdit = canEdit;
-    	  data.isNotEdit = true;
-    	  data.editLocator = "/conversation/edit/"+result.getLocator();
-	      data.title = title;
-	      data.body = details;
-	      data.tags = tags;
-	      data.source = result.toJSON();
-	      if (contextLocator) {
-	    	  data.contextLocator = contextLocator;
-	    	  //TODO this must be used in the transclude button
-	      }
-	      data.date = date;
-	      data.user = userid;
-	      data.image = result.getImage();
-    	  data.myLocator = q;
-    	  data.myLocatorXP = q+"?contextLocator="+contextLocator;
-    	  //This is to transclude any selected node as a child node on this node
-	      if (credentials.length > 0 && req.session.clipboard === "") {
-	    	  data.transclude = "yes";
-	      } else {
-	    	  data.transcludeLocator = req.session.clipboard;
-	    	  //conversationmodel must clear this when it's used.
-	      }
-	      console.log('CONVERSATIonrout-2 '+JSON.stringify(data));
-	      res.render('conversationnode', data);
-	    });
-	  });
-  
-  app.get('/conversation/ajaxtopicnode/:id', function(req, res) {
-	    var q = req.params.id;
-	    console.log('AJAXCONNODE '+q);
-	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    //get all parents
-	    CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
+	      console.log('CONVERSATIONajax-1 '+err+" "+result);
+	      var data = myEnvironment.getCoreUIData(req);
+			    var contextLocator;
+			    if (req.query.contextLocator) {
+			    	contextLocator = req.query.contextLocator;
+			    } else {
+			    	//if it's a map node, use that
+			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+			    		contextLocator = result.getLocator();
+			    	}
+			    	//TODO
+			    	//Otherwise, grab some context from the node
+			    }
+		    	  var canEdit = self.canEdit(result,credentials);
+		    	  var clipboard = req.session.clipboard;
+		    	  
+		    	  var editLocator = "/conversation/edit/"+result.getLocator();
+		    	  
 
-	    });
+			      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+			      if (!tags) {
+			    	  tags = [];
+			      }
 
+	      CommonModel.generateViewFirstData(result, tags, [],[],credentials, canEdit, data, contextLocator, "/conversation/", clipboard, lang, function(json) {
+	    	  if (credentials.length > 0 && req.session.clipboard !="") {
+	    		  var transcludeLocator = req.session.clipboard;
+	    		  //conversationmodel must clear this when it's used.
+	    		  var htmx = "<form method=\"post\" action=\"/conversation/transclude\"  role=\"form\" class=\"form-horizontal\">";
+	    		  htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
+	    		  htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
+	    		  htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
+	    		  htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
+	    		  htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node</button>";
+	    		  htmx += "</div></div></form><p></p><hr>";
+	    		  json.transclude=htmx;
+	    	  }
+
+	    	  
+	    	  //TODO add response html here  {{#if isAuthenticated}}
+		      if (credentials.length > 0) {
+		    	  var htx = "<h2>Respond with these options...</h2>";
+		    	  htx += "<table width=\"100%\"><tbody><tr>";
+		    	  htx += "<td><center><a title=\"New Map: conversation branch\" href=\"/conversation/newMap/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/map.png\"></a></center</td>";
+		    	  htx += "<td><center><a title=\"New Question/Issue\" href=\"/conversation/newIssue/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/issue.png\"></a></center</td>";
+		    	  htx += "<td><center><a title=\"New Answer/Position\" href=\"/conversation/newPosition/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/position.png\"></a></center</td>";
+		    	  htx += "<td><center><a title=\"New Pro Argument\" href=\"/conversation/newPro/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/plus.png\"></a></center</td>";
+		    	  htx += "<td><center><a title=\"New Con Argument\" href=\"/conversation/newCon/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/minus.png\"></a></center</td>";
+		    	  htx += "</tr></tbody></table>";
+		    	  json.responsebuttons = htx;
+		      }
+			  //get all parents
+			  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
+				  if (cresult) {
+					  json.ccontable = cresult;
+				  }
+				  //get just my parents in particular context
+				  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+					  if (presult) {
+						  json.pcontable = presult;
+					  }
+				      console.log("XXXX "+JSON.stringify(json));
+				      	
+				        try {
+				            res.set('Content-type', 'text/json');
+				          }  catch (e) { }
+				          res.json(json);
+				  });
+
+			  });
+
+	    	  
+	      });
+	    });
+	      
   });
-  
-  app.get('/conversation/ajaxptopicnode/:id', function(req, res) {
+  app.get('/conversation/:id', isPrivate,function(req,res) {
 	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
-	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    var contxt = req.query.contextLocator;
-	    //get just my parents in particular context
-	    CommonModel.fillConversationTable(true, false,q,contxt,credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
+	    console.log('CONVERSATIONrout '+q);
+	    var data = myEnvironment.getCoreUIData(req);
+	    data.query = "/conversation/ajaxfetch/"+q;
+	    data.language = "en";
+	    data.type = "foo";
+	    res.render('vf_conversationnode', data);
+  });
 
-	    });
- });
 
   /**
    * Function which ties the app-embedded route back to here
@@ -259,12 +256,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   };
     
   var _newsomething = function(body,usx, what, parentLocator, callback) {
-	    var credentials = [];
-	    if (usx) {credentials = usx.credentials;}
-	    ConversationModel.createMap(body, usx, credentials, function(err,result) {
-	      callback(err,result);
-	    });
-	  };
+	var credentials = [];
+	if (usx) {credentials = usx.credentials;}
+	ConversationModel.createMap(body, usx, credentials, function(err,result) {
+		callback(err,result);
+	});
+  };
 
   app.post('/conversation', isLoggedIn, function(req,res) {
     var body = req.body;
@@ -299,22 +296,21 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   });
   
   app.post('/conversation/remember', isLoggedIn, function(req,res) {
-	  var body = req.body;
-	  topicMapEnvironment.logDebug("Conversation.postRemember "+JSON.stringify(body));
-	  var clip = req.body.myLocator;
-	  if (clip) {req.session.clipboard = clip;}
-	  return res.redirect('/conversation');
+	var body = req.body;
+	topicMapEnvironment.logDebug("Conversation.postRemember "+JSON.stringify(body));
+	var clip = req.body.myLocator;
+	if (clip) {req.session.clipboard = clip;}
+	return res.redirect('/conversation');
   });
   
   app.post('/conversation/transclude', isLoggedIn, function(req,res) {
-	  var credentials = req.user.credentials;
-	  var body = req.body;
-	  topicMapEnvironment.logDebug("Conversation.postTransclude "+JSON.stringify(body));
-	  req.session.clipboard = ""; //clear the clipboard
-	  //TODO body.transcludeLocator and body.myLocator determine this transclusion
-	  ConversationModel.performTransclude(body, credentials,function(err,result) {
-			return res.redirect('/conversation');
-		  
-	  });
+	var credentials = req.user.credentials;
+	var body = req.body;
+	topicMapEnvironment.logDebug("Conversation.postTransclude "+JSON.stringify(body));
+	req.session.clipboard = ""; //clear the clipboard
+	//TODO body.transcludeLocator and body.myLocator determine this transclusion
+	ConversationModel.performTransclude(body, credentials,function(err,result) {
+		return res.redirect('/conversation');
+	});
   });
 };

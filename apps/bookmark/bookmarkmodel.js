@@ -145,12 +145,17 @@ var BookmarkModel =  module.exports = function(environment) {
 					  myEnvironment.addRecentBookmark(bookmarkTopic.getLocator(),blog.title);
 					  Dataprovider.putNode(bookmarkTopic, function(err,data) {
 					      if (err) {error+=err;}
-				    	  //MAKE POSITION
-				    	  //TAGS to Bookmark and Position
-				    	  self.createPositionAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
-						      if (err) {error+=err;}
-				    		  callback(error,result);
-				    	  });						  
+					      TopicModel.relateExistingNodesAsPivots(userTopic,bookmarkTopic,types.CREATOR_DOCUMENT_RELATION_TYPE,
+				              		userTopic.getLocator(),
+				                  		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+					  			  if (err) {error += err;}
+					  			  //MAKE POSITION
+					  			  //TAGS to Bookmark and Position
+					  			  self.createPositionAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
+					  				  if (err) {error+=err;}
+					  				  callback(error,result);
+					  			  });
+					      });
 					  });
 			      });
 			  }

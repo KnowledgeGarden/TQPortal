@@ -108,17 +108,16 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 
 	    });
   });
-  
-  app.get('/bookmark/:id', isPrivate,function(req,res) {
+  app.get("/bookmark/ajaxfetch/:id", isPrivate, function(req,res) {
 	    var q = req.params.id;
-	    console.log('BOOKMARKrout '+q);
+		var lang = req.query.language;
+	    console.log('Bookmarkajax '+q+" "+lang);
 	    var credentials = [];
 	    var usr = req.user;
 	    if (usr) { credentials = usr.credentials;}
 	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-	      console.log('BOOKMARKrout-1 '+err+" "+result);
+	      console.log('Bookmarkrout-1 '+err+" "+result);
 	      var data = myEnvironment.getCoreUIData(req);
-	      if (result) {
 			    var contextLocator;
 			    if (req.query.contextLocator) {
 			    	contextLocator = req.query.contextLocator;
@@ -130,75 +129,77 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			    	//TODO
 			    	//Otherwise, grab some context from the node
 			    }
-	    	  //This is an AIR
-	    	  var title = result.getSubject(constants.ENGLISH).theText;
-		      var details = "";
-		      if (result.getBody(constants.ENGLISH)) {
-		    	  details = result.getBody(constants.ENGLISH).theText;
-		      }
-	    	  var userid = result.getCreatorId();
-	    	  // paint tags
-	    	  var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-	    	  var annotations = result.listPivotsByRelationType(types.DOCUMENT_ANNOTATION_RELATION_TYPE);
-	    	  console.log("Blogs.XXX "+JSON.stringify(tags));
-	    	  var canEdit = self.canEdit(result,credentials);
-	    	  data.canEdit = canEdit;
-	    	  data.isNotEdit = true;
-	    	  data.editLocator = "/blog/edit/"+result.getLocator();
-	    	  var date = result.getLastEditDate();
-	    	  data.locator = q;
-	    	  if (result.getResourceUrl()) {
-	    		  data.url = result.getResourceUrl();
-	    	  }
-	    	  data.title = title;
-	    	  data.body = details;
-	    	  data.tags = tags;
-	    	  data.annotations = annotations;
-	    	  data.source = result.toJSON();
-	    	  data.date = date;
-	    	  console.log("BLOGrout-X "+data.canEdit+" "+data.editLocator);
-	    	  data.user = userid;
-	    	  data.image = result.getImage();
-	    	  //TODO NOT sure we want to transclude blog posts
-	    	  data.myLocator = q;
-	    	  data.myLocatorXP = q+"?contextLocator="+contextLocator;
-		      if (credentials.length > 0 && req.session.clipboard === "") {
-		    	  data.transclude = "yes";
-		      }
-		      if (contextLocator) {
-		    	  data.contextLocator = contextLocator;
-		    	  //TODO this must be used in the transclude button
-		      }
+		    	  var canEdit = self.canEdit(result,credentials);
+		    	  var clipboard = req.session.clipboard;
+		    	  
+		    	  var editLocator = "/bookmark/edit/"+result.getLocator();
+		    	  
 
-	    	  console.log('BLOGrout-2 '+JSON.stringify(data));
-	      }
-	      res.render('topic', data);
+			      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+			      if (!tags) {
+			    	  tags = [];
+			      }
+
+	      CommonModel.generateViewFirstData(result, tags, [],[],credentials, canEdit, data, contextLocator, "/bookmark/", clipboard, lang, function(json) {
+			  //get all parents
+			  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
+				  if (cresult) {
+					  json.ccontable = cresult;
+				  }
+				  //get just my parents in particular context
+				  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+					  if (presult) {
+						  json.pcontable = presult;
+					  }
+				      console.log("XXXX "+JSON.stringify(json));
+				      	
+				        try {
+				            res.set('Content-type', 'text/json');
+				          }  catch (e) { }
+				          res.json(json);
+				  });
+
+			  });
+	      });
 	    });
-	  });
+	      
+  });
+  
+  /**
+   * Fill ViewFirst
+   */
+  app.get('/bookmark/:id', isPrivate,function(req,res) {
+	    var q = req.params.id;
+	    console.log('Bookmarkrout '+q);
+	    var data = myEnvironment.getCoreUIData(req);
+	    data.query = "/bookmark/ajaxfetch/"+q;
+	    data.language = "en";
+	    data.type = "foo";
+	    res.render('vf_topic', data);
+  });
+
   var _bookmarksupport = function(body,usx, callback) {
-	    var credentials = usx.credentials;
-	    if (body.locator === "") {
-	    	BookmarkModel.create(body, usx, credentials, function(err,result) {
-	    		callback(err,result);
-	    	});
-	    } else {
-	    	BookmarkModel.update(body, usx, credentials, function(err,result) {
-	            callback(err,result);
-	        });
-	   }
-	  };
+	var credentials = usx.credentials;
+	if (body.locator === "") {
+		BookmarkModel.create(body, usx, credentials, function(err,result) {
+			callback(err,result);
+		});
+	} else {
+		BookmarkModel.update(body, usx, credentials, function(err,result) {
+			callback(err,result);
+		});
+	}
+  };
 
   app.post('/bookmark', isLoggedIn, function(req,res) {
-	    var body = req.body;
-	    var usx = req.user;
-	    console.log('BOOKMARK_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
-	    _bookmarksupport(body, usx, function(err,result) {
-	      console.log('BOOKMARK_NEW_POST-1 '+err+' '+result);
-	      //technically, this should return to "/" since Lucene is not ready to display
-	      // the new post; you have to refresh the page in any case
-	      return res.redirect('/bookmark');
-	    });
-	  });
-	  
-
+	var body = req.body;
+	var usx = req.user;
+	console.log('BOOKMARK_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
+	_bookmarksupport(body, usx, function(err,result) {
+		console.log('BOOKMARK_NEW_POST-1 '+err+' '+result);
+		//technically, this should return to "/" since Lucene is not ready to display
+		// the new post; you have to refresh the page in any case
+		return res.redirect('/bookmark');
+	});
+  });
 };

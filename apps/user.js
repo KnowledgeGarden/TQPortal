@@ -82,35 +82,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			}
 			res.render('userform', data); //,
 		});
-	  });
-  app.get('/user/ajaxtopicnode/:id', function(req, res) {
-	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
-	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    //get all parents
-	    CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
-
-	    });
-});
-app.get('/user/ajaxptopicnode/:id', function(req, res) {
-	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
-	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    //get just my children
-	    CommonModel.fillConversationTable(false, false,q,q,credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
-
-	    });
-});
+  });
 
   var _usersupport = function(body,usx, callback) {
 	var credentials = usx.credentials;
@@ -130,48 +102,64 @@ app.get('/user/ajaxptopicnode/:id', function(req, res) {
 
   });
   
-  
-  app.get('/user/:id', isPrivate,function(req,res) {
-	var q = req.params.id;
-	console.log('USERrout '+q);
-	//there may be a ringing from the lists, so we trap it here
-	if (q === "ajaxptopicnode") {return;}
-	var credentials = [];
-    var usr = req.user;
-    if (usr) { credentials = usr.credentials;}
-	Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-		console.log('USERrout-1 '+err+" "+result);
-		var title = result.getSubject(constants.ENGLISH).theText;
-		
-		var userid = result.getCreatorId();
-		// paint tags
-		var tags = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE); //types.TAG_DOCUMENT_RELATION_TYPE);
-		// paint docs
-		var docs = result.listPivotsByRelationType(types.CREATOR_DOCUMENT_RELATION_TYPE);
-		var date = result.editedAt;
-		var data = myEnvironment.getCoreUIData(req);
-  	    var canEdit = self.canEdit(result,credentials);
-  	    data.canEdit = canEdit;
-    	  data.myLocator = q;
+  app.get("/user/ajaxfetch/:id", isPrivate, function(req,res) {
+	    var q = req.params.id;
+		var lang = req.query.language;
+	    console.log('USERajax '+q+" "+lang);
+	    var credentials = [];
+	    var usr = req.user;
+	    if (usr) { credentials = usr.credentials;}
+	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+	      console.log('USERrout-1 '+err+" "+result);
+	      var data = myEnvironment.getCoreUIData(req);
+			    var contextLocator;
+			    if (req.query.contextLocator) {
+			    	contextLocator = req.query.contextLocator;
+			    } else {
+			    	//if it's a map node, use that
+			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+			    		contextLocator = result.getLocator();
+			    	}
+			    	//TODO
+			    	//Otherwise, grab some context from the node
+			    }
+		    	  var canEdit = self.canEdit(result,credentials);
+		    	  var clipboard = req.session.clipboard;
+		    	  
+		    	  var editLocator = "/user/edit/"+result.getLocator();
+		    	  
 
-	    data.editLocator = "/user/edit/"+result.getLocator();
- 	    if (result.getResourceUrl()) {
-  	    	data.url = result.getResourceUrl();
-   	    }
+		  		var tags = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE); //types.TAG_DOCUMENT_RELATION_TYPE);
+			      if (!tags) {
+			    	  tags = [];
+			      }
+				var docs = result.listPivotsByRelationType(types.CREATOR_DOCUMENT_RELATION_TYPE);
+			      if (!docs) {
+			    	  docs = [];
+			      }
 
-		data.title = title;
-		if (result.getBody(constants.ENGLISH)) {
-			data.body = result.getBody(constants.ENGLISH).theText;
-		}
-		data.tags = tags;
-		data.docs = docs;
-		data.source = result.toJSON();
-		data.date = date;
-		data.image = "/images/person.png";
-		//TODO paint provenance creator Id setup to point to user
-		console.log('USERrout-2 '+JSON.stringify(data));
-		res.render('topic', data);
-	});
+	      CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, function(json) {
+	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
+	    	  json.myLocator = q;
+		      console.log("XXXX "+JSON.stringify(json));
+		        try {
+		            res.set('Content-type', 'text/json');
+		          }  catch (e) { }
+		          res.json(json);
+	    	  
+	      });
+	    });
+	      
   });
+  app.get('/user/:id', isPrivate,function(req,res) {
+	    var q = req.params.id;
+	    console.log('USERrout '+q);
+	    var data = myEnvironment.getCoreUIData(req);
+	    data.query = "/user/ajaxfetch/"+q;
+	    data.language = "en";
+	    data.type = "foo";
+	    res.render('vf_topic', data);
+  });
+
 
 };
