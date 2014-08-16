@@ -1,0 +1,67 @@
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#topic">Topic</a></li>
+  <li><a data-toggle="tab" href="#list">List View</a></li>
+  <li><a data-toggle="tab" title="Conversations in which I am the parent node" href="#pconv">P-Conversation</a></li>
+  <li><a data-toggle="tab" title="Conversations in which I am a child node" href="#cconv">C-Conversation</a></li>
+  <li><a data-toggle="tab" href="#relations">Relations</a></li>
+  <li><a data-toggle="tab" href="#source">Source</a></li>
+</ul>
+ <!-- ViewFirst data -->
+ <div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}}"></div>
+
+<div class="tab-content">
+  <div id="topic" class="tab-pane fade in active">
+   <div class="blog-post col-xs-7">
+    <div class="topictitle">foo</div>
+    <p class="blog-post-meta"> 
+     <div class="userref"></div>
+     <div class="urlref"></div>
+    </p>
+    <div class="body pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+        <p><div class="transclude"></div>
+    
+   </div>
+
+ <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+  <div class="sidebar-module sidebar-module-inset">
+    <div class="taglist"></div>
+    <div class="userlist"></div>
+    <div class="doclist"></div>
+  </div>
+ </div>
+ </div> <!-- /topic -->
+ <div id="list" class="tab-pane fade">
+   <div class="blog-post col-xs-7">
+    <div class="topictitle"></div>
+    <p class="blog-post-meta"> 
+     <div class="userref"></div>
+     <div class="urlref"></div>
+    </p>
+    <div class="body pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+    <div class="taglist"></div>
+    <div class="userlist"></div>
+    <div class="doclist"></div>
+   </div>
+ </div> <!-- /list -->
+ <div id="cconv" class="tab-pane fade">
+    <div class="ccontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+ </div> <!-- /cconv -->
+ <div id="pconv" class="tab-pane fade">
+  {{#if isAuthenticated}}
+   <div class="form-group">
+    <form method="post" action="/conversation/new/{{locator}}"  role="form" class="form-horizontal">
+     <input type="hidden" name="locator" value="{{locator}}">
+     <button type="submit" class="btn btn-btn-success btn-small">New Conversation</button>
+    </form>
+  </div>
+  {{/if}}
+  <div class="pcontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+ </div> <!-- /pconv -->
+ 
+ <div id="source" class="tab-pane fade">
+  <div class="sourcecode"></div>
+ </div>
+ <div id="relations" class="tab-pane fade">
+ <h1>Relations</h1>
+ </div> <!-- /relations -->
+ </div>
