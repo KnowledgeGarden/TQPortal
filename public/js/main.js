@@ -10,12 +10,17 @@
  */
 function initPage() {
 	var q = $(".vfpage").attr("query");
-	var language = $(".vfpage").attr("language");
-	var query = q+"?language="+language;
-	var type = $(".vfpage").attr("type");
-	if (query) {
+	if (q) {
+	  var language = $(".vfpage").attr("language");
+	  var type = $(".vfpage").attr("type");
+	  var cl = $(".vfpage").attr("contextLocator");
+	  var query = q+"?language="+language;
+	  if (cl) {
+		  query += "&contextLocator="+cl;
+	  }
+
 		$.get( query, function( data ) {
-			  //alert($("div.topictitle").text());
+		//	alert(data);
 			  //now, paint the page
 			  $("div.topictitle").html(data.title);
 			  $("div.userref").html(data.user);
@@ -29,7 +34,6 @@ function initPage() {
 			  if (data.transclude) {
 				  $("div.transclude").html(data.transclude);
 			  }
-			  
 			  $("div.sourcecode").html(data.source);
 			  if (data.tags) {
 				  paintTags(data.tags);
@@ -46,8 +50,22 @@ function initPage() {
 			  if (data.pcontable) {
 				  paintPConTable(data.pcontable.data);
 			  }
+			  if (data.isAuthenticated) {
+				  if ($("div.newconform")) {
+					  paintNewCon(data.locator, data.newnodetype);
+				  }
+			  }
 		});
 	}
+}
+
+function paintNewCon(locator, type) {
+	html = "<div class=\"form-group\">";
+	html+="<form method=\"post\" action=\"/conversation/new/"+locator+"\"  role=\"form\" class=\"form-horizontal\">";
+	html += "<input type=\"hidden\" name=\"nodefoo\" value=\""+type+"\">";
+	html+="<button type=\"submit\" class=\"btn btn-btn-success btn-small\">New Conversation</button>";
+	html+="</form></div>";
+	$("div.newconform").html(html);
 }
 
 function paintCConTable(data) {
@@ -91,8 +109,29 @@ function paintUsers(users) {
 function paintDocs(docs) {
     var html = "<h4>Documents</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
     html += "<ol class=\"list-unstyled\">"
+    var urx, typ;
     for (var i=0;i<docs.length;i++) {
-    	html+= "<li><a href=\"/blog/"+docs[i].locator+"\"><img src=\""+docs[i].icon+"\">&nbsp;"+docs[i].label+"</a></li>"
+    	urx="/conversation/"; //default
+    	typ = docs[i].documentType;
+    	if (typ) {
+    		if (typ === "WikiNodeType") {
+    			urx = "/wiki/";
+    		} else if (typ === "BlogNodeType") {
+    			urx = "/blog/";
+    		} else if (typ === "BookmarkNodeType") {
+    			urx = "/bookmark/";
+    		}
+    	} else {
+    		//try to infer from image
+    		typ = docs[i].icon;
+    		if (typ === "/images/bookmark_sm.png") {
+    			urx = "/bookmark/";
+    		} else if (typ === "/images/publication_sm.png") {
+    			//could be a wiki or a blog (until we get different icons
+    			urx = "/blog";
+    		}
+    	}
+    	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].icon+"\">&nbsp;"+docs[i].label+"</a></li>"
     }
    html+="</ol></div>";
    $("div.doclist").html(html);

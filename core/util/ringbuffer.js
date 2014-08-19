@@ -25,9 +25,9 @@ var RingBuffer = module.exports = function(size, name, environment) {
 	 * @param smallicon
 	 */
 	self.add = function(locator,label,smallicon) {
-		if (data.length >= maxlen) {
-			data = data.splice(0,1);
-		}
+//		if (data.length >= maxlen) {
+//			data = data.splice(0,1);
+//		}
 		if (myenv) {
 			myenv.logDebug("RingBuffer "+myname+" "+data);
 		}
@@ -38,9 +38,9 @@ var RingBuffer = module.exports = function(size, name, environment) {
 		//TODO: ideal to add this to the first rather than push it to the end
 		//Otherwise, we must reverse the list going out
 		data.push(s);
-		if (myenv) {
-			myenv.logDebug("RingBuffer "+myname+" "+data.length + " "+JSON.stringify(s));
-		}
+//		if (myenv) {
+//			myenv.logDebug("RingBuffer "+myname+" "+data.length + " "+JSON.stringify(s));
+//		}
 	},
 	
 	self.getData = function() {
@@ -48,9 +48,9 @@ var RingBuffer = module.exports = function(size, name, environment) {
 	},
 	
 	self.getReversedData = function() {
-		if (myenv) {
-			myenv.logDebug("RingBuffer.getReversedData "+myname+" "+JSON.stringify(data));
-		}
+//		if (myenv) {
+//			myenv.logDebug("RingBuffer.getReversedData "+myname+" "+JSON.stringify(data));
+//		}
 		var result = [];
 		var len = data.length;
 		if (len > -1) {
@@ -64,9 +64,9 @@ var RingBuffer = module.exports = function(size, name, environment) {
 				result.push(data[i-1]);
 			}
 		}
-		if (myenv) {
-			myenv.logDebug("RingBuffer.getReversedData+ "+myname+" "+JSON.stringify(result));
-		}
+//		if (myenv) {
+//			myenv.logDebug("RingBuffer.getReversedData+ "+myname+" "+JSON.stringify(result));
+//		}
 		return result;
 	},
 	

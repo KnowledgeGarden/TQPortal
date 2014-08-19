@@ -73,24 +73,69 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Routes
   /////////////////
   app.get('/conversation', isPrivate, function(req,res) {
-    res.render('conversationindex',environment.getCoreUIData(req));
+	  var credentials= [];
+	  if (req.user) {credentials = req.user.credentials;}
+	  var data = environment.getCoreUIData(req);
+	  ConversationModel.fillDatatable(credentials, function(datax) {
+		  var x = datax;
+		  if (x) {
+			  x = x.data;
+		  }
+		  data.sadtable = x;
+		  res.render('conversationindex',data);
+	  });
+  });
+  
+  /**
+  * Start a new conversation with a Map node
+  */
+  app.get('/conversation/new', isLoggedIn, function(req,res) {
+	  var data = myEnvironment.getCoreUIData(req);
+	  data.formtitle = "New Conversation Root";
+	  data.locator = "";
+	  data.context = "";
+	  data.nodetype = MAPTYPE;
+	  data.body = "";
+	  data.isNotEdit = true;
+	  res.render('conversationform', data);
+  });  
+  //TODO THIS WORKS
+  //CHANGE to a set of forms for different IBIS buttons
+  //Start a new conversation with a question or a statement
+  // none of the other nodes can be used.
+  app.post('/conversation/new/:id', isLoggedIn, function(req,res) {
+	var q = req.params.id;
+	console.log("CONVERSATION_NEW "+q);
+	var data =  myEnvironment.getCoreUIData(req);
+//	data.formtitle = "New Conversation Root";
+	data.locator = q; // becomes parentNodeLocator
+	data.context = "";  
+	data.nodetype = MAPTYPE;
+	data.body = "";
+    data.isNotEdit = true;
+    console.log("FOO "+JSON.stringify(data));
+    res.render('conversationform', data);
   });
 
   /**
-   * Start a new conversation with a Map node
+   * Create a new Map to be added to the Help menu.
+   * NOTE: this requires Admin credentials.
+   * WARNING: it will crash if used by defaultAdmin:
+   *   that "user" does not have a topic in the topic map.
+   *   It must be used by a user other than defaultAdmin
+   *   who has Admin credentials.
    */
-  app.get('/conversation/new', isLoggedIn, function(req,res) {
-		var data =  myEnvironment.getCoreUIData(req);
-		data.formtitle = "New Conversation Root";
-		data.locator = "";
-		data.context = "";
+  app.get('/conversation/newHelp', isPrivate, function(req,res) {
+	  console.log("Conversation.newHelp");
+	    var data = environment.getCoreUIData(req);
+	    data.formtitle = "New Help Map";
 		data.nodetype = MAPTYPE;
-		data.body = "";
-
+		data.ishelpmenu = "T";
 	    data.isNotEdit = true;
+		data.body = "";
 	    res.render('conversationform', data);
   });
-  
+
   var __getNewSomething = function(type, req,res) {
 	    var q = req.params.id;
 	    var contextLocator = req.query.contextLocator;
@@ -144,6 +189,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			res.render('conversationform', data); //,
 		});
   });
+  
   app.get("/conversation/ajaxfetch/:id", isPrivate, function(req,res) {
 	    var q = req.params.id;
 		var lang = req.query.language;
@@ -154,6 +200,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
 	      console.log('CONVERSATIONajax-1 '+err+" "+result);
 	      var data = myEnvironment.getCoreUIData(req);
+	  	
+
 			    var contextLocator;
 			    if (req.query.contextLocator) {
 			    	contextLocator = req.query.contextLocator;
@@ -165,6 +213,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			    	//TODO
 			    	//Otherwise, grab some context from the node
 			    }
+			    topicMapEnvironment.logDebug("Conversation.ajaxfetch "+q+" "+contextLocator+" "+req.query.contextLocator);
+			    
 		    	  var canEdit = self.canEdit(result,credentials);
 		    	  var clipboard = req.session.clipboard;
 		    	  
@@ -213,7 +263,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					  if (presult) {
 						  json.pcontable = presult;
 					  }
-				      console.log("XXXX "+JSON.stringify(json));
+					 
+				      console.log("XOXOX "+JSON.stringify(json));
 				      	
 				        try {
 				            res.set('Content-type', 'text/json');
@@ -235,6 +286,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    data.query = "/conversation/ajaxfetch/"+q;
 	    data.language = "en";
 	    data.type = "foo";
+	    if (req.query.contextLocator) {
+	    	data.contextLocator = req.query.contextLocator;
+	    }
 	    res.render('vf_conversationnode', data);
   });
 
@@ -244,7 +298,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    */
   var _consupport = function(body,usx, callback) {
     var credentials = usx.credentials;
-    if (body.locator === "") {
+    if (body.ishelpmenu == "T") {
+    	ConversationModel.createHelpMap(body,usx,credentials, function(err,result) {
+    		callback(err,result);
+    	});
+    } else if (body.locator === "") {
     	ConversationModel.createRootMap(body, usx, credentials, function(err,result) {
     		callback(err,result);
     	});
@@ -275,25 +333,6 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     });
   });
   
-  //TODO THIS WORKS
-  //CHANGE to a set of forms for different IBIS buttons
-  //Start a new conversation with a question or a statement
-  // none of the other nodes can be used.
-  app.post('/conversation/new/:id', isLoggedIn, function(req,res) {
-	var q = req.params.id;
-	console.log("CONVERSATION_NEW "+q);
-	var data =  myEnvironment.getCoreUIData(req);
-	data.formtitle = "New Conversation Root";
-	data.locator = q;
-	data.context = "";
-	data.nodetype = MAPTYPE;
-	data.body = "";
-
-    data.isNotEdit = true;
-    res.render('conversationform', data);
-	
-
-  });
   
   app.post('/conversation/remember', isLoggedIn, function(req,res) {
 	var body = req.body;

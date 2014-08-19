@@ -31,6 +31,9 @@ var Environment = module.exports = function(callback) {
 	var conversationRing;
 	var bookmarkRing;
 	var appMenu = [];
+	var helpMenu = [];
+//	var recentCollection;
+	var theMessage = "";
 	var self = this;
   ///////////////////////
   // API
@@ -38,6 +41,27 @@ var Environment = module.exports = function(callback) {
 	/////////////////////////
 	// Application UI
 	/////////////////////////
+	self.setMessage = function(message) {
+		console.log("SETTING MESSAGE "+message)
+		theMessage = message;
+	},
+	self.clearMessage = function() {
+		theMessage = "";
+	},
+	self.persistRecents = function() {
+		var recentspath = __dirname+"/../config/recents.json";
+		var dx = {};
+		dx.blog = self.listRecentBlogs();
+		dx.wiki = self.listRecentWikis();
+		dx.tag = self.listRecentTags();
+		dx.convers = self.listRecentConversations();
+		dx.bkmrk = self.listRecentBookmarks();
+		fs.writeFileSync(recentspath, JSON.stringify(dx));
+	},
+	self.saveProperties = function() {
+		var path = __dirname+"/../config/config.json";
+		fs.writeFileSync(path, JSON.stringify(configProperties));
+	},
 	self.addApplicationToMenu = function(url, name) {
 		if (!appMenu) {appMenu = [];}
 		var urx = {};
@@ -49,9 +73,21 @@ var Environment = module.exports = function(callback) {
 		return appMenu;
 	},
 	
+	self.addConversationToHelp = function(url, name) {
+		if (!helpMenu) {helpMenu = [];}
+		var urx = {};
+		urx.url = url;
+		urx.name = name;
+		helpMenu.push(urx);
+		
+		configProperties.helpMenu = helpMenu;
+		self.saveProperties();
+	},
 	self.getCoreUIData = function(request) {
+		console.log("FFF "+JSON.stringify(helpMenu));
 		var result = {};
 		result.appmenu = appMenu;
+		result.helpMenu = helpMenu;
 		var isAdmin = false;
 		var isAuth = request.isAuthenticated();
 		console.log("Environment.getCoreUIData "+isAuth);
@@ -67,6 +103,11 @@ var Environment = module.exports = function(callback) {
 				}
 			}
 		}
+		if (!theMessage) {theMessage=""};
+		if (theMessage.length > 1) {
+			console.log("THEMESSAGE "+theMessage);
+			result.themessage = theMessage;
+		}
 		result.isAdmin = isAdmin;
 		result.isAuthenticated = isAuth;
 		result.isNotAuthenticated = !isAuth;
@@ -78,33 +119,35 @@ var Environment = module.exports = function(callback) {
 	},
 	/////////////////////////
 	// Recent events recording
+	//TODO move these to applications, and let them install
+	// listeners here to fetch them when needed
 	/////////////////////////
 	self.addRecentTag = function(locator,label) {
 		var d = new Date().getTime();
-		TopicMapEnvironment.logDebug("Environment.addRecentTag "+locator+" "+label);
+//		TopicMapEnvironment.logDebug("Environment.addRecentTag "+locator+" "+label);
 		var d = new Date().getTime();
 		tagRing.add(locator,label,d);
-		TopicMapEnvironment.logDebug("Environment.addRecentTag-1 "+tagRing.size());
+//		TopicMapEnvironment.logDebug("Environment.addRecentTag-1 "+tagRing.size());
 	},
 	self.addRecentBlog = function(locator,label) {
 		var d = new Date().getTime();
 		blogRing.add(locator,label,d);
-		TopicMapEnvironment.logDebug("Environment.addRecentBlog "+blogRing.size());
+//		TopicMapEnvironment.logDebug("Environment.addRecentBlog "+blogRing.size());
 	},
 	self.addRecentWiki = function(locator,label) {
 		var d = new Date().getTime();
 		wikiRing.add(locator,label,d);
-		TopicMapEnvironment.logDebug("Environment.addRecentWiki "+wikiRing.size());
+//		TopicMapEnvironment.logDebug("Environment.addRecentWiki "+wikiRing.size());
 	},
 	self.addRecentBookmark = function(locator,label) {
 		var d = new Date().getTime();
 		bookmarkRing.add(locator,label,d);
-		TopicMapEnvironment.logDebug("Environment.addRecentBookmark "+wikiRing.size());
+//		TopicMapEnvironment.logDebug("Environment.addRecentBookmark "+wikiRing.size());
 	},
 	self.addRecentConversation = function(locator,label) {
 		var d = new Date().getTime();
 		conversationRing.add(locator,label,d);
-		TopicMapEnvironment.logDebug("Environment.addRecentConversation "+wikiRing.size());
+	//	TopicMapEnvironment.logDebug("Environment.addRecentConversation "+wikiRing.size());
 	},
 	
 	self.listRecentTags = function() {
@@ -164,17 +207,20 @@ var Environment = module.exports = function(callback) {
   ///////////////////////
 	var path = __dirname+"/../config/config.json";
 	var path1 = __dirname+"/../config/logger.json";
+	var recentspath = __dirname+"/../config/recents.json";
   //read the config file
-  fs.readFile(/*"./config.json"*/path, function(err, configfile) {
+  fs.readFile(path, function(err, configfile) {
     configProperties = JSON.parse(configfile);
     // build the databases and dataprovider
     var MongoClient = mongo.MongoClient;
     lgr.configure(/*"./logger.json"*/path1);
     log = lgr.getLogger("Portal");
     log.setLevel('ERROR');
+    helpMenu = configProperties.helpMenu;
+    if (!helpMenu) {helpMenu = [];}
     //bring up mongo
     //TODO improve the connect string with credentials, etc
-    MongoClient.connect("mongodb://localhost:27017/portaldb2", function(err, db) {
+    MongoClient.connect(configProperties.mongoString, function(err, db) {
       console.log("BOOTING DB "+err+" "+db);
       database = db;
       var myCollection;
@@ -187,25 +233,73 @@ var Environment = module.exports = function(callback) {
         //create invitation collection
         database.createCollection(constants.INVITATION_COLLECTION, {strict:true}, function(err, collection) {
             console.log('----'+err+" "+collection);
-            //user databasea
-            userdatabase = new udb(database);
-            //now boot the topic map
-            var foo = new idx(function(err, environment) { //new tmenv(function(err, environment) {
-            	TopicMapEnvironment = environment;
-            	//It is a fact that anything constructed below cannot call this Environment
-            	// since it is not yet finished building
-            	CommonModel = new cm(this, TopicMapEnvironment);
-            	blogRing = new rbuf(20, "blog", TopicMapEnvironment);
-            	wikiRing= new rbuf(20, "wiki", TopicMapEnvironment);
-            	tagRing= new rbuf(20,"tag", TopicMapEnvironment);
-            	bookmarkRing = new rbuf(20,"bookmark",TopicMapEnvironment);
-            	conversationRing = new rbuf(20,"conversation",TopicMapEnvironment);
-            	//fire up the program
-            	console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
-            	self.logDebug("Portal Environment started ");
-            	TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
-            	callback("foo","bar");
-            });
+	            //user databasea
+	            userdatabase = new udb(database);
+	            //now boot the topic map
+	            var foo = new idx(function(err, environment) {
+	            	TopicMapEnvironment = environment;
+	            	//load recents
+	            	fs.readFile(recentspath, function(err, recents) {
+	            		var rx = JSON.parse(recents);
+	            		console.log("RECENTS "+err+" "+JSON.stringify(rx));
+		            	blogRing = new rbuf(20, "blog", TopicMapEnvironment);
+		            	wikiRing= new rbuf(20, "wiki", TopicMapEnvironment);
+		            	tagRing= new rbuf(20,"tag", TopicMapEnvironment);
+		            	bookmarkRing = new rbuf(20,"bookmark",TopicMapEnvironment);
+		            	conversationRing = new rbuf(20,"conversation",TopicMapEnvironment);
+		            	var len, ix, i, x = rx.blog;
+		            	if (x) {
+		            		len = x.length;
+			            	for (i=0;i<len;i++) {
+			            		ix=x[i];
+			            		self.addRecentBlog(ix.locator, ix.label);
+			            	}
+		            	}
+			            	x = rx.wiki;
+			            	if (x) {
+			            	len = x.length;
+			            	for (i=0;i<len;i++) {
+			            		ix=x[i];
+			            		self.addRecentWiki(ix.locator, ix.label);
+			            	}
+		            	}
+		            	x = rx.tag;
+			            	if (x) {
+			            	len = x.length;
+			            	for (i=0;i<len;i++) {
+			            		ix=x[i];
+			            		self.addRecentTag(ix.locator, ix.label);
+			            	}
+		            	}
+		            	x = rx.bkmrk;
+			            	if (x) {
+			            	len = x.length;
+			            	for (i=0;i<len;i++) {
+			            		ix=x[i];
+			            		self.addRecentBookmark(ix.locator, ix.label);
+			            	}
+		            	}
+		            	x = rx.convers;
+			            	if (x) {
+			            	len = x.length;
+			            	for (i=0;i<len;i++) {
+			            		ix=x[i];
+			            		self.addRecentConversation(ix.locator, ix.label);
+			            	}
+		            	}
+		            	//It is a fact that anything constructed below cannot call this Environment
+		            	// since it is not yet finished building
+		            	theMessage = "";
+		            	CommonModel = new cm(this, TopicMapEnvironment);
+		            	//fire up the program
+		            	console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
+		            	self.logDebug("Portal Environment started ");
+		            	TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
+		            	callback("foo","bar");
+		            	
+	            	});
+	            });
+ //           });
         });
       });
     });

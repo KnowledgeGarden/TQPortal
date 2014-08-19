@@ -225,7 +225,19 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   app.get('/admin', isAdmin, function(req, res) {
 	res.render('admin',environment.getCoreUIData(req));
   });
-  
+  app.get('/admin/setmessage', isAdmin, function(req,res) {
+	  var msg = req.query.message;
+	  environment.setMessage(msg);
+	  res.redirect('/admin');
+  });
+  app.get('/clearmessage', isAdmin, function(req,res) {
+	  environment.clearMessage();
+	  res.redirect('/admin');
+  });
+  app.get('/saverecents', isAdmin, function(req,res) {
+	  environment.persistRecents();
+	  res.redirect('/admin');
+  });
   app.get('/importdb', isAdmin, function(req, res) {
 	res.render('admin',environment.getCoreUIData(req)); //TODO
   });
@@ -239,20 +251,21 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   
   app.post('/inviteuser', isAdmin, function(req,res) {
 	var email = req.body.email;
+	  console.log("ABC "+JSON.stringify(req.body));
+	  console.log("DEF "+JSON.stringify(req.query));
 	AdminModel.addInvitation(email, function(err,data) {
 		console.log("Admin.inviteUser "+email+" "+err+" "+data);
 		res.redirect('/admin');
 	});
   });
-  
+
  
   app.get('/listusers', isAdmin, function(req, res) {
-	AdminModel.listUsers(function(err,data) {
-		console.log("AdminModel.listUsers "+err+" "+data);
-		if (data) {
-			console.log(JSON.stringify(data));
-		}
-		res.render('listusers',environment.getCoreUIData(req)); //TODO
+	AdminModel.fillDatatable(function(json) {
+		console.log("AdminModel.listUsers "+json);
+		var data = environment.getCoreUIData(req);
+		data.usrtable = json.data;
+		res.render('listusers',data); 
 	});
   });
 

@@ -13,8 +13,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var CommonModel = environment.getCommonModel();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
-  this.BookmarkModel = new bkmrk(environment);
-  console.log("Starting Bookmark "+this.BookmarkModel);
+    var BookmarkModel = new bkmrk(environment);
+	var MAPTYPE = "1";
+
+  console.log("Starting Bookmark "+BookmarkModel);
 	var self = this;
 	self.canEdit = function(node, credentials) {
 		console.log("BOOKMARK.canEdit "+JSON.stringify(credentials));
@@ -66,7 +68,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	// Routes
 	/////////////////
   app.get('/bookmark', isPrivate, function(req,res) {
-	  res.render('bookmarkindex', __get(req));
+	  var credentials= [];
+	  if (req.user) {credentials = req.user.credentials;}
+	  var data = environment.getCoreUIData(req);
+	  BookmarkModel.fillDatatable(credentials, function(datax) {
+		  var x = datax;
+		  if (x) {
+			  x = x.data;
+		  }
+		  data.sadtable = x;
+		  res.render('bookmarkindex',data);
+	  });
   });
   app.get('/bookmark/new', isLoggedIn, function(req,res) {
 	  //console.log("BOOKMARKNEW "+JSON.stringify(req.query));
@@ -79,35 +91,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    data.isNotEdit = true;
 		res.render('bookmarkform',data);
   });
-  app.get('/bookmark/ajaxtopicnode/:id', function(req, res) {
-	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
-	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    //get all parents
-	    CommonModel.fillConversationTable(false, true,q,"",credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
 
-	    });
-  });
-  app.get('/bookmark/ajaxptopicnode/:id', function(req, res) {
-	    var q = req.params.id;
-	    console.log('AJAXTOPICNODE '+q);
-	    var credentials = [];
-	    if (req.user) { credentials = req.user.credentials;}
-	    var contxt = req.query.contextLocator;
-	    //get just my children
-	    CommonModel.fillConversationTable(false, false,q,contxt,credentials,function(err,result) {
-	        try {
-	            res.set('Content-type', 'text/json');
-	          }  catch (e) { }
-	          res.json(result);
-
-	    });
-  });
   app.get("/bookmark/ajaxfetch/:id", isPrivate, function(req,res) {
 	    var q = req.params.id;
 		var lang = req.query.language;
@@ -125,10 +109,13 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			    	//if it's a map node, use that
 			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
 			    		contextLocator = result.getLocator();
+			    	} else {
+			    		//This is a bookmark; it can be its own context
+			    		//but that's not good enough; we'll punt for now
+			    		contextLocator = q;
 			    	}
-			    	//TODO
-			    	//Otherwise, grab some context from the node
 			    }
+			    topicMapEnvironment.logDebug("Bookmark.ajaxfetch "+q+" "+contextLocator);
 		    	  var canEdit = self.canEdit(result,credentials);
 		    	  var clipboard = req.session.clipboard;
 		    	  
@@ -151,6 +138,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					  if (presult) {
 						  json.pcontable = presult;
 					  }
+				      json.newnodetype = MAPTYPE;
 				      console.log("XXXX "+JSON.stringify(json));
 				      	
 				        try {
@@ -175,6 +163,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    data.query = "/bookmark/ajaxfetch/"+q;
 	    data.language = "en";
 	    data.type = "foo";
+	    if (req.query.contextLocator) {
+	    	data.contextLocator = req.query.contextLocator;
+	    }
 	    res.render('vf_topic', data);
   });
 

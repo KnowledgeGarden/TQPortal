@@ -126,11 +126,16 @@ uJd3ccZwwZ/cIuJ5PAf0ix3LC" }
 			var posts = [];
 			for (var i=0;i<len;i++) {
 				p = result[i];
-				m = [];
-				m.push(p.email);
-				m.push(p.handle);
-				m.push(p.fullname);
-				m.push(p.credentials);
+				m = {};
+				m.email = p.email;
+				m.handle = p.handle;
+				m.name = p.fullname;
+				m.credentials = p.credentials;
+			//	m = [];
+			//	m.push(p.email);
+			//	m.push(p.handle);
+			//	m.push(p.fullname);
+			//	m.push(p.credentials);
 				data.push(m);
 			}
 			theResult.data = data;

@@ -14,6 +14,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var UserModel = new userModel(environment);
 	var CommonModel = environment.getCommonModel();
+	var MAPTYPE = "1";
+
   console.log("Starting User "+UserModel);
   //TODO lots!
 	var self = this;
@@ -63,7 +65,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Routes
   /////////////////
   app.get('/user', isPrivate,function(req,res) {
-    res.render('userindex',myEnvironment.getCoreUIData(req));
+	  var credentials= [];
+	  if (req.user) {credentials = req.user.credentials;}
+	  var data = environment.getCoreUIData(req);
+	  UserModel.fillDatatable(credentials, function(datax) {
+		  var x = datax;
+		  if (x) {
+			  x = x.data;
+		  }
+		  data.sadtable = x;
+		  res.render('userindex',data);
+	  });
   });
 		
   app.get('/user/edit/:id', isLoggedIn, function(req,res) {
@@ -119,6 +131,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			    	//if it's a map node, use that
 			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
 			    		contextLocator = result.getLocator();
+			    	} else {
+			    		contextLocator = q;
 			    	}
 			    	//TODO
 			    	//Otherwise, grab some context from the node
@@ -141,6 +155,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	      CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, function(json) {
 	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
 	    	  json.myLocator = q;
+		      json.newnodetype = MAPTYPE;
 		      console.log("XXXX "+JSON.stringify(json));
 		        try {
 		            res.set('Content-type', 'text/json');
@@ -158,6 +173,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    data.query = "/user/ajaxfetch/"+q;
 	    data.language = "en";
 	    data.type = "foo";
+	    if (req.query.contextLocator) {
+	    	data.contextLocator = req.query.contextLocator;
+	    }
 	    res.render('vf_topic', data);
   });
 

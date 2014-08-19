@@ -1,183 +1,17 @@
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <title>TopicQuests Foundation</title>
-     <link href="/css/jbootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
-     <link href="/css/bootswatch.min.css" media="all" rel="stylesheet" type="text/css" />
-     <link href="/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" /> 
-     <link href="/css/jquery.dataTables.css" media="all" rel="stylesheet" type="text/css" />
-     <link href="/css/summernote.css" media="all" rel="stylesheet" type="text/css" />
-     
-<style>  
-  body {
-    padding-top: 50px;
-    height: 100%;
-    padding-bottom: 20px;
-  }
-  #wrap {
-    min-height: 100%
-  }
-  #main {
-    overflow:auto;
-    padding-bottom:150px; /* this needs to be bigger than footer height*/
-  }
-  
-  <!--http://jsfiddle.net/drueter/yqgB5/3/ -->
-  table.table-fixedheader>tbody {
-    display: block;
-  }
+ <meta charset="utf-8" />
+ <title>TopicQuests Foundation</title>
+ <link href="/css/jbootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
+ <link href="/css/bootswatch.min.css" media="all" rel="stylesheet" type="text/css" />
+ <link href="/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css" /> 
+ <link href="/css/summernote.css" media="all" rel="stylesheet" type="text/css" />
+ <script src="/js/jquery-1.11.1.min.js" type="text/javascript"></script>
 
-  table.table-fixedheader>tbody {
-    overflow-y: auto;
-    height: 50px; /*placeholder:  override as needed*/
-  }
-
-  table.table-fixedheader>thead>tr>th, table.table-fixedheader>tbody>tr>td {
-    float: left;
-    width: 100%;
-  }
-</style>
-<style>
-        #slides {
-            display: none;
-        }
-
-            #slides .slidesjs-navigation {
-                margin-top: 3px;
-            }
-
-            #slides .slidesjs-previous {
-                margin-right: 5px;
-                float: left;
-                position: absolute;
-                top: 370px;
-                margin-top: -20px;
-                left: 20px;
-            }
-
-            #slides .slidesjs-next {
-                margin-right: 5px;
-                float: left;
-                position: absolute;
-                top: 370px;
-                margin-top: -20px;
-                right: 20px;
-            }
-
-        .slidesjs-pagination {
-            margin: 6px 0 0;
-            float: right;
-            list-style: none;
-        }
-
-            .slidesjs-pagination li {
-                float: left;
-                margin: 0 1px;
-            }
-
-                .slidesjs-pagination li a {
-                    display: block;
-                    width: 13px;
-                    height: 0;
-                    padding-top: 13px;
-                    background-image: url(img/pagination.png);
-                    background-position: 0 0;
-                    float: left;
-                    overflow: hidden;
-                }
-
-                    .slidesjs-pagination li a.active,
-                    .slidesjs-pagination li a:hover.active {
-                        background-position: 0 -13px;
-                    }
-
-                    .slidesjs-pagination li a:hover {
-                        background-position: 0 -26px;
-                    }
-
-        #slides a:link,
-        #slides a:visited {
-            color: #333;
-        }
-
-        #slides a:hover,
-        #slides a:active {
-            color: #0094ff;
-        }
-  </style>
-  <script src="/js/jquery-1.11.1.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="/js/jquery.slides.min.js"></script>
-  <script src="/js/jquery.dataTables.js"></script>
-  <script>
-        $(document).keyup(function (event) {
-
-            /* left arrow 37
-            up arrow 38
-            right arrow 39
-            down arrow 40 */
-            switch (event.keyCode) {
-                case 37:  // 
-                    $(".slidesjs-previous").click();
-                    break;
-                case 39:  // 
-                    $(".slidesjs-next").click();
-                    break;
-                default:
-                    //  ne rien faire
-
-            }
-        })
-        $(function () {
-            $('#slides').slidesjs({
-                preload: true,
-                preloadImage: 'img/loading.gif',
-                width: 1366,
-                height: 542,
-                play: {
-                    active: false,
-                    auto: true,
-                    interval: 4000,
-                    swap: false
-                },
-                navigation: {
-                    active: false,
-                    effect: "fade"
-                },
-
-                pagination: {
-                    active: false,
-                    effect: "fade"
-                },
-                effect: {
-
-                    fade: {
-                        speed: 0,
-                        crossfade: false
-                    }
-                },
-                end: 3
-            });
-        });
-  </script>
   <script>
     jQuery(document).ready(function ($) {
       initPage();
-      //rich text
-      $('.sidenote').summernote({
-        height: 100,
-        toolbar: false
-         });
-         
-      //topicnote is the topic.handlebars view
-     $('.topicnote').summernote({
-        height: 300,
-        toolbar: [
-    //[groupname, [button list]]
-     
-    ['misc', ['fullscreen']]
-  ]
-         });
       //summernote is for blogform.handlebars and wikiform.handlebars
       $('#summernote').summernote({
         height: 300,
@@ -208,112 +42,9 @@
                 }
             });
         }
-      //datatables
-      //These are index pages
-      //TODO: replace entire system.
-     try { 
-      //Blogs
-       $('#datatable').dataTable({
-         "bProcessing" : true,
-         "bServerSide" : true,
-         "searching": false,
-         "paging":   true,
-         "ajax" : 'ajaxblog',
-         "Columns" : [
-				   { "title": "Subject" },
-				   { "title": "Author" },
-				   { "title": "Date" }]
-        });
-       //Bookmark
-       $('#bookmarktable').dataTable({
-         "bProcessing" : true,
-         "bServerSide" : true,
-         "searching": false,
-         "paging":   true,
-         "ajax" : 'ajaxbookmark',
-         "Columns" : [
-           { "title": "Subject" },
-           { "title": "Author" },
-           { "title": "Date" }]
-        });
- 
-      //Wiki
-       $('#wikitable').dataTable({
-         "bProcessing" : true,
-         "bServerSide" : true,
-         "searching": false,
-         "paging":   true,
-         "ajax" : 'ajaxwiki',
-         "Columns" : [
-           { "title": "Subject" },
-           { "title": "Author" },
-           { "title": "Date" }]
-        }); 
-      //Conversations
-      $('#conversationtable').dataTable({
-         "bProcessing" : true,
-         "bServerSide" : true,
-         "searching": false,
-         "paging":   true,
-         "ajax" : 'ajaxconversation',
-         "Columns" : [
-           { "title": "Subject" },
-           { "title": "Author" },
-           { "title": "Date" }]
-        }); 
-  
-        //Members
-       $('#usertable').dataTable({
-         "bProcessing" : true,
-         "bServerSide" : true,
-         "searching": false,
-         "paging":   true,
-         "ajax" : 'ajaxuser',
-         "Columns" : [
-				{ "title": "User" },
-             ]
-        });
-        //Tags
-       $('#tagtable').dataTable({
-         "bProcessing" : true,
-         "bServerSide" : true,
-         "searching": false,
-         "paging":   true,
-         "ajax" : 'ajaxtag',
-         "Columns" : [
-				{ "title": "Tag" },
-				{ "title": "Author" },
-				{ "title": "Date" },
-             ]
-        });
-        //adminuserslist
-        $('#adminusertable').dataTable({
-         "bProcessing" : true,
-         "bServerSide" : true,
-         "searching": false,
-         "paging":   true,
-         "ajax" : 'ajaxadminusers',
-         "Columns" : [
-        { "title": "Email" },
-        { "title": "Handle" },
-        { "title": "Full Name" },
-        { "title": "Credentials"}]
-        });
-        
-      } catch (e) {alert('bar '+e);}
-        var screenWidth = $(window).width();
-        var h = screenWidth / 1.773;
-	try {
-        $(".slidesjs-container").css('height', "760px");
-        if (screenWidth < 1800) {
-            $(".slidesjs-container").css('height', '700px'); <!-- 537 -->
-            $("#slide-perviosID").css('top', "275px");
-            $("#slide-nextID").css('top', "275px");
-        }
-    } catch (err) {alert('foo '+err);}
+
     });
-</script>
-  
+  </script>
 </head>
 <body>
  <nav class="navbar navbar-default navbar-fixed-top" role="navigation"> <!--  navbar-inverse  -->
@@ -336,6 +67,17 @@
       <a href="#" class="dropdown-toggle" data-toggle="dropdown">Applications <b class="caret"></b></a>
       <ul class="dropdown-menu">
        {{#each appmenu}}
+        <li><a href="{{ url }}">{{ name }}</a></li>
+       {{/each}}
+      </ul>
+     </li>
+     <li class="dropdown">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
+      <ul class="dropdown-menu">
+      {{#if isAdmin}}
+       <li><a href="/conversation/newHelp">New</a></li>
+      {{/if}}      
+       {{#each helpMenu}}
         <li><a href="{{ url }}">{{ name }}</a></li>
        {{/each}}
       </ul>
@@ -370,15 +112,21 @@
   </div> <!-- /container -->
  </nav> <!-- navbar -->
  <div id=wrap">
- <div id="main" class="container">
- 
+  <div id="main" class="container">
+    <!-- content painted by other templates goes here -->
     {{{body}}}
-    </div>
+  </div>
  </div> <!-- wrap -->
      <hr>
  <div class="container">
  <footer class="footer">
- <img src="/images/TopicQuestsLogo_sm.png">
+ <table width="100%">
+ <tr>
+  <td width="33%"><img src="/images/TopicQuestsLogo_sm.png"></td>
+  <td width="33%"><a rel="license" title="This work is licensed under a Creative Commons Attribution 4.0 International License" href="http://creativecommons.org/licenses/by/4.0/"><img src="/images/ccby88x31.png" /></a></td>
+  <td><a href="https://github.com/KnowledgeGarden/TQPortal"><img src="/images/github.jpg"></a></td>
+ </tr>
+ </table>
  </footer>
  </div>
  <!-- <script src="/socket.io/socket.io.js"></script> -->

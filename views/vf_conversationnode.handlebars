@@ -7,7 +7,7 @@
   <li><a data-toggle="tab" href="#source">Source</a></li>
 </ul>
  <!-- ViewFirst data -->
- <div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}}"></div>
+ <div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}}"  contextLocator={{contextLocator}}></div>
 
 <div class="tab-content">
   <div id="topic" class="tab-pane fade in active">
@@ -57,7 +57,7 @@
  </div> <!-- /pconv -->
  
  <div id="source" class="tab-pane fade">
-  <pre>{{source}}</pre>
+  <div class="sourcecode"></div>
  </div>
  <div id="relations" class="tab-pane fade">
  <h1>Relations</h1>

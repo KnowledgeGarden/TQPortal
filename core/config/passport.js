@@ -36,7 +36,7 @@ module.exports = function (passport, userdb) {
 	    usernameField: 'email',
 	    passwordField: 'password'
 	  }, function(email,password,done) {
-    console.log('LOGINSTART '+email+" | "+password+" is trying to login as local.");
+    console.log('LOGINSTART '+email+" is trying to login as local.");
     userdb.findOne(email, function(err,puser) {
       //NOTE: puser is a JSON object
       console.log('LOGINSTART-1 '+err+' | '+puser);

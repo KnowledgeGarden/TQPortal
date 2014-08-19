@@ -1,7 +1,8 @@
 /**
  * commonmodel
  */
-var  constants = require('../../core/constants');
+var  types = require('../../node_modules/tqtopicmap/lib/types')
+	, constants = require('../../core/constants');
 
 var CommonModel = module.exports = function(environment, tmenv) {
 	var myEnvironment = environment;
@@ -25,7 +26,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		      var posts = [];
 		      for (var i=0;i<len;i++) {
 		        p = proxyList[i];
-		        m = [];
+		        m = {};
 		        var subj = "";
 		        if (p.getSubject(constants.ENGLISH)) {
 		        	subj = p.getSubject(constants.ENGLISH).theText;
@@ -33,10 +34,12 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		        	subj = p.getLabel(constants.ENGLISH);
 		        }
 		        url = "<a href='"+urx+p.getLocator()+"'>"+subj+"</a>";
-		        m.push(url);
+		        m.subjloc = urx+p.getLocator();
+		        m.subjsubj = subj;
 		        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
-		        m.push(url);
-		        m.push(p.getDate());
+		        m.authloc = "user/"+p.getCreatorId();
+		        m.name = p.getCreatorId();		
+		        m.date = (p.getDate());
 		        data.push(m);
 		      }
 		      theResult.data = data;
@@ -86,18 +89,44 @@ var CommonModel = module.exports = function(environment, tmenv) {
 			  console.log("CommonModel.fillConversationTable-1 "+isChild+" "+snappers);
 		      var p; //the struct
 		      var m; //the individual message
-		      var url;
+		      var url, urx;
 			  var data = [];
 		      var posts = [];
 			  if (snappers) {
 				  topicMapEnvironment.logDebug("CommonModel.fillConversationTable- "+isChild+" "+JSON.stringify(snappers));
 				  var len = snappers.length;
+				  var ntype;
 				  for (var i=0;i<len;i++) {
 					  p = snappers[i];
 					  topicMapEnvironment.logDebug("CommonModel.fillConversationTable "+JSON.stringify(p));
 					  m = [];
 					  //track context with a query string
-				      url = "<a href='/conversation/"+p.locator+"?contextLocator="+p.contextLocator+"'><img src=\""+p.smallImagePath+"\"> "+p.subject+"</a>";
+					  //Determine node type here!!!
+					  //TODO: this needs to be extensible:
+					  // EACH application installs its mappers
+				//	 
+					  console.log("CommonModel.fillConversationTable-type "+ntype);
+					  urx = "/conversation/"; // default
+		/** This was a wrong headed idea:
+		 *  each node painted in a conversation tree is, in fact, a conversation node
+		 *  regardless of its actual nodeType
+		 * 			  ntype = p.type;
+		 
+					  if (ntype) {
+						  if (ntype === types.BLOG_TYPE) {
+							  urx = "/blog/";
+						  } else if (ntype === types.WIKI_TYPE) {
+							  urx = "/wiki/";
+						  } else if (ntype === types.BOOKMARK_TYPE) {
+							  urx = "/bookmark/";
+						  } else if (ntype === types.TAG_TYPE) {
+							  urx = "/tag/";
+						  } else if (ntype === types.USER_TYPE) {
+							  urx = "/user/";
+						  }
+					  }
+					  */
+				      url = "<a href='"+urx+p.locator+"?contextLocator="+p.contextLocator+"'><img src=\""+p.smallImagePath+"\"> "+p.subject+"</a>";
 				      m.push(url);
 				      m.push("");
 				      m.push("");
@@ -152,7 +181,6 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	    	  details = theNode.getDetails(language);
 	      }
     	  data.body = details;
-    //	  data.tags = tags;
     	  var edithtml = "";
     	  if (canEdit) {
     		  edithtml = "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\""+editLocator+"\"><b>Edit</b></a>";

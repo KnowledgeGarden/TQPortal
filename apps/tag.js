@@ -12,6 +12,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var CommonModel = environment.getCommonModel();
+	var TagModel = new tagModel(environment);
+	var MAPTYPE = "1";
+
 
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
@@ -41,7 +44,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	// Routes
 	/////////////////
 	app.get('/tag', isPrivate,function(req,res) {
-		res.render('tagindex',environment.getCoreUIData(req));
+		  var credentials= [];
+		  if (req.user) {credentials = req.user.credentials;}
+		  var data = environment.getCoreUIData(req);
+		  TagModel.fillDatatable(credentials, function(datax) {
+			  var x = datax;
+			  if (x) {
+				  x = x.data;
+			  }
+			  data.sadtable = x;
+			  res.render('tagindex',data);
+		  });
 	});
 	
 	app.get("/tag/ajaxfetch/:id", isPrivate, function(req,res) {
@@ -61,6 +74,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				    	//if it's a map node, use that
 				    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
 				    		contextLocator = result.getLocator();
+				    	} else {
+				    		contextLocator = q;
 				    	}
 				    	//TODO
 				    	//Otherwise, grab some context from the node
@@ -90,6 +105,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 						  if (presult) {
 							  json.pcontable = presult;
 						  }
+					      json.newnodetype = MAPTYPE;
 					      console.log("XXXX "+JSON.stringify(json));
 					      	
 					        try {
@@ -111,6 +127,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    data.query = "/tag/ajaxfetch/"+q;
 	    data.language = "en";
 	    data.type = "foo";
+	    if (req.query.contextLocator) {
+	    	data.contextLocator = req.query.contextLocator;
+	    }
 	    res.render('vf_topic', data);
   });
 

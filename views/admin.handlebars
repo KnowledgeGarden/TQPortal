@@ -1,9 +1,25 @@
 <h1>Administration Panel</h1>
 <div id="article">
-
+ <form method="get" action="/admin/setmessage"  role="form" class="form-horizontal">
+  <div class="form-group">
+	<label for="message" class="col-sm-2 control-label">Message</label>
+	<div class="col-sm-10">
+		<input id="message" type="text" name="message"  placeholder="Enter the message" class="form-control">
+ 	</div>
+  </div>
+  <div class="form-group">
+	<div class="col-sm-offset-2 col-sm-10">
+	 <button type="submit" class="btn btn-primary">Set Message</button>
+	</div>
+  </div>
+ </form><br/>
+<div class="form-group">
+ <a href="/clearmessage" class="btn btn-large btn-primary">Clear Message</a><br/><br/>
+ <a href="/saverecents" class="btn btn-large btn-primary">Save Recents</a><br/><br/>
  <a href="/listusers" class="btn btn-large btn-primary">List Users</a><br/><br/>
  <a href="/inviteuser" class="btn btn-large btn-primary">Invite User</a><br/><br/>
  <a href="/exportdb" class="btn btn-large btn-primary">Export Database</a><br/><br/>
  <a href="/importdb" class="btn btn-large btn-primary">Import Database</a><br/><br/>
+</div>
 </div>
 

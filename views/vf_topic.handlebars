@@ -7,7 +7,7 @@
   <li><a data-toggle="tab" href="#source">Source</a></li>
 </ul>
  <!-- ViewFirst data -->
- <div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}}"></div>
+ <div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}} contextLocator={{contextLocator}}"></div>
 
 <div class="tab-content">
   <div id="topic" class="tab-pane fade in active">
@@ -17,7 +17,7 @@
      <div class="userref"></div>
      <div class="urlref"></div>
     </p>
-    <div class="body pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+    <div class="body pre-scrollable span12" style="border: 1px solid #e1e1e8; resize:both;overflow: auto;"></div>
         <p><div class="transclude"></div>
     
    </div>
@@ -47,14 +47,7 @@
     <div class="ccontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
  </div> <!-- /cconv -->
  <div id="pconv" class="tab-pane fade">
-  {{#if isAuthenticated}}
-   <div class="form-group">
-    <form method="post" action="/conversation/new/{{locator}}"  role="form" class="form-horizontal">
-     <input type="hidden" name="locator" value="{{locator}}">
-     <button type="submit" class="btn btn-btn-success btn-small">New Conversation</button>
-    </form>
-  </div>
-  {{/if}}
+  <div class="newconform"></div><br/>
   <div class="pcontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
  </div> <!-- /pconv -->
  

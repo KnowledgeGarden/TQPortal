@@ -12,6 +12,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var BlogModel = new acls(environment);
+	var MAPTYPE = "1";
+
 	console.log("Starting Blog "+this.BlogModel);
   
 	var self = this;
@@ -63,7 +65,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Routes
   /////////////////
   app.get('/blog', isPrivate,function(req,res) {
-    res.render('blogindex',myEnvironment.getCoreUIData(req));
+	  var credentials= [];
+	  if (req.user) {credentials = req.user.credentials;}
+	  var data = environment.getCoreUIData(req);
+	  BlogModel.fillDatatable(credentials, function(datax) {
+		  var x = datax;
+		  if (x) {
+			  x = x.data;
+		  }
+		  data.sadtable = x;
+		  res.render('blogindex',data);
+	  });  
   });
 		
 		
@@ -111,6 +123,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			    	//if it's a map node, use that
 			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
 			    		contextLocator = result.getLocator();
+			    	} else {
+			    		contextLocator = q;
 			    	}
 			    	//TODO
 			    	//Otherwise, grab some context from the node
@@ -139,6 +153,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					  if (presult) {
 						  json.pcontable = presult;
 					  }
+				      json.newnodetype = MAPTYPE;
 				      console.log("XXXX "+JSON.stringify(json));
 				      	
 				        try {
@@ -164,6 +179,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    data.query = "/blog/ajaxfetch/"+q;
 	    data.language = "en";
 	    data.type = "foo";
+	    if (req.query.contextLocator) {
+	    	data.contextLocator = req.query.contextLocator;
+	    }
 	    res.render('vf_topic', data);
   });
   

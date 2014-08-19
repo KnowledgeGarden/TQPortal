@@ -17,6 +17,23 @@ var SearchModel = module.exports = function(environment) {
 	var queryDSL = topicMapEnvironment.getQueryDSL();
 	var self = this;
 
+	self.isConversationType = function(type) {
+		var result = false;
+		if (type) {
+			if (type === types.CONVERSATION_MAP_TYPE ||
+				type === types.PRO_TYPE ||
+				type === types.CON_TYPE ||
+				type === types.POSITION_TYPE ||
+				type === types.CHALLENGE_TYPE ||
+				type === types.ISSUE_TYPE ||
+				type === types.EVIDENCE_TYPE ||
+				type === types.CLAIM_TYPE ||
+				type === types.DECISION_TYPE)
+				result = true;
+		}
+		return result;
+	}
+	
 	/**
 	 * Each line of hits should include locator, label
 	 * Locator must include the object type, e.g. /blog/locator
@@ -40,8 +57,10 @@ var SearchModel = module.exports = function(environment) {
 			var result = [];
 			if (data) {
 				var len = data.length;
-				var p, typ, urx,loc,lab;
+				var p, typ, loc,lab;
+				var urx = "/blog/";  //default
 				for (var i=0;i<len;i++) {
+					urx = "/blog/";
 					p = data[i];
 					console.log("SearchModel.runSearch-2 "+p.toJSON());
 					
@@ -60,13 +79,21 @@ var SearchModel = module.exports = function(environment) {
 						urx = "/tag/";
 					} else if (typ === types.USER_TYPE) {
 						urx = "/user/";
+					} else if (typ === types.BOOKMARK_TYPE) {
+						urx = "/bookmark/";
+					} else if (self.isConversationType(typ)) {
+						urx = "/conversation/";
+					
 					} else {
 						//here's where we crash and burn
-						topicMapEnvironment.logError("SearchModel unknown type: "+typ);
+						topicMapEnvironment.logError("SearchModel unknown type: "+typ+" | "+loc);
+						//Actually, we don't: this will happen when the upper typology nodes fall
+						//into the search so, we just show them as blogs
 					}
 					var x = {};
 					x.locator = urx+loc;
 					x.label = lab;
+					console.log("SM "+JSON.stringify(x));
 					result.push(x);
 				}
 			}

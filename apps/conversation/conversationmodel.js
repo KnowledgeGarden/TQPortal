@@ -37,6 +37,14 @@ var ConversationModel = module.exports = function(environment) {
   //TODO
   // We need a create for each node type
   // The root class is CONVERSATION_MAP_TYPE
+  self.createHelpMap = function(blog,user,credentials,callback) {
+	  self.createRootMap(blog,user, credentials, function(err,data) {
+		  var lox = data.getLocator();
+		  var name = data.getSubject(constants.ENGLISH).theText;
+		  myEnvironment.addConversationToHelp("/conversation/"+lox, name);
+		  callback(err,data);
+	  });
+  },
   
   self.createRootMap = function(blog,user, credentials, callback) {
 	  //NOTE: if parentNodeLocator exists, this is not a new map, so we use create
@@ -81,7 +89,8 @@ var ConversationModel = module.exports = function(environment) {
 	                		userTopic.getLocator(),
 	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                      callback(err,article.getLocator());
+	                    //modified to return entire node
+	                    callback(err,article);
 	                 }); //r1
 	              }); //putnode 		  
 	        	}); // processtaglist
@@ -97,7 +106,8 @@ var ConversationModel = module.exports = function(environment) {
 	                		userTopic.getLocator(),
 	                    		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                      callback(err,article.getLocator());
+	                    //modified to return entire node
+	                    callback(err,article);
 	                 }); //r1
 	              }); //putNode
 	            });//processTags
@@ -183,9 +193,14 @@ var ConversationModel = module.exports = function(environment) {
 		  smallIcon, largeIcon, credentials, callback) {
 	  var credentials = user.credentials;
 	  var language = constants.ENGLISH; //TODO
-	  var contextLocator = blog.contextLocator;
-	  //TODO
-	  //ISSUE:  "contextLocator":"\"\"\"e7a6f620-181b-11e4-8f8d-19fadb5e55fe\"\"\"\"\"\""
+	  
+	  var contextLocator = parentNodeLocator; // default
+	  //we're gonna punt here; if nobody sent in a contextLocator, then
+	  // parentNodeLocator will be context.
+	  if(blog.contextLocator && blog.contextLocator.length > 1) {
+		  contextLocator = blog.contextLocator;
+	  }
+	  
     var userLocator = user.handle;
 	topicMapEnvironment.logDebug("ConversationModel.create- "+parentNodeLocator+" "+nodeType);
 	topicMapEnvironment.logDebug("ConversationModel.create-- "+JSON.stringify(blog));
@@ -200,10 +215,53 @@ var ConversationModel = module.exports = function(environment) {
     		  credentials, userLocator, false, function(err,data) {
     	  //data is the created node
     	  topicMapEnvironment.logDebug("ConversationModel.create "+parentNodeLocator+" "+data.toJSON());
-			myEnvironment.addRecentConversation(data.getLocator(),blog.title);
-    	  //TODO tags
-    	  
-    	  callback(err,data);
+    	  myEnvironment.addRecentConversation(data.getLocator(),blog.title);
+    	  var article = data;
+	    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
+	      var userTopic = result;
+			
+   	     	// now deal with tags
+	      var tags = blog.tags;
+	      if (tags.length > 0 && tags.indexOf(',') > -1) {
+           var tagList = tags.split(',');
+           TagModel.processTagList(tagList, userTopic, article, credentials, function(err,result) {
+             console.log('NEW_POST-1 '+result);
+             //result could be an empty list;
+             //TagModel already added Tag_Doc and Doc_Tag relations
+             console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
+             Dataprovider.putNode(article, function(err,data) {
+               console.log('ARTICLES_CREATE-3 '+err);	  
+               if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+               console.log('ARTICLES_CREATE-3b '+userTopic);	  
+
+               TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+               		userTopic.getLocator(),
+                     		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+                   if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+                   //modified to return entire node
+                   callback(err,article);
+                }); //r1
+             }); //putnode 		  
+       		}); // processtaglist
+	      } else {
+           TagModel.processTag(tags, userTopic, article, credentials, function(err,result) {
+             console.log('NEW_POST-2 '+result);
+             //result is a list of tags already related to doc and user
+             console.log("ARTICLES_CREATE_22 "+JSON.stringify(article));
+             Dataprovider.putNode(article, function(err,data) {
+               console.log('ARTICLES_CREATE-33 '+err);	  
+               if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
+               TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+               		userTopic.getLocator(),
+                   		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+                   if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+                   //modified to return entire node
+                   callback(err,article);
+                }); //r1
+             }); //putNode
+           });//processTags
+	      } // else  
+	    });
       });
     });
   },
