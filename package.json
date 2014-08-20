@@ -4,7 +4,7 @@
     "test": "./node_modules/.bin/eslint apps config lib routes server.js"
   },
   "name": "TQPortal",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "A Landing Page and Portal Framework for TopicQuests",
   "main": "server.js",
   "author": "park",
@@ -44,6 +44,6 @@
     "eslint": "^0.6.2"
   },
   "non-npmDependencies": {
-    "tqtopicmap": "0.5.6+"
+    "tqtopicmap": "0.6.0+"
   }
 }

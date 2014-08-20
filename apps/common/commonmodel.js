@@ -10,6 +10,12 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var self = this;
 	
+	self.fillTree = function(rootLocator, credentials, callback) {
+		Dataprovider.getTree(rootLocator, 0,0,0, credentials, function(err,node) {
+			console.log("CommonModel.fillTree "+rootLocator+" "+node);
+			callback(err, node);
+		});
+	},
 	  /**
 	   * @param proxyList
 	   * @param urx  e.g. "conversation/"
@@ -218,8 +224,14 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	      if (docList.length > 0) {
 	    	  data.documents = docList;
 	      }
-
-	      return callback(data);
+	      self.fillTree(q,credentials,function(err,node) {
+	    	  console.log("CommonModel.generateViewFirstData "+err+" "+node);
+	    	  if (node) {
+	    		  data.jtree = node;
+	    	  }
+	    	  return callback(data);
+	      });
+	      
 	  }
 	  
 };
