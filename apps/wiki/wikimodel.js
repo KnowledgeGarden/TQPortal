@@ -43,7 +43,7 @@ var WikiModel =  module.exports = function(environment) {
 	    	  });
 		  });
 	  },
-	  
+/**	  
 	  self.update = function(blog,user,credentials,callback) {
 		  topicMapEnvironment.logDebug("Bookmark.UPDATE "+JSON.stringify(blog));
 		  var lox = blog.locator;
@@ -65,7 +65,7 @@ var WikiModel =  module.exports = function(environment) {
 	    	  });
 		  });
 	  },
-
+*/
   /**
    * Create a new wiki topic
    * @param wiki: a JSON object filled in

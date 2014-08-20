@@ -33,6 +33,30 @@ var ConversationModel = module.exports = function(environment) {
 
 	var self = this;	
   
+	  /**
+	   * Update an existing conversation entry; no tags included
+	   */
+	  self.update = function(blog,user,callback) {
+		  topicMapEnvironment.logDebug("CONVERSATION.UPDATE "+JSON.stringify(blog));
+		  var credentials = user.credentials;
+		  var lox = blog.locator;
+		  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+			  var error = '';
+			  if (err) {error += err;}
+			  var title = blog.title;
+			  var body = blog.body;
+	    	  var lang = blog.language;
+	    	  var comment = "an edit"; //TODO add comment field to form
+	    	  if (!lang) {lang = "en";}
+	    	  result.updateSubject(title,lang,user.handle,comment);
+	    	  result.updateBody(body,lang,user.handle,comment);
+	    	  result.setLastEditDate(new Date());
+	    	  Dataprovider.putNode(result, function(err,data) {
+	    		  if (err) {error += err;}
+	    		  callback(error,data);
+	    	  });
+		  });
+	  },
   ///////////////////////////////
   //TODO
   // We need a create for each node type

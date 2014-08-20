@@ -217,6 +217,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       callback(err,result);
     });
 	    } else {
+	    	var credentials = usx.credentials;
+	    	
 	        WikiModel.update(body, usx, function(err,result) {
 	            callback(err,result);
 	          });

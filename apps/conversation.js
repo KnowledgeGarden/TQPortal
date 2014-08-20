@@ -184,6 +184,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				data.title = result.getSubject(constants.ENGLISH).theText;
 				data.body = result.getBody(constants.ENGLISH).theText;
 				data.locator = result.getLocator();
+				data.isedit = "T";
 				data.isNotEdit = false;
 			}
 			res.render('conversationform', data); //,
@@ -300,6 +301,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     var credentials = usx.credentials;
     if (body.ishelpmenu == "T") {
     	ConversationModel.createHelpMap(body,usx,credentials, function(err,result) {
+    		callback(err,result);
+    	});
+    } else if (body.isedit === "T") {
+    	ConversationModel.update(body,usx, function(err,result) {
     		callback(err,result);
     	});
     } else if (body.locator === "") {
