@@ -65,19 +65,35 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Routes
   /////////////////
   app.get('/blog', isPrivate,function(req,res) {
+	  var data = environment.getCoreUIData(req);
+	  data.start=0;
+	  data.count=constants.MAX_HIT_COUNT; //pagination size
+	  data.total=0;
+	  data.query="/blog/index";
+	  //rendering this will cause an ajax query to blog/index
+	  res.render('blogindex',data);
+  });
+	
+  app.get("/blog/index", isPrivate,function(req,res) {
+	  var start = parseInt(req.query.start);
+	  var count = parseInt(req.query.count);
 	  var credentials= [];
 	  if (req.user) {credentials = req.user.credentials;}
-	  var data = environment.getCoreUIData(req);
-	  BlogModel.fillDatatable(credentials, function(datax) {
-		  var x = datax;
-		  if (x) {
-			  x = x.data;
-		  }
-		  data.sadtable = x;
-		  res.render('blogindex',data);
-	  });  
+
+	  BlogModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+		  console.log("Blog.index "+data);
+		  var cursor = start+countsent;
+		  var json = {};
+		  json.start = cursor;
+		  json.count = constants.MAX_HIT_COUNT; //pagination size
+		  json.total = totalavailable;
+		  json.table = data;
+		  try {
+			  res.set('Content-type', 'text/json');
+		  }  catch (e) { }
+	      res.json(json);
+	  });
   });
-		
 		
   app.get('/blog/new', isLoggedIn, function(req,res) {
 	var data =  myEnvironment.getCoreUIData(req);

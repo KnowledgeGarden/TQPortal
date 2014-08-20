@@ -95,9 +95,9 @@ var UserModel = module.exports = function(environment) {
   },
   
   self.listUsers = function(start, count, credentials, callback) {
-    Dataprovider.listInstanceNodes(types.USER_TYPE, start,count,credentials, function(err,data) {
+    Dataprovider.listInstanceNodes(types.USER_TYPE, start,count,credentials, function(err,data,total) {
       console.log("UserModel.listInstanceNodes "+err+" "+data);
-      callback(err,data);
+      callback(err,data,total);
     });
   },
 	  
@@ -105,12 +105,27 @@ var UserModel = module.exports = function(environment) {
 	   * @param credentials
 	   * @param callback signatur (data)
 	   */
-  self.fillDatatable = function(credentials, callback) {
-    self.listUsers(0,-1,credentials,function(err,result) {
+  self.fillDatatable = function(start, count, credentials, callback) {
+    self.listUsers(start,count,credentials,function(err,result, total) {
       console.log('ROUTES/users '+err+' '+result);
-	  CommonModel.fillDatatable(result, "user/", function(data) {
-		  callback(data);
-	  });
-	});
+      var len = result.length;
+      var url,p
+      var html = "<table  cellspacing=\"0\"><thead>";
+      html+="<tr><th>Member</th></tr>";
+      html+="</thead><tbody>";
+      
+      for (var i=0;i<len;i++) {
+    	  p = result[i];
+    	  html+="<tr><td>";
+    	  url = "<a href='/user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
+    	  html+=url+"</td></tr>";
+      }
+      //{{#each sadtable}}
+      //<tr><td width="60%"><a href="{{subjloc}}">{{subjsubj}}</a></td><td width="20%"><a href="{{authloc}}">{{name}}</a></td><td>{{date}}</td></tr>
+     // {{/each}}
+      html+="</tbody></table>";
+      console.log("FILLING "+total);
+      callback(html,len,total);	
+    });
   }
 };

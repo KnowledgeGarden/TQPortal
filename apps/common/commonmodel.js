@@ -19,40 +19,38 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	  /**
 	   * @param proxyList
 	   * @param urx  e.g. "conversation/"
+	   * @param total available in the original database query
 	   * @param callback signatur (data)
 	   */
-	  self.fillDatatable = function(proxyList, urx, callback) {
-		  var theResult = {};
-		 
-		      var data = [];
-		      var len = proxyList.length;
-		      var p; //the proxy
-		      var m; //the individual message
-		      var url;
-		      var posts = [];
-		      for (var i=0;i<len;i++) {
-		        p = proxyList[i];
-		        m = {};
-		        var subj = "";
-		        if (p.getSubject(constants.ENGLISH)) {
-		        	subj = p.getSubject(constants.ENGLISH).theText;
-		        } else {
-		        	subj = p.getLabel(constants.ENGLISH);
-		        }
-		        url = "<a href='"+urx+p.getLocator()+"'>"+subj+"</a>";
-		        m.subjloc = urx+p.getLocator();
-		        m.subjsubj = subj;
-		        url = "<a href='user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
-		        m.authloc = "user/"+p.getCreatorId();
-		        m.name = p.getCreatorId();		
-		        m.date = (p.getDate());
-		        data.push(m);
-		      }
-		      theResult.data = data;
-		      console.log();
-		      console.log("CommonModel.fillDatatable "+JSON.stringify(theResult));
-		      console.log();
-		    callback(theResult);
+	  self.fillSubjectAuthorDateTable = function(proxyList, urx, total, callback) {
+  	  //NOW, build the table in html
+	      var len = proxyList.length;
+	      topicMapEnvironment.logDebug("CommonModel.fillSubjectAuthorDateTable "+proxyList+" "+urx+" "+len+" "+total);
+	      var url,p,label;
+	      var html = "<table  cellspacing=\"0\"><thead>";
+	      html+="<tr><th width=\"60%\">Subject</th><th>Author</th><th>Date</th></tr>";
+	      html+="</thead><tbody>";
+	      
+	      for (var i=0;i<len;i++) {
+	    	  p = proxyList[i];
+	    	  html+="<tr><td width=\"60%\">";
+	    	  label = "";
+	    	  if (p.getLabel(constants.ENGLISH)) {
+	    		  label = p.getLabel(constants.English);
+	    	  } else {
+	    		  label = p.getSubject(constants.ENGLISH).theText;
+	    	  }
+	    	  url = "<a href='"+urx+p.getLocator()+"'>"+label+"</a>";
+	    	  html+=url+"</td><td width=\"20%\">";
+	    	  url = "<a href='/user/"+p.getCreatorId()+"'>"+p.getCreatorId()+"</a>";
+	    	  html+=url+"</td><td>"+p.getLastEditDate()+"</td></tr>";
+	      }
+	      //{{#each sadtable}}
+	      //<tr><td width="60%"><a href="{{subjloc}}">{{subjsubj}}</a></td><td width="20%"><a href="{{authloc}}">{{name}}</a></td><td>{{date}}</td></tr>
+	     // {{/each}}
+	      html+="</tbody></table>";
+	      console.log("FILLING "+total);
+	      callback(html,len,total);
 	  },
 	  
 	  /**

@@ -52,11 +52,14 @@ var SearchModel = module.exports = function(environment) {
 //		test.label = "This one's for the gipper";
 //		result.push(test);
 		console.log("SearchModel.runSearch "+query+" "+user);
-		DataProvider.listNodesByTextSearch(query,language,start,count,credentials,function(err,data) {
+		DataProvider.listNodesByTextSearch(query,language,start,count,credentials,function(err,data,total) {
 			console.log("SearchModel.runSearch-1 "+err+data);
-			var result = [];
+			var len = 0;
+		      var html = "<table  cellspacing=\"0\"><thead>";
+		      html+="<tr><th>Hits</th></tr>";
+		      html+="</thead><tbody>";
 			if (data) {
-				var len = data.length;
+				len = data.length;
 				var p, typ, loc,lab;
 				var urx = "/blog/";  //default
 				for (var i=0;i<len;i++) {
@@ -90,15 +93,11 @@ var SearchModel = module.exports = function(environment) {
 						//Actually, we don't: this will happen when the upper typology nodes fall
 						//into the search so, we just show them as blogs
 					}
-					var x = {};
-					x.locator = urx+loc;
-					x.label = lab;
-					console.log("SM "+JSON.stringify(x));
-					result.push(x);
+					html+="<tr><td><a href=\""+urx+loc+"\">"+lab+"</a></td></tr>";
 				}
 			}
-			
-			callback(err,result);
+		    html+="</tbody></table>";
+		    callback(html,len,total);	
 		});
 	};
 };

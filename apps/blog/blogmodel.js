@@ -129,22 +129,26 @@ var BlogModel =  module.exports = function(environment) {
   
   self.listBlogPosts = function(start, count, credentials, callback) {
     var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BLOG_TYPE,start,count);
-    Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data) {
+    Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
       console.log("BlogModel.listBlogPosts "+err+" "+data);
-      callback(err,data);
+      callback(err,data, total);
     });
   },
   
   /**
+   * @param start
+   * @param count
    * @param credentials
-   * @param callback signatur (data)
+   * @param callback signatur (data, countsent, totalavailable)
    */
-  self.fillDatatable = function(credentials, callback) {
-	  self.listBlogPosts(0,100,credentials,function(err,result) {
-	      console.log('ROUTES/blog '+err+' '+result);
-    	  CommonModel.fillDatatable(result, "blog/", function(data) {
-    		  callback(data);
-    	  });
+  self.fillDatatable = function(start, count,credentials, callback) {
+	  self.listBlogPosts(start,count,credentials,function(err,result, totalx) {
+	      console.log('BlogModel.fillDatatable '+err+' '+totalx+" "+result);
+	      CommonModel.fillSubjectAuthorDateTable(result,"/blog/",totalx, function(html,len,total) {
+		      console.log("FILLING "+start+" "+count+" "+total);
+		      callback(html,len,total);
+	    	  
+	      });
 	  });
   }
   

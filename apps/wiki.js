@@ -66,16 +66,34 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  var credentials= [];
 	  if (req.user) {credentials = req.user.credentials;}
 	  var data = environment.getCoreUIData(req);
-	  WikiModel.fillDatatable(credentials, function(datax) {
-		  var x = datax;
-		  if (x) {
-			  x = x.data;
-		  }
-		  data.sadtable = x;
-		  res.render('wikihome',data);
-	  });
+	  data.start=0;
+	  data.count=constants.MAX_HIT_COUNT; //pagination size
+	  data.total=0;
+	  data.query="/wiki/index";
+	  //rendering this will cause an ajax query to blog/index
+	  res.render('wikihome',data);
   });
-  
+	
+  app.get("/wiki/index", isPrivate,function(req,res) {
+	  var start = parseInt(req.query.start);
+	  var count = parseInt(req.query.count);
+	  var credentials= [];
+	  if (req.user) {credentials = req.user.credentials;}
+
+	  WikiModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+		  console.log("Wiki.index "+data);
+		  var  cursor = start+countsent;
+		  var json = {};
+		  json.start = cursor;
+		  json.count = constants.MAX_HIT_COUNT; //pagination size
+		  json.total = totalavailable;
+		  json.table = data;
+		  try {
+			  res.set('Content-type', 'text/json');
+		  }  catch (e) { }
+	      res.json(json);
+	  });
+  });  
   app.get('/wiki/edit/:id', isLoggedIn, function(req,res) {
 	var q = req.params.id;
 	var usx = req.user;

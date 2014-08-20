@@ -282,7 +282,15 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
   
   });
-  
+  app.get('/removeuser', isAdmin, function(req,res) {
+		var email = req.query.email;
+		console.log("Admin.selectuser "+email);
+		AdminModel.removeUser(email, function(err,data) {
+			res.redirect('/admin');
+		});
+	  
+	  });
+
   app.post('/editcredentials', isAdmin, function(req,res) {
 	var email = req.body.email;
 	var creds = req.body.credentials;

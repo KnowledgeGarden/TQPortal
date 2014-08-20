@@ -65,19 +65,44 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Routes
   /////////////////
   app.get('/user', isPrivate,function(req,res) {
+	  var data = environment.getCoreUIData(req);
+	  data.start=0;
+	  data.count=constants.MAX_HIT_COUNT; //pagination size
+	  data.total=0;
+	  data.query="/user/index";
+	  //rendering this will cause an ajax query to blog/index
+	  res.render('userindex',data);
+  });
+	
+  app.get("/user/index", isPrivate,function(req,res) {
+	  var start = parseInt(req.query.start);
+	  var count = parseInt(req.query.count);
+//	  var isNext = req.query.isNext.trim();
+//	  topicMapEnvironment.logDebug("BLOG INDEX "+start+" "+count+" "+isNext);
 	  var credentials= [];
 	  if (req.user) {credentials = req.user.credentials;}
-	  var data = environment.getCoreUIData(req);
-	  UserModel.fillDatatable(credentials, function(datax) {
-		  var x = datax;
-		  if (x) {
-			  x = x.data;
-		  }
-		  data.sadtable = x;
-		  res.render('userindex',data);
+
+	  UserModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+		  console.log("User.index "+data);
+		  var cursor;
+		  //if (isNext === "T") {
+			  cursor = start+countsent;
+		  //} else {
+		//	  cursor = start-countsent;
+		 // }
+		//  if (cursor < 0) {cursor = 0;}
+		//  topicMapEnvironment.logDebug("BLOG INDEX2 "+start+" "+countsent+" "+isNext+" "+cursor);
+		  var json = {};
+		  json.start = cursor;
+		  json.count = constants.MAX_HIT_COUNT; //pagination size
+		  json.total = totalavailable;
+		  json.table = data;
+		  try {
+			  res.set('Content-type', 'text/json');
+		  }  catch (e) { }
+	      res.json(json);
 	  });
-  });
-		
+  });		
   app.get('/user/edit/:id', isLoggedIn, function(req,res) {
 		var q = req.params.id;
 		var usx = req.user;

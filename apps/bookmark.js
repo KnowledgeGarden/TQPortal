@@ -68,16 +68,33 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	// Routes
 	/////////////////
   app.get('/bookmark', isPrivate, function(req,res) {
+	  var data = environment.getCoreUIData(req);
+	  data.start=0;
+	  data.count=constants.MAX_HIT_COUNT; //pagination size
+	  data.total=0;
+	  data.query="/bookmark/index";
+	  //rendering this will cause an ajax query to blog/index
+	  res.render('bookmarkindex',data);
+  });
+	
+  app.get("/bookmark/index", isPrivate,function(req,res) {
+	  var start = parseInt(req.query.start);
+	  var count = parseInt(req.query.count);
 	  var credentials= [];
 	  if (req.user) {credentials = req.user.credentials;}
-	  var data = environment.getCoreUIData(req);
-	  BookmarkModel.fillDatatable(credentials, function(datax) {
-		  var x = datax;
-		  if (x) {
-			  x = x.data;
-		  }
-		  data.sadtable = x;
-		  res.render('bookmarkindex',data);
+
+	  BookmarkModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+		  console.log("Bookmark.index "+data);
+		  var cursor = start+countsent;
+		  var json = {};
+		  json.start = cursor;
+		  json.count = constants.MAX_HIT_COUNT; //pagination size
+		  json.total = totalavailable;
+		  json.table = data;
+		  try {
+			  res.set('Content-type', 'text/json');
+		  }  catch (e) { }
+	      res.json(json);
 	  });
   });
   app.get('/bookmark/new', isLoggedIn, function(req,res) {

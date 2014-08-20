@@ -92,6 +92,12 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
 		});
 	},
 	
+	self.removeUser = function(email, callback) {
+		userDatabase.removeUser(email, function(err,truth) {
+			callback(err,truth);
+		});	
+	},
+	
 	self.removeInvitation = function(email,callback) {
 		userDatabase.removeInvitation(email, function(err,truth) {
 			callback(err,truth);

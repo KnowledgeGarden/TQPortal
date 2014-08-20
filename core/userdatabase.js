@@ -23,7 +23,18 @@ var UserDatabase = module.exports = function(db) {
 			});
 		});
 	},
-  
+	
+	self.removeUser = function(email, callback) {
+		var q = {};
+		q.email = email;
+		database.collection(constants.USER_COLLECTION, function(err, collection) {
+			collection.remove(q, function(err,result) {
+				callback(err,result);
+			});
+		});
+		
+	},
+
 	/**
 	 * Find a user given <code>email</code>
 	 * @param email

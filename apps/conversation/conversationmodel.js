@@ -324,10 +324,11 @@ var ConversationModel = module.exports = function(environment) {
 	  });
   }
   self.listConversations = function(start, count, credentials, callback) {
-    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.CONVERSATION_MAP_TYPE);
-    Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data) {
+	  Dataprovider.listInstanceNodes(types.CONVERSATION_MAP_TYPE, start,count,credentials, function(err,data,total) {
+    //var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.CONVERSATION_MAP_TYPE);
+    //Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
       console.log("ConversationModel.listConversations "+err+" "+data);
-      callback(err,data);
+      callback(err,data,total);
     });
   },
   
@@ -335,12 +336,14 @@ var ConversationModel = module.exports = function(environment) {
    * @param credentials
    * @param callback signatur (data)
    */
-  self.fillDatatable = function(credentials, callback) {
-	  self.listConversations(0,100,credentials,function(err,result) {
+  self.fillDatatable = function(start, count, credentials, callback) {
+	  self.listConversations(start,count,credentials,function(err,result,totalx) {
 	      console.log('ROUTES/conversation '+err+' '+result);
-	    	  CommonModel.fillDatatable(result, "conversation/", function(data) {
-	    		  callback(data);
-	    	  });
+	      CommonModel.fillSubjectAuthorDateTable(result,"/conversation/",totalx, function(html,len,total) {
+		      console.log("FILLING "+start+" "+count+" "+total);
+		      callback(html,len,total);
+	    	  
+	      });
 	  });
   }
   

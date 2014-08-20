@@ -1,7 +1,12 @@
 <h1>Search Results</h1>
 
- <h2>Query: {{ query }} </h2>
- {{#each hits}}
-  <li><a href="{{ locator }}">{{ label }}</a></li>
- {{/each}}
-
+ <h2>Query: {{ querystring }} </h2>
+ <!-- Pagination data -->
+<div id="tabledata" query="{{query}}" start="{{start}}" count="{{count}}" total="{{total}}"></div>
+<div class="col-xs-10 pre-scrollable" position:"left"; style="border: 1px solid #e1e1e8;">
+  <div class="tableindex"></div>
+</div>
+<div class="col-xs-12" position:"left">
+  <div class="pagination"></div>
+</div>
+ 

@@ -157,10 +157,12 @@ var TagModel = module.exports = function(environment) {
   
   
   self.listTags = function(start, count, credentials, callback) {
-	var query = queryDSL.sortedTupleCountTermQuery(properties.INSTANCE_OF,types.TAG_TYPE);
-	DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data) {
-		console.log("TagModel.listTags "+err+" "+data);
-		callback(err,data);
+	  //TODO DataProvider doesn't do tuplecounting well; the tpC property is missing
+	//var query = queryDSL.sortedTupleCountTermQuery(properties.INSTANCE_OF,types.TAG_TYPE);
+	//DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
+	DataProvider.listInstanceNodes(types.TAG_TYPE, start,count,credentials, function(err,data,total) {
+		console.log("TagModel.listTags "+err+" "+data,total);
+		callback(err,data, total);
 	});
   },
 
@@ -168,12 +170,14 @@ var TagModel = module.exports = function(environment) {
    * @param credentials
    * @param callback signatur (data)
    */
-  self.fillDatatable = function(credentials, callback) {
-	self.listTags(0,-1,credentials,function(err,result) {
+  self.fillDatatable = function(start, count, credentials, callback) {
+	self.listTags(start,count,credentials,function(err,result,totalx) {
 		console.log('ROUTES/tag '+err+' '+result);
-  	  CommonModel.fillDatatable(result, "tag/", function(data) {
-		  callback(data);
-	  });
+	      CommonModel.fillSubjectAuthorDateTable(result,"/tag/",totalx, function(html,len,total) {
+		      console.log("FILLING "+start+" "+count+" "+total);
+		      callback(html,len,total);
+	    	  
+	      });
 	});
   }
 };

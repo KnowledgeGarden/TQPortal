@@ -165,22 +165,24 @@ var BookmarkModel =  module.exports = function(environment) {
 	  
 	  self.listBlogPosts = function(start, count, credentials, callback) {
 	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BOOKMARK_TYPE,start,count);
-	    Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data) {
+	    Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
 	      console.log("BookmarkModel.listBlogPosts "+err+" "+data);
-	      callback(err,data);
+	      callback(err,data,total);
 	    });
 	  },
 	  
 	  /**
 	   * @param credentials
-	   * @param callback signatur (data)
+	   * @param callback signature (html, length, total)
 	   */
-	  self.fillDatatable = function(credentials, callback) {
-		  self.listBlogPosts(0,100,credentials,function(err,result) {
+	  self.fillDatatable = function(start, count, credentials, callback) {
+		  self.listBlogPosts(start,count,credentials,function(err,result,totalx) {
 		      console.log('ROUTES/bookmark '+err+' '+result);
-	    	  CommonModel.fillDatatable(result, "bookmark/", function(data) {
-	    		  callback(data);
-	    	  });
+		      CommonModel.fillSubjectAuthorDateTable(result,"/bookmark/",totalx, function(html,len,total) {
+			      console.log("FILLING "+start+" "+count+" "+total);
+			      callback(html,len,total);
+		    	  
+		      });
 		  });
 	  }
 };

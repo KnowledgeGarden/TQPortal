@@ -43,29 +43,7 @@ var WikiModel =  module.exports = function(environment) {
 	    	  });
 		  });
 	  },
-/**	  
-	  self.update = function(blog,user,credentials,callback) {
-		  topicMapEnvironment.logDebug("Bookmark.UPDATE "+JSON.stringify(blog));
-		  var lox = blog.locator;
-		  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
-			  var error = '';
-			  if (err) {error += err;}
-			  var title = blog.title;
-			  var body = blog.body;
-	    	  var lang = blog.language;
-	    	  var comment = "an edit"; //TODO add comment field to form
-	    	  if (!lang) {lang = "en";}
-	    	  result.updateSubject(title,lang,user.handle,comment);
-	    	  result.updateBody(body,lang,user.handle,comment);
-	    	  result.setLastEditDate(new Date());
 
-	    	  Dataprovider.putNode(result, function(err,data) {
-	    		  if (err) {error += err;}
-	    		  callback(error,data);
-	    	  });
-		  });
-	  },
-*/
   /**
    * Create a new wiki topic
    * @param wiki: a JSON object filled in
@@ -137,10 +115,9 @@ var WikiModel =  module.exports = function(environment) {
   },
 
   	self.listWikiPosts = function(start, count, credentials, callback) {
-	  var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.WIKI_TYPE,start,count);
-	  Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data) {
+	  Dataprovider.listInstanceNodes(types.WIKI_TYPE, start,count,credentials, function(err,data,total){
 		  console.log("WikiModel.listBlogPosts "+err+" "+data);
-		  callback(err,data);
+		  callback(err,data, total);
 	  });
 	},
 	  
@@ -148,12 +125,14 @@ var WikiModel =  module.exports = function(environment) {
 	   * @param credentials
 	   * @param callback signatur (data)
 	   */
-	  self.fillDatatable = function(credentials, callback) {
-          self.listWikiPosts(0,100,credentials,function(err,result) {
+	  self.fillDatatable = function(start, count, credentials, callback) {
+          self.listWikiPosts(start,count,credentials,function(err,result,totalx) {
 		      console.log('ROUTES/bookmark '+err+' '+result);
-			  CommonModel.fillDatatable(result, "wiki/", function(data) {
-				  callback(data);
-			  });
+		      CommonModel.fillSubjectAuthorDateTable(result,"/wiki/",totalx, function(html,len,total) {
+			      console.log("FILLING "+start+" "+count+" "+total);
+			      callback(html,len,total);
+		    	  
+		      });
 		  });
 	  }
 };

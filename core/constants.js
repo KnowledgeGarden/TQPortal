@@ -13,3 +13,4 @@ module.exports.ADMIN_CREDENTIALS	= "AdminCred";
 module.exports.INVITATION_COLLECTION	= "invitees";
 module.exports.USER_COLLECTION	= "users";
 module.exports.RECENT_COLLECTION = "recents";
+module.exports.MAX_HIT_COUNT = 30;

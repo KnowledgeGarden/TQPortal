@@ -5,20 +5,31 @@
  */
 
 /**
+ * A constant value (for now)
+ */
+var __pageCount = 30;
+
+/**
  * Boots a page by fetching data according to 
  * content on the page
  */
 function initPage() {
-	var q = $(".vfpage").attr("query");
-	if (q) {
-	  var language = $(".vfpage").attr("language");
-	  var type = $(".vfpage").attr("type");
-	  var cl = $(".vfpage").attr("contextLocator");
-	  var query = q+"?language="+language;
-	  if (cl) {
-		  query += "&contextLocator="+cl;
-	  }
-
+	var test = $("#tabledata").attr("query");
+	//first, see if this is an index page
+	if (test) {
+		pageSetup();
+	} else {
+	//paint virtual page
+		var q = $(".vfpage").attr("query");
+		if (q) {
+		  var language = $(".vfpage").attr("language");
+		  var type = $(".vfpage").attr("type");
+		  var cl = $(".vfpage").attr("contextLocator");
+		  var query = q+"?language="+language;
+		  if (cl) {
+			  query += "&contextLocator="+cl;
+		}
+	
 		$.get( query, function( data ) {
 		//	alert(data);
 			  //now, paint the page
@@ -61,7 +72,102 @@ function initPage() {
 				  paintTree(data.jtree);
 			  }
 		});
+		}
 	}
+}
+
+/**
+ * ViewFirst tables:
+ * Since different index tables will vary,
+ * we let the server paint the html
+ * query is based on <app>/index
+ */
+function pageSetup() {
+	var data = $("#tabledata");
+	var q = data.attr("query");
+	var cursor = data.attr("start");
+	var count = data.attr("count");
+	var query = q+"?start="+cursor+"&count="+count;
+	$.get( query, function( data ) {
+		paintIndex(data);
+	});
+}
+
+/**
+ * Server must send back 
+ *   the table's HTML <table>
+ *   the current cursor <start>
+ *   the number sent <count>
+ *   the total number available <total>
+ * @param data
+ * @returns
+ */
+function paintIndex(data) {
+	//alert(data.total);
+	$("div.tableindex").html(data.table);
+	$("#tabledata").attr("start","");
+	//$("#tabledata").attr("count","");
+	$("#tabledata").attr("total","");
+	$("#tabledata").attr("start",parseInt(data.start));
+	//$("#tabledata").attr("count",parseInt(data.count));
+	$("#tabledata").attr("total",parseInt(data.total));
+	paintPaginationButtons(data);
+}
+function paintPaginationButtons(data) {
+	var cursor = parseInt(data.start);
+	var count = parseInt(data.count);
+	//total available to show
+	var avail = parseInt(data.total);
+	//what's to the left of the cursor
+	var surplus = cursor - count;
+	//what's to the right of the cursor
+	var more = avail - cursor;
+//	alert(cursor+" "+more+" "+surplus+" "+avail);
+	//     5          5         0         10
+	//    10          0         5         10  after previous
+	var html = "Available: "+avail; //doing simple javascript hrefs for now
+	if (more > 0) {
+		html+="&nbsp;&nbsp;<a href=\"javascript:pageNext();\"><b>Next</a>";
+	}
+	if (surplus > 0) {
+		html+="&nbsp;&nbsp;<a href=\"javascript:pagePrevious();\"><b>Previous</a>";	
+	}
+	$("div.pagination").html(html);
+}
+function pageNext() {
+	var data = $("#tabledata");
+	var q = data.attr("query");
+	//tells where we are (actually, points to the next
+	var cursor = parseInt(data.attr("start"));
+	//
+	var count = parseInt(data.attr("count"));
+	var avail = parseInt(data.attr("total"));
+//	alert(cursor+" "+count);
+	var query = q+"?start="+cursor+"&count="+count;
+	$.get( query, function( data ) {
+		paintIndex(data);
+	});
+
+}
+
+function pagePrevious() {
+	var data = $("#tabledata");
+	var q = data.attr("query");
+	//tells where we are (actually, points to the next
+	var cursor = parseInt(data.attr("start"));
+	//
+	var count = parseInt(data.attr("count"));
+	var start = cursor - count-count;
+	if (start < 0) {
+		start = 0;
+	}
+	//var avail = parseInt(data.attr("total"));
+//	alert(cursor+" "+count+" "+start);
+	var query = q+"?start="+start+"&count="+count;
+	$.get( query, function( data ) {
+		paintIndex(data);
+	});
+
 }
 
 function paintNewCon(locator, type) {
