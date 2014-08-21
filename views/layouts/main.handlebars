@@ -13,14 +13,17 @@
   <script>
     jQuery(document).ready(function ($) {
       initPage();
-       $('#calendar').fullCalendar({
+      try {
+    $('#calendar').fullCalendar({
         header: {
 				left: 'prev,next today',
 				center: 'title',
 				right: 'month,basicWeek,basicDay'
 			}
-    	});
-      //summernote is for blogform.handlebars and wikiform.handlebars
+    }); 
+    } catch (e) {};
+      
+       //summernote is for blogform.handlebars and wikiform.handlebars
       $('#summernote').summernote({
         height: 300,
           onImageUpload: function(files, editor, $editable) {
