@@ -103,7 +103,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			}
 			if (info) {
 				//this could be anything contained in the message in info
-				return res.redirect('/NoSuchUser');   //TODO
+				return res.redirect('/error/NoSuchUser');   //TODO
 			}
 			//Initialize a user's clipboard
 			var sess = req.session;
@@ -143,39 +143,56 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var __doPostSignup = function(req, res) {
 		var handle = req.body.handle;
 		var email = req.body.email;
+		var password = req.body.password;
+		var fullname = req.body.fullname;
+		if (fullname === "") {
+			fullname = "no name given";
+		}
 		console.log("__doPostSignup "+email+' | '+
-				req.body.fullname+' | '+
+				fullname+' | '+
 				handle+' | '+
 				req.body.avatar+' | '+
 				req.body.homepage);
 		//validate handle -1
+		//Sanity checks
+		console.log("XXX "+email);
+		if (email === "") {
+			return res.redirect('/error/MissingEmail');
+		}
 		if (handle === "") {
-			return res.redirect('/HandleRequired');
+			return res.redirect('/error/HandleRequired');
+		}
+		if (password === "") {
+			return res.redirect('/error/MissingPassword');
+		}
+		if (handle.indexOf(" ") > -1) {
+			console.log("BAD HANDLE "+handle);
+			return res.redirect("/error/BadHandle");
 		}
 		//validate handle -2
 		AdminModel.handleExists(handle, function(err,truth) {
 			if (truth) {
 				console.log('SIGNUP-B');
-				return res.redirect('/HandleExists');
+				return res.redirect('/error/HandleExists');
 			}
 		});
-		var handle = req.body.handle;
 		//build a user
 		var credentials = [];
 		credentials.push(handle);
 		console.log('SIGNUP-C');
 		var xuser = new User({
-			fullname : req.body.fullname,
-			email   : req.body.email,
+			fullname : fullname,
+			email   : email,
 			avatar : req.body.avatar,
 			homepage : req.body.homepage,
+			latitude : req.body.Latitude,
+			longitude : req.body.Longitude
 			//leave password out; it requires a callback
 			//leave handle out: set next
 		});
-		//note: handle is username: must be unique
 		xuser.setHandle(handle);
 		console.log('SIGNUP-XXX '+xuser.getEmail());
-		xuser.setPassword(req.body.password, function (err) {
+		xuser.setPassword(password, function (err) {
 			console.log('Saving '+ JSON.stringify(xuser.getData()));
 			userDatabase.save(xuser.getData(), function(err,data) {
 				if(err) {
@@ -186,7 +203,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					UserModel.newUserTopic(xuser,function(err,result) {
 						if (err) {
 							console.log('ROUTES.signup/post error '+err);
-							return res.redirect('/SignupError');
+							return res.redirect('/error/SignupError');
 						}
 					});
 				}
