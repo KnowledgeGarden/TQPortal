@@ -56,6 +56,22 @@ var User = module.exports = function(json) {
   self.getAvatar = function() {
     return data['avatar'];
   },
+  self.setLatitude = function(latitude) {
+	  this.data['latitude'] = latitude;
+  }
+  self.getLatitude = function() {
+	  var result = this.data['latitude'];
+	  if (result) {return result;}
+	  return "";
+  }
+  self.setLongitude = function(longitude) {
+	  this.data['longitude'] = longitude;
+  }
+  self.getLongitude = function() {
+	  var result = this.data['longitude'];
+	  if (result) {return result;}
+	  return "";
+  }
   /**
    * @param password text
    * @param callback: signature (err)

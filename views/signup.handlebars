@@ -7,7 +7,7 @@
   {{/if}}
   <form action="/validate" method="post">
       <div class="form-group">
-      <label>Handle must be unique. Validate Handle here. If chosen value is available, it will return in the Handle field below.</label>
+      <label class="text-danger">Handle must be single word and unique. Validate Handle here. If chosen value is available, it will return in the Handle field below.</label>
       <input type="text" class="form-control" name="vhandle">
       <button type="submit" class="btn btn-warning btn-lg">Validate</button>
     </div>
@@ -16,7 +16,7 @@
   <hr>
 	<form action="/signup" method="post">
 		<div class="form-group">
-			<label>Email</label>
+			<label>Email <b class="text-danger">Required for login</b></label>
 			<input type="text" class="form-control" name="email">
 		</div>
 		<div class="form-group">
@@ -24,7 +24,7 @@
 			<input type="text" class="form-control" name="fullname">
 		</div>
 		<div class="form-group">
-			<label>Handle</label>
+			<label>Handle <b class="text-danger">Required & must be a single word</b></label>
 			<input type="text" class="form-control" name="handle" value="{{ hndl }}">
 		</div>
 		<div class="form-group">
@@ -39,7 +39,20 @@
 			<label>Password</label>
 			<input type="password" class="form-control" name="password">
 		</div>
-
+		<h4>GeoLocation</h4>
+		It is possible to use the GeoMap Application: navigate to your location and click the map to get Latitude and Longitute values.
+		<div class="form-group">
+			<label>Latitude</label>
+			<input type="text" id="Latitude" class="form-control" name="Latitude" value="">
+		</div>
+		<div class="form-group">
+ 			<label>Longitude</label>
+ 			<input type="text" id="Longitude" class="form-control" name="Longitude" value="">
+ 		</div>
+ 		<div class="form-group">
+ 			<input type="button" value="Get Location" onclick="getLocationConstant()"/> Might fail to get values
+		</div>
+ 
 		<button type="submit" class="btn btn-warning btn-lg">Signup</button>
 	</form>
 

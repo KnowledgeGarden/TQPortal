@@ -4,7 +4,7 @@
     "test": "./node_modules/.bin/eslint apps config lib routes server.js"
   },
   "name": "TQPortal",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "A Landing Page and Portal Framework for TopicQuests",
   "main": "server.js",
   "author": "park",
@@ -38,7 +38,9 @@
     "easyimage": "~1.0.0",
     "feathers": "~1.0.0-pre.5",
     "socket.io": "~1.0.6",
-    "primus": "~2.4.2"
+    "primus": "~2.4.2",
+    "cron": "~1.0.4",
+    "nodemailer": "~1.2.1"
   },
   "devDependencies": {
     "eslint": "^0.6.2"
