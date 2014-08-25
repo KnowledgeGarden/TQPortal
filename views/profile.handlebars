@@ -1,0 +1,45 @@
+<h1>User Profile</h2>
+<div id="article">
+<div class="col-sm-6 col-sm-offset-3">
+	<form action="/profile/update" method="post">
+	    <input type="hidden" name="userlocator" value="{{userlocator}}"/>
+	    <input type="hidden" name="useremail" value="{{email}}"/>
+		<div class="form-group">
+			<!-- future changes might allow this -->
+			<label>Email <b class="text-danger">cannot be changed</b></label>
+			<!--<input type="text" class="form-control" name="email" value="{{email}}">-->
+		</div>
+		<div class="form-group">
+			<label>Full Name</label>
+			<input type="text" class="form-control" name="fullname" value="{{fullname}}">
+		</div>
+		<div class="form-group">
+			<label>Handle <b class="text-danger">cannot be changed</b></label>
+		</div>
+		<div class="form-group">
+			<label>Avatar</label>
+			<input type="text" class="form-control" name="avatar" value="{{avatar}}">
+		</div>
+		<div class="form-group">
+			<label>Home Page</label>
+			<input type="text" class="form-control" name="homepage" value="{{homepage}}">
+		</div>
+		<h4>GeoLocation</h4>
+		It is possible to use the GeoMap Application: navigate to your location and click the map to get Latitude and Longitute values.
+		<div class="form-group">
+			<label>Latitude</label>
+			<input type="text" id="Latitude" class="form-control" name="Latitude" value="{{latitude}}">
+		</div>
+		<div class="form-group">
+ 			<label>Longitude</label>
+ 			<input type="text" id="Longitude" class="form-control" name="Longitude" value="{{longitude}}">
+ 		</div>
+ 		<div class="form-group">
+ 			<input type="button" value="Get Location" onclick="getLocationConstant()"/> Might fail to get values
+		</div>
+ 
+		<button type="submit" class="btn btn-warning btn-lg">Update</button>
+	</form>
+
+</div>
+</div>
