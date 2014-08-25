@@ -1,6 +1,7 @@
 {
 "server": "localhost",
 "port": "3000",
+"brand":"TopicQuests Portal",
 "defaultadminemail": "admin@topicquests.org",
 "defaultadminpwd": "testuser!",
 "portalIsPrivate": false,
