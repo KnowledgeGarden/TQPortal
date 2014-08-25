@@ -13,7 +13,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
 var UserModel = module.exports = function(environment) {
 	var CommonModel = environment.getCommonModel();
   var topicMapEnvironment = environment.getTopicMapEnvironment();
-  var Dataprovider = topicMapEnvironment.getDataProvider();
+  var DataProvider = topicMapEnvironment.getDataProvider();
   var topicModel = topicMapEnvironment.getTopicModel();
 
   var self = this;
@@ -24,19 +24,46 @@ var UserModel = module.exports = function(environment) {
   self.update = function(userbody,user,credentials,callback) {
 	  topicMapEnvironment.logDebug("USER.UPDATE "+JSON.stringify(userbody));
 	  var lox = userbody.locator;
-	  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+	  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
 		  var error = '';
 		  if (err) {error += err;}
 		  var body = userbody.body;
     	  var lang = userbody.language;
-    	  var comment = "an edit"; //TODO add comment field to form
-    	  if (!lang) {lang = "en";}
-    	  result.updateBody(body,lang,user.handle,comment);
-    	  Dataprovider.putNode(result, function(err,data) {
-    		  if (err) {error += err;}
-    		  callback(error,data);
-    	  });
-	  });
+    	  var comment = "an edit by "+user.handle;
+    	  var oldBody;
+    	  if(result.getBody(lang)) {
+    		  oldBody = result.getBody(lang).theText;
+    	  }
+    	  if (oldBody) {
+    		  isNotUpdateToBody = (oldBody === body);
+    	  }
+    	  var oldLabel = result.getSubject(lang).theText;
+    	  var isNotUpdateToLabel = (title === oldLabel);
+    	  if (!isNotUpdateToLabel) {
+    		  //crucial update to label
+    		  result.updateSubject(title,lang,user.handle,comment);
+    		  if (!isNotUpdateToBody) {
+    			  result.updateBody(body,lang,user.handle,comment);
+    		  }
+	    	  result.setLastEditDate(new Date());
+	    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+	    		  if (err) {error += err;}
+	    		  console.log("UserModel.update "+error+" "+oldLabel+" "+title);
+	    		  callback(error,data);
+	    	  });
+    	  } else {
+    		  if (!isNotUpdateToBody) {
+    			  result.updateBody(body,lang,user.handle,comment);
+    			  result.setLastEditDate(new Date());
+		    	  DataProvider.putNode(result, function(err,data) {
+		    		  if (err) {error += err;}
+		    		  callback(error,data);
+		    	  });
+    		  } else {
+    			  callback(error,null);
+    		  }
+    	  };
+    });
   },
 
   /**
@@ -72,7 +99,7 @@ var UserModel = module.exports = function(environment) {
         	if (user.getHomepage()) {
         		usr.setResourceUrl(user.getHomepage());
         	}
-          Dataprovider.putNode(usr, function(err,data) {
+          DataProvider.putNode(usr, function(err,data) {
             console.log('UserModel.newUserTopic+ '+usr.getLocator()+" "+err);
             callback(err,null);
           });
@@ -89,13 +116,13 @@ var UserModel = module.exports = function(environment) {
    */
   self.findUser = function(userLocator, credentials, callback) {
 	  console.log("UserModel.findUser "+userLocator+" "+credentials);
-    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
+    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
       callback(err,result);
     });
   },
   
   self.listUsers = function(start, count, credentials, callback) {
-    Dataprovider.listInstanceNodes(types.USER_TYPE, start,count,credentials, function(err,data,total) {
+    DataProvider.listInstanceNodes(types.USER_TYPE, start,count,credentials, function(err,data,total) {
       console.log("UserModel.listInstanceNodes "+err+" "+data);
       callback(err,data,total);
     });

@@ -114,7 +114,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (result) {
 			//A blog post is an AIR
 			data.title = result.getSubject(constants.ENGLISH).theText;
-			data.body = result.getBody(constants.ENGLISH).theText;
+			if (result.getBody(constants.ENGLISH)) {
+				data.body = result.getBody(constants.ENGLISH).theText;
+			}
 			data.locator = result.getLocator();
 			data.isNotEdit = false;
 		}

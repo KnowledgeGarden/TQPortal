@@ -13,7 +13,7 @@ var WikiModel =  module.exports = function(environment) {
 	var CommonModel = environment.getCommonModel();
 	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
+	var DataProvider = topicMapEnvironment.getDataProvider();
 	var queryDSL = topicMapEnvironment.getQueryDSL();
 	var TopicModel = topicMapEnvironment.getTopicModel();
 	var TagModel = new tagmodel(environment);
@@ -26,22 +26,47 @@ var WikiModel =  module.exports = function(environment) {
 		  topicMapEnvironment.logDebug("WIKI.UPDATE "+JSON.stringify(blog));
 		  var credentials = user.credentials;
 		  var lox = blog.locator;
-		  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
 			  var error = '';
 			  if (err) {error += err;}
 			  var title = blog.title;
 			  var body = blog.body;
 	    	  var lang = blog.language;
-	    	  var comment = "an edit"; //TODO add comment field to form
-	    	  if (!lang) {lang = "en";}
-	    	  result.updateSubject(title,lang,user.handle,comment);
-	    	  result.updateBody(body,lang,user.handle,comment);
-	    	  result.setLastEditDate(new Date());
-	    	  Dataprovider.putNode(result, function(err,data) {
-	    		  if (err) {error += err;}
-	    		  callback(error,data);
-	    	  });
-		  });
+	    	  var comment = "an edit by "+user.handle;
+	    	  var oldBody;
+	    	  if(result.getBody(lang)) {
+	    		  oldBody = result.getBody(lang).theText;
+	    	  }
+	    	  if (oldBody) {
+	    		  isNotUpdateToBody = (oldBody === body);
+	    	  }
+	    	  var oldLabel = result.getSubject(lang).theText;
+	    	  var isNotUpdateToLabel = (title === oldLabel);
+	    	  if (!isNotUpdateToLabel) {
+	    		  //crucial update to label
+	    		  result.updateSubject(title,lang,user.handle,comment);
+	    		  if (!isNotUpdateToBody) {
+	    			  result.updateBody(body,lang,user.handle,comment);
+	    		  }
+		    	  result.setLastEditDate(new Date());
+		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+		    		  if (err) {error += err;}
+		    		  console.log("WikiModel.update "+error+" "+oldLabel+" "+title);
+		    		  callback(error,data);
+		    	  });
+	    	  } else {
+	    		  if (!isNotUpdateToBody) {
+	    			  result.updateBody(body,lang,user.handle,comment);
+	    			  result.setLastEditDate(new Date());
+			    	  DataProvider.putNode(result, function(err,data) {
+			    		  if (err) {error += err;}
+			    		  callback(error,data);
+			    	  });
+	    		  } else {
+	    			  callback(error,null);
+	    		  }
+	    	  };
+	    });
 	  },
 
   /**
@@ -56,7 +81,7 @@ var WikiModel =  module.exports = function(environment) {
     var credentials = user.credentials;
     var language = constants.ENGLISH; //TODO
     var userTopic;
-    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
+    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
     	userTopic = result;
     	console.log('WikiModel.create-1 '+userLocator+' | '+userTopic);
     	// create the blog post
@@ -71,15 +96,14 @@ var WikiModel =  module.exports = function(environment) {
     		topicMapEnvironment.logDebug("WikiModel adding ring "+myEnvironment);
 			myEnvironment.addRecentWiki(article.getLocator(),wiki.title);
   		// now deal with tags
-    		var tags = wiki.tags;
-    		if (tags.indexOf(',') > -1) {
-    			var tagList = tags.split(',');
-    			TagModel.processTagList(tagList, userTopic, article, credentials, function(err,result) {
+			var taglist = CommonModel.makeTagList(wiki);
+    		if (taglist.length > 0) {
+    			TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
     				topicMapEnvironment.logDebug('NEW_POST-1 '+result);
     				//result could be an empty list;
     				//TagModel already added Tag_Doc and Doc_Tag relations
     				console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-    				Dataprovider.putNode(article, function(err,data) {
+    				DataProvider.putNode(article, function(err,data) {
     					console.log('ARTICLES_CREATE-3 '+err);	  
     					if (err) {console.log('ARTICLES_CREATE-3a '+err)}
     					console.log('ARTICLES_CREATE-3b '+userTopic);	 
@@ -93,29 +117,28 @@ var WikiModel =  module.exports = function(environment) {
     					}); //r1
     				}); //putnode 		  
     			}); // processtaglist
-    		} else {
-    			TagModel.processTag(tags, userTopic, article, credentials, function(err,result) {
-    				topicMapEnvironment.logDebug('NEW_POST-2 '+result);
-    				//result is a list of tags already related to doc and user
-    				console.log("ARTICLES_CREATE_22 "+JSON.stringify(article));
-    				Dataprovider.putNode(article, function(err,data) {
-    					console.log('ARTICLES_CREATE-33 '+err);	  
-    					if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
-    					TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-    							userTopic.getLocator(),
-    							icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-    						if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-    						callback(err,article.getLocator());
-    					}); //r1
-    				}); //putNode
-    			});//processTags
-    		} // else      	
+    		}  	else {
+				DataProvider.putNode(article, function(err,data) {
+					console.log('ARTICLES_CREATE-3 '+err);	  
+					if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+					console.log('ARTICLES_CREATE-3b '+userTopic);	 
+
+					TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+							userTopic.getLocator(),
+							icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+						if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+						console.log("WikiModel.create-A "+article.toJSON());
+						callback(err,article.getLocator());
+					}); //r1
+				}); //putnode 		  
+
+    		}
     	});  
 	});
   },
 
   	self.listWikiPosts = function(start, count, credentials, callback) {
-	  Dataprovider.listInstanceNodes(types.WIKI_TYPE, start,count,credentials, function(err,data,total){
+	  DataProvider.listInstanceNodes(types.WIKI_TYPE, start,count,credentials, function(err,data,total){
 		  console.log("WikiModel.listBlogPosts "+err+" "+data);
 		  callback(err,data, total);
 	  });

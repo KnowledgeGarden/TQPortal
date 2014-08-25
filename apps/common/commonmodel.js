@@ -7,11 +7,28 @@ var  types = require('../../node_modules/tqtopicmap/lib/types')
 var CommonModel = module.exports = function(environment, tmenv) {
 	var myEnvironment = environment;
 	var topicMapEnvironment = tmenv;
-	var Dataprovider = topicMapEnvironment.getDataProvider();
+	var DataProvider = topicMapEnvironment.getDataProvider();
 	var self = this;
 	
+	self.makeTagList = function(body) {
+		var taglist = [];
+		if (body.tag1 && body.tag1.length > 0) {
+			taglist.push(body.tag1);
+		}
+		if (body.tag2 && body.tag2.length > 0) {
+			taglist.push(body.tag2);
+		}
+		if (body.tag3 && body.tag3.length > 0) {
+			taglist.push(body.tag3);
+		}
+		if (body.tag4 && body.tag4.length > 0) {
+			taglist.push(body.tag4);
+		}
+		return taglist;
+	},
+	
 	self.fillTree = function(rootLocator, credentials, callback) {
-		Dataprovider.getTree(rootLocator, 0,0,0, credentials, function(err,node) {
+		DataProvider.getTree(rootLocator, 0,0,0, credentials, function(err,node) {
 			console.log("CommonModel.fillTree "+rootLocator+" "+node);
 			callback(err, node);
 		});
@@ -65,7 +82,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	   */
 	  self.fillConversationTable = function(isConversation, isChild, locator,contextLocator,credentials,callback) {
 		  var TheResult = {};
-		  Dataprovider.getNodeByLocator(locator,credentials, function(err,data) {
+		  DataProvider.getNodeByLocator(locator,credentials, function(err,data) {
 			  topicMapEnvironment.logDebug("CommonModel.fillConversationTable- "+err+" "+data);
 			  var snappers;
 			  if (isChild) {
@@ -174,8 +191,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
     	  var title = "";
     	  if (theNode.getSubject(language)) {
     		  title = theNode.getSubject(language).theText;
-    	  } else if (theNode.getLabel("language")) {
-    		  title = theNode.getLabel("language");
+    	  } else if (theNode.getLabel(language)) {
+    		  title = theNode.getLabel(language);
     	  }
     	  data.title = "<h2 class=\"blog-post-title\"><img src="+theNode.getImage()+">&nbsp;"+title+"</h2>"
 	      var details = "";

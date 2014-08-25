@@ -35,12 +35,28 @@ var UserDatabase = module.exports = function(db) {
 		
 	},
 
+	
+	/**
+	 * Fetch a user by <code>handle</code>. Used only when a 
+	 * profile change returns a new email address.
+	 */
+	self.__getUserByHandle = function(handle, callback) {
+		database.collection(constants.USER_COLLECTION, function(err, collection) {
+			var q = {};
+			q.handle = handle;
+			collection.findOne(q,function(err, result) {
+				callback(err,result);
+			});
+		});
+		
+	},
 	/**
 	 * Find a user given <code>email</code>
 	 * @param email
-	 * @param callback: signature (err,data)
+	 * @param callback: signature (err,data) returns a JSON object
 	 */
 	self.findOne = function(email, callback) {
+		console.log("UserDatabase.findOne "+email);
 		database.collection(constants.USER_COLLECTION, function(err, collection) {
 			var q = {};
 			q.email = email;

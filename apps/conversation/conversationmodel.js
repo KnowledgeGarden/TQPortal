@@ -15,7 +15,7 @@ var ConversationModel = module.exports = function(environment) {
 	var myEnvironment = environment;
 	var CommonModel = environment.getCommonModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
+	var DataProvider = topicMapEnvironment.getDataProvider();
 	var TopicModel = topicMapEnvironment.getTopicModel();
 	var TagModel = new tagmodel(environment);
 	var queryDSL = topicMapEnvironment.getQueryDSL();
@@ -40,22 +40,50 @@ var ConversationModel = module.exports = function(environment) {
 		  topicMapEnvironment.logDebug("CONVERSATION.UPDATE "+JSON.stringify(blog));
 		  var credentials = user.credentials;
 		  var lox = blog.locator;
-		  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
 			  var error = '';
 			  if (err) {error += err;}
 			  var title = blog.title;
 			  var body = blog.body;
 	    	  var lang = blog.language;
-	    	  var comment = "an edit"; //TODO add comment field to form
+			  var isNotUpdateToBody = true;
+	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
-	    	  result.updateSubject(title,lang,user.handle,comment);
-	    	  result.updateBody(body,lang,user.handle,comment);
-	    	  result.setLastEditDate(new Date());
-	    	  Dataprovider.putNode(result, function(err,data) {
-	    		  if (err) {error += err;}
-	    		  callback(error,data);
-	    	  });
-		  });
+	    	  var comment = "an edit by "+user.handle;
+	    	  var oldBody;
+	    	  if(result.getBody(lang)) {
+	    		  oldBody = result.getBody(lang).theText;
+	    	  }
+	    	  if (oldBody) {
+	    		  isNotUpdateToBody = (oldBody === body);
+	    	  }
+	    	  var oldLabel = result.getSubject(lang).theText;
+	    	  var isNotUpdateToLabel = (title === oldLabel);
+	    	  if (!isNotUpdateToLabel) {
+	    		  //crucial update to label
+	    		  result.updateSubject(title,lang,user.handle,comment);
+	    		  if (!isNotUpdateToBody) {
+	    			  result.updateBody(body,lang,user.handle,comment);
+	    		  }
+		    	  result.setLastEditDate(new Date());
+		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+		    		  if (err) {error += err;}
+		    		  console.log("ConversationModel.update "+error+" "+oldLabel+" "+title);
+		    		  callback(error,data);
+		    	  });
+	    	  } else {
+	    		  if (!isNotUpdateToBody) {
+	    			  result.updateBody(body,lang,user.handle,comment);
+	    			  result.setLastEditDate(new Date());
+			    	  DataProvider.putNode(result, function(err,data) {
+			    		  if (err) {error += err;}
+			    		  callback(error,data);
+			    	  });
+	    		  } else {
+	    			  callback(error,null);
+	    		  }
+	    	  };		 
+	    });
 	  },
   ///////////////////////////////
   //TODO
@@ -75,7 +103,7 @@ var ConversationModel = module.exports = function(environment) {
 	    var userLocator = user.handle; // It's supposed to be user.handle;
 	    //first, fetch this user's topic
 	    var userTopic;
-	    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
 	      userTopic = result;
 	      console.log('ConversationModel.createRootMap1 '+userLocator+' | '+userTopic);
 	      // create the blog post
@@ -96,15 +124,14 @@ var ConversationModel = module.exports = function(environment) {
 	    //	  console.log('BlogModel.create-2 '+article.toJSON());
 				myEnvironment.addRecentConversation(article.getLocator(),blog.title);
 	    	     // now deal with tags
-	          var tags = blog.tags;
-	          if (tags.length > 0 && tags.indexOf(',') > -1) {
-	            var tagList = tags.split(',');
-	            TagModel.processTagList(tagList, userTopic, article, credentials, function(err,result) {
+				var taglist = CommonModel.makeTagList(blog);
+	          if (taglist.length > 0) {
+	            TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
 	              console.log('NEW_POST-1 '+result);
 	              //result could be an empty list;
 	              //TagModel already added Tag_Doc and Doc_Tag relations
 	              console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-	              Dataprovider.putNode(article, function(err,data) {
+	              DataProvider.putNode(article, function(err,data) {
 	                console.log('ARTICLES_CREATE-3 '+err);	  
 	                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
 	                console.log('ARTICLES_CREATE-3b '+userTopic);	  
@@ -118,24 +145,21 @@ var ConversationModel = module.exports = function(environment) {
 	                 }); //r1
 	              }); //putnode 		  
 	        	}); // processtaglist
-	          } else {
-	            TagModel.processTag(tags, userTopic, article, credentials, function(err,result) {
-	              console.log('NEW_POST-2 '+result);
-	              //result is a list of tags already related to doc and user
-	              console.log("ARTICLES_CREATE_22 "+JSON.stringify(article));
-	              Dataprovider.putNode(article, function(err,data) {
-	                console.log('ARTICLES_CREATE-33 '+err);	  
-	                if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
-	                TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	                		userTopic.getLocator(),
-	                    		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                    //modified to return entire node
-	                    callback(err,article);
-	                 }); //r1
-	              }); //putNode
-	            });//processTags
-	          } // else      	
+	          }  else {
+	              DataProvider.putNode(article, function(err,data) {
+		                console.log('ARTICLES_CREATE-3 '+err);	  
+		                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+		                console.log('ARTICLES_CREATE-3b '+userTopic);	  
+
+		                TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+		                		userTopic.getLocator(),
+		                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+		                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+		                    //modified to return entire node
+		                    callback(err,article);
+		                 }); //r1
+		              }); //putnode 		
+	          }   	
 	      });
 	    });
   },
@@ -229,7 +253,7 @@ var ConversationModel = module.exports = function(environment) {
 	topicMapEnvironment.logDebug("ConversationModel.create- "+parentNodeLocator+" "+nodeType);
 	topicMapEnvironment.logDebug("ConversationModel.create-- "+JSON.stringify(blog));
 
-    Dataprovider.getNodeByLocator(parentNodeLocator, credentials, function(err,result) {
+    DataProvider.getNodeByLocator(parentNodeLocator, credentials, function(err,result) {
       var parent = result;
       //contextLocator, parentNode,
 	  //newLocator, nodeType, subject, body, language, smallIcon, largeIcon,
@@ -241,19 +265,19 @@ var ConversationModel = module.exports = function(environment) {
     	  topicMapEnvironment.logDebug("ConversationModel.create "+parentNodeLocator+" "+data.toJSON());
     	  myEnvironment.addRecentConversation(data.getLocator(),blog.title);
     	  var article = data;
-	    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
 	      var userTopic = result;
 			
    	     	// now deal with tags
-	      var tags = blog.tags;
-	      if (tags.length > 0 && tags.indexOf(',') > -1) {
-           var tagList = tags.split(',');
-           TagModel.processTagList(tagList, userTopic, article, credentials, function(err,result) {
+			var taglist = CommonModel.makeTagList(blog);
+			console.log("NEW_POST "+err+" "+userTopic+" "+taglist);
+	        if (taglist.length > 0) {
+           TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
              console.log('NEW_POST-1 '+result);
              //result could be an empty list;
              //TagModel already added Tag_Doc and Doc_Tag relations
              console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-             Dataprovider.putNode(article, function(err,data) {
+             DataProvider.putNode(article, function(err,data) {
                console.log('ARTICLES_CREATE-3 '+err);	  
                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
                console.log('ARTICLES_CREATE-3b '+userTopic);	  
@@ -267,24 +291,21 @@ var ConversationModel = module.exports = function(environment) {
                 }); //r1
              }); //putnode 		  
        		}); // processtaglist
-	      } else {
-           TagModel.processTag(tags, userTopic, article, credentials, function(err,result) {
-             console.log('NEW_POST-2 '+result);
-             //result is a list of tags already related to doc and user
-             console.log("ARTICLES_CREATE_22 "+JSON.stringify(article));
-             Dataprovider.putNode(article, function(err,data) {
-               console.log('ARTICLES_CREATE-33 '+err);	  
-               if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
-               TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-               		userTopic.getLocator(),
-                   		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-                   if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-                   //modified to return entire node
-                   callback(err,article);
-                }); //r1
-             }); //putNode
-           });//processTags
-	      } // else  
+	          }  else {
+	              DataProvider.putNode(article, function(err,data) {
+		                console.log('ARTICLES_CREATE-3 '+err);	  
+		                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+		                console.log('ARTICLES_CREATE-3b '+userTopic);	  
+
+		                TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+		                		userTopic.getLocator(),
+		                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+		                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+		                    //modified to return entire node
+		                    callback(err,article);
+		                 }); //r1
+		              }); //putnode 		
+	          }   	
 	    });
       });
     });
@@ -296,11 +317,11 @@ var ConversationModel = module.exports = function(environment) {
 	  var toNode = body.myLocator;
 	  var contextLocator = body.contextLocator;
 	  topicMapEnvironment.logDebug("ConversationModel.performTransclude "+fromNode+" | "+toNode+" | "+contextLocator);
-	  Dataprovider.getNodeByLocator(fromNode, credentials, function(err,from) {
+	  DataProvider.getNodeByLocator(fromNode, credentials, function(err,from) {
 		  var error = '';
 		  if (err) {error+=err;}
 		  var sourceNode = from;
-		  Dataprovider.getNodeByLocator(toNode, credentials, function(err,to) {
+		  DataProvider.getNodeByLocator(toNode, credentials, function(err,to) {
 			  if (err) {error+=err;}
 			  var targetNode = to;
 			  //TODO add parent to source
@@ -310,9 +331,9 @@ var ConversationModel = module.exports = function(environment) {
 			  targetNode.addChildNode(contextLocator,sourceNode.getSmallImage(),sourceNode.getLocator(),sourceNode.getSubject(constants.ENGLISH).theText);
 			  topicMapEnvironment.logDebug("ConversationModel.performTransclude-2 "+targetNode.toJSON());
 			  //TODO save them both
-			  Dataprovider.putNode(sourceNode, function(err,data) {
+			  DataProvider.putNode(sourceNode, function(err,data) {
 				  if (err) {error+=err;}
-				  Dataprovider.putNode(targetNode, function(err,data) {
+				  DataProvider.putNode(targetNode, function(err,data) {
 					  if (err) {error+=err;}
 					  callback(error,null);
 				  });
@@ -324,9 +345,9 @@ var ConversationModel = module.exports = function(environment) {
 	  });
   }
   self.listConversations = function(start, count, credentials, callback) {
-	  Dataprovider.listInstanceNodes(types.CONVERSATION_MAP_TYPE, start,count,credentials, function(err,data,total) {
+	  DataProvider.listInstanceNodes(types.CONVERSATION_MAP_TYPE, start,count,credentials, function(err,data,total) {
     //var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.CONVERSATION_MAP_TYPE);
-    //Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
+    //DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
       console.log("ConversationModel.listConversations "+err+" "+data);
       callback(err,data,total);
     });

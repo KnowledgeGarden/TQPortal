@@ -93,6 +93,7 @@ var Environment = module.exports = function(callback) {
 		console.log("Environment.getCoreUIData "+isAuth);
 		if (isAuth) {
 			var usx = request.user;
+			result.userlocator = usx.handle;
 			var creds = usx.credentials;
 			console.log("Environment.checkIsAdmin "+creds.length+" "+creds);
 			for(var i=0;i<creds.length;i++) {

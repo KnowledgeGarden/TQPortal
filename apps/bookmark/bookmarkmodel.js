@@ -13,14 +13,14 @@ var BookmarkModel =  module.exports = function(environment) {
 	var myEnvironment = environment;
 	var CommonModel = environment.getCommonModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
+	var DataProvider = topicMapEnvironment.getDataProvider();
 	var TopicModel = topicMapEnvironment.getTopicModel();
 	var TagModel = new tagmodel(environment);
 	var queryDSL = topicMapEnvironment.getQueryDSL();
 	var self = this;
   
 	self.getBookmarkByURL = function(url, credentials, callback) {
-		Dataprovider.getNodeByURL(url,credentials, function(err,data) {
+		DataProvider.getNodeByURL(url,credentials, function(err,data) {
 			console.log('BookmarkModel.getNodeByURL '+url+" "+err+" "+data);
 		});
 	},
@@ -46,15 +46,14 @@ var BookmarkModel =  module.exports = function(environment) {
 			positionNode.setResourceUrl(url);
 			  myEnvironment.addRecentConversation(positionNode.getLocator(),blog.subject);
 			if (err) {error += err;}
-	        var tags = blog.tags;
-	        if (tags.length > 0 && tags.indexOf(',') > -1) {
-	          var tagList = tags.split(',');
-	          TagModel.processTagList(tagList, userTopic, positionNode, credentials, function(err,result) {
+			var taglist = CommonModel.makeTagList(blog);
+	        if (taglist.length > 0) {
+	          TagModel.processTagList(taglist, userTopic, positionNode, credentials, function(err,result) {
 	            console.log('NEW_POST-1 '+result);
 	            //result could be an empty list;
 	            //TagModel already added Tag_Doc and Doc_Tag relations
 	            console.log("ARTICLES_CREATE_2 "+JSON.stringify(positionNode));
-	            Dataprovider.putNode(positionNode, function(err,data) {
+	            DataProvider.putNode(positionNode, function(err,data) {
 	              console.log('ARTICLES_CREATE-3 '+err);	  
 	  			  if (err) {error += err;}
 	              if (err) {console.log('ARTICLES_CREATE-3a '+err)}
@@ -70,25 +69,22 @@ var BookmarkModel =  module.exports = function(environment) {
 	            }); //putnode 		  
 	      	  }); // processtaglist
 	        } else {
-	          TagModel.processTag(tags, userTopic, positionNode, credentials, function(err,result) {
-	  			  if (err) {error += err;}
-	            console.log('NEW_POST-2 '+result);
-	            //result is a list of tags already related to doc and user
-	            console.log("ARTICLES_CREATE_22 "+JSON.stringify(positionNode));
-	            Dataprovider.putNode(positionNode, function(err,data) {
-	              console.log('ARTICLES_CREATE-33 '+err);	  
-	  			  if (err) {error += err;}
-	              if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
-	              TopicModel.relateExistingNodesAsPivots(userTopic,positionNode,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	              		userTopic.getLocator(),
-	                  		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	            DataProvider.putNode(positionNode, function(err,data) {
+		              console.log('ARTICLES_CREATE-3 '+err);	  
 		  			  if (err) {error += err;}
-	                  if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-		              callback(error,positionNode.getLocator());
-	               }); //r1
-	            }); //putNode
-	          });//processTags
-	        } // else	
+		              if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+		              console.log('ARTICLES_CREATE-3b '+userTopic);	  
+		
+		              TopicModel.relateExistingNodesAsPivots(userTopic,positionNode,types.CREATOR_DOCUMENT_RELATION_TYPE,
+		              		userTopic.getLocator(),
+		                    		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+		      			if (err) {error += err;}
+		                  if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+			              callback(error,positionNode.getLocator());
+		               }); //r1
+		            }); //putnode 		  
+
+	        }
 		});
 	},
 	/**
@@ -108,12 +104,12 @@ var BookmarkModel =  module.exports = function(environment) {
 	      , bookmarkTopic;
 	    var error = '';
 	    //get the user
-	    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,utpx) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,utpx) {
 	      userTopic = utpx;
 	      if (err) {error+=err;}
 	      topicMapEnvironment.logDebug('BookmarkModel.create- '+userLocator+' | '+userTopic.toJSON());
 	      //see if the bookmark exists
-	      Dataprovider.getNodeByURL(url, credentials, function(err,dNode) {
+	      DataProvider.getNodeByURL(url, credentials, function(err,dNode) {
 		      if (err) {error+=err;}
 		      var lox;
 		      //test data to see if it's a proxy
@@ -143,7 +139,7 @@ var BookmarkModel =  module.exports = function(environment) {
 			    	  article.setSubject(subj,lang,userLocator);
 			    	  article.setResourceUrl(url);
 					  myEnvironment.addRecentBookmark(bookmarkTopic.getLocator(),blog.title);
-					  Dataprovider.putNode(bookmarkTopic, function(err,data) {
+					  DataProvider.putNode(bookmarkTopic, function(err,data) {
 					      if (err) {error+=err;}
 					      TopicModel.relateExistingNodesAsPivots(userTopic,bookmarkTopic,types.CREATOR_DOCUMENT_RELATION_TYPE,
 				              		userTopic.getLocator(),
@@ -165,7 +161,7 @@ var BookmarkModel =  module.exports = function(environment) {
 	  
 	  self.listBlogPosts = function(start, count, credentials, callback) {
 	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BOOKMARK_TYPE,start,count);
-	    Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
+	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
 	      console.log("BookmarkModel.listBlogPosts "+err+" "+data);
 	      callback(err,data,total);
 	    });

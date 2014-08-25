@@ -14,6 +14,7 @@ var __pageCount = 30;
  * content on the page
  */
 function initPage() {
+
 	var test = $("#tabledata").attr("query");
 	//first, see if this is an index page
 	if (test) {
@@ -47,7 +48,9 @@ function initPage() {
 			  }
 			  $("div.sourcecode").html(data.source);
 			  if (data.tags) {
-				  paintTags(data.tags);
+				  paintTags(data.tags, data.isAuthenticated, data.locator);
+			  } else if (data.isAuthenticated) {
+				  paintTags([], data.isAuthenticated, data.locator);
 			  }
 			  if (data.users) {
 				  paintUsers(data.users);
@@ -224,8 +227,12 @@ function paintPConTable(data) {
 	$("div.pcontable").html(html);
 }
 
-function paintTags(tags) {
-    var html = "<h4>Tags</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
+function paintTags(tags, isAuthenticated, locator) {
+	var nx = "";
+	if (isAuthenticated) {
+		nx = "<a title = \"Add More Tags\" href=\"/tag/addtag/"+locator+"\"><img src=\"/images/newbutton_sm.png\"></a>";
+	}
+    var html = "<h4>Tags"+nx+"</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
     html += "<ol class=\"list-unstyled\">";
     for (var i=0;i<tags.length;i++) {
     	html+= "<li><a href=\"/tag/"+tags[i].locator+"\"><img src=\""+tags[i].icon+"\">&nbsp;"+tags[i].label+"</a></li>"
@@ -264,7 +271,7 @@ function paintDocs(docs) {
     			urx = "/bookmark/";
     		} else if (typ === "/images/publication_sm.png") {
     			//could be a wiki or a blog (until we get different icons
-    			urx = "/blog";
+    			urx = "/blog/";
     		}
     	}
     	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].icon+"\">&nbsp;"+docs[i].label+"</a></li>"

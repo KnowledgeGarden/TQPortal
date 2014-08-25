@@ -52,6 +52,42 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  //rendering this will cause an ajax query to blog/index
 		  res.render('tagindex',data);
 	  });
+	  app.get('/tag/addtag/:id', isLoggedIn, function(req,res) {
+		  var data = environment.getCoreUIData(req);
+			var q = req.params.id;
+		  data.locator = q;
+		  res.render('addtagform',data);
+		  
+	  });
+	  
+	  app.post('/tag/add', isPrivate, function(req,res) {
+	    var body = req.body;
+	    var usx = req.user;
+		var credentials = usx.credentials;
+		console.log("Tag.add "+JSON.stringify(body));
+		TagModel.addTagsToNode(body,usx,credentials, function(err,data) {
+			console.log("Tag.add "+err);
+			res.redirect('/');
+		});
+	  });
+	  
+	  app.get('/tag/edit/:id', isLoggedIn, function(req,res) {
+			var q = req.params.id;
+			var usx = req.user;
+			var credentials = [];
+			if (usx) {credentials = usx.credentials;}
+			var data =  myEnvironment.getCoreUIData(req);
+			Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+				topicMapEnvironment.logDebug("TAG.edit "+q+" "+result);
+				if (result) {
+					data.title = result.getLabel(constants.ENGLISH);
+					data.body = result.getDetails(constants.ENGLISH);
+					data.locator = result.getLocator();
+					data.isNotEdit = false;
+				}
+				res.render('tagform', data); //,
+			});
+		  });
 		
 	  app.get("/tag/index", isPrivate,function(req,res) {
 		  var start = parseInt(req.query.start);
@@ -105,7 +141,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				    	//TODO
 				    	//Otherwise, grab some context from the node
 				    }
+				    //Allow Admins to edit tag
 			    	  var canEdit = false;
+			    	  if (credentials.indexOf(constants.ADMIN_CREDENTIALS) > -1) {
+			    		  canEdit = true;
+			    	  }
 			    	  var clipboard = req.session.clipboard;
 			    	  
 			    	  var editLocator = "/tag/edit/"+result.getLocator();
@@ -156,6 +196,15 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    	data.contextLocator = req.query.contextLocator;
 	    }
 	    res.render('vf_topic', data);
-  });
+	});
+	
+	app.post('/tag', isPrivate, function(req,res) {
+	    var body = req.body;
+	    var usx = req.user;
+		var credentials = usx.credentials;
+	    TagModel.update(body, usx, credentials, function(err,result) {
+	    	return res.redirect('/tag');
+        });
+	});
 
 };

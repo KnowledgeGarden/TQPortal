@@ -19,7 +19,7 @@ var BlogModel =  module.exports = function(environment) {
 	var CommonModel = environment.getCommonModel();
 	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
+	var DataProvider = topicMapEnvironment.getDataProvider();
 	var TopicModel = topicMapEnvironment.getTopicModel();
 	var TagModel = new tagmodel(environment);
 	var queryDSL = topicMapEnvironment.getQueryDSL();
@@ -34,22 +34,50 @@ var BlogModel =  module.exports = function(environment) {
   self.update = function(blog,user,credentials,callback) {
 	  topicMapEnvironment.logDebug("BLOG.UPDATE "+JSON.stringify(blog));
 	  var lox = blog.locator;
-	  Dataprovider.getNodeByLocator(lox, credentials, function(err,result) {
+	  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
 		  var error = '';
 		  if (err) {error += err;}
 		  var title = blog.title;
 		  var body = blog.body;
     	  var lang = blog.language;
-    	  var comment = "an edit"; //TODO add comment field to form
+    	  var comment = "an edit by "+user.handle;
     	  if (!lang) {lang = "en";}
-    	  result.updateSubject(title,lang,user.handle,comment);
-    	  result.updateBody(body,lang,user.handle,comment);
-    	  result.setLastEditDate(new Date());
-
-    	  Dataprovider.putNode(result, function(err,data) {
-    		  if (err) {error += err;}
-    		  callback(error,data);
-    	  });
+		  var isNotUpdateToBody = true;
+    	  var lang = blog.language;
+    	  if (!lang) {lang = "en";}
+    	  var oldBody;
+    	  if(result.getBody(lang)) {
+    		  oldBody = result.getBody(lang).theText;
+    	  }
+    	  if (oldBody) {
+    		  isNotUpdateToBody = (oldBody === body);
+    	  }
+    	  var oldLabel = result.getSubject(lang).theText;
+    	  var isNotUpdateToLabel = (title === oldLabel);
+    	  if (!isNotUpdateToLabel) {
+    		  //crucial update to label
+    		  result.updateSubject(title,lang,user.handle,comment);
+    		  if (!isNotUpdateToBody) {
+    			  result.updateBody(body,lang,user.handle,comment);
+    		  }
+	    	  result.setLastEditDate(new Date());
+	    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+	    		  if (err) {error += err;}
+	    		  console.log("BlogModel.update "+error+" "+oldLabel+" "+title);
+	    		  callback(error,data);
+	    	  });
+    	  } else {
+    		  if (!isNotUpdateToBody) {
+    			  result.updateBody(body,lang,user.handle,comment);
+    			  result.setLastEditDate(new Date());
+		    	  DataProvider.putNode(result, function(err,data) {
+		    		  if (err) {error += err;}
+		    		  callback(error,data);
+		    	  });
+    		  } else {
+    			  callback(error,null);
+    		  }
+    	  };
 	  });
   },
   
@@ -67,7 +95,7 @@ var BlogModel =  module.exports = function(environment) {
     var userLocator = user.handle; // It's supposed to be user.handle;
     //first, fetch this user's topic
     var userTopic;
-    Dataprovider.getNodeByLocator(userLocator, credentials, function(err,result) {
+    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
       userTopic = result;
       console.log('BlogModel.create-1 '+userLocator+' | '+userTopic);
       // create the blog post
@@ -85,15 +113,14 @@ var BlogModel =  module.exports = function(environment) {
     //	  console.log('BlogModel.create-2 '+article.toJSON());
 			myEnvironment.addRecentBlog(article.getLocator(),blog.title);
     	     // now deal with tags
-          var tags = blog.tags;
-          if (tags.length > 0 && tags.indexOf(',') > -1) {
-            var tagList = tags.split(',');
-            TagModel.processTagList(tagList, userTopic, article, credentials, function(err,result) {
+			var taglist = CommonModel.makeTagList(blog);
+          if (taglist.length > 0) {
+            TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
               console.log('NEW_POST-1 '+result);
               //result could be an empty list;
               //TagModel already added Tag_Doc and Doc_Tag relations
               console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-              Dataprovider.putNode(article, function(err,data) {
+              DataProvider.putNode(article, function(err,data) {
                 console.log('ARTICLES_CREATE-3 '+err);	  
                 if (err) {console.log('ARTICLES_CREATE-3a '+err)}
                 console.log('ARTICLES_CREATE-3b '+userTopic);	  
@@ -106,30 +133,28 @@ var BlogModel =  module.exports = function(environment) {
                  }); //r1
               }); //putnode 		  
         	}); // processtaglist
-          } else {
-            TagModel.processTag(tags, userTopic, article, credentials, function(err,result) {
-              console.log('NEW_POST-2 '+result);
-              //result is a list of tags already related to doc and user
-              console.log("ARTICLES_CREATE_22 "+JSON.stringify(article));
-              Dataprovider.putNode(article, function(err,data) {
-                console.log('ARTICLES_CREATE-33 '+err);	  
-                if (err) {console.log('ARTICLES_CREATE-33a '+err)};	  
-                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-                		userTopic.getLocator(),
-                    		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-                      callback(err,article.getLocator());
-                 }); //r1
-              }); //putNode
-            });//processTags
-          } // else      	
+          }  else {
+              DataProvider.putNode(article, function(err,data) {
+                  console.log('ARTICLES_CREATE-3 '+err);	  
+                  if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+                  console.log('ARTICLES_CREATE-3b '+userTopic);	  
+
+                  TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+                  		userTopic.getLocator(),
+                        		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+                      if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+                        callback(err,article.getLocator());
+                   }); //r1
+                }); //putnode 		  
+
+          }    	
       });
     });
   },
   
   self.listBlogPosts = function(start, count, credentials, callback) {
     var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BLOG_TYPE,start,count);
-    Dataprovider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
+    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
       console.log("BlogModel.listBlogPosts "+err+" "+data);
       callback(err,data, total);
     });
