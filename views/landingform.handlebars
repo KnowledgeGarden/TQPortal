@@ -1,0 +1,14 @@
+<h1>Landing Page Editor</h1>
+<hr>
+<div class="blog-post col-xs-9">
+ <form method="post" action="/landing"  role="form" class="form-horizontal">
+  <input type="hidden" name="locator" value="{{locator}}">
+  <div class="form-group">
+   <label for="desc" class="col-sm-2 control-label">Body</label>
+   <textarea id="summernote" rows="5" name="body" placeholder="Enter the page description" class="form-control">{{body}}</textarea>
+  </div>
+  <div class="form-group">
+   <button type="submit" class="btn btn-success">Save</button>&nbsp;<a href="/" title="cancel" class="btn">Cancel</a>
+  </div>
+ </form>
+</div>
