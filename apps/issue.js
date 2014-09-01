@@ -17,7 +17,19 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
 	var IssueModel = new issue(environment);
+	var __landingPageLocator = "gtilanding";
 	
+	var isAdmin = function(credentials) {
+		console.log("BLOG.canEdit "+JSON.stringify(credentials));
+		var result = false;
+		if (credentials) {
+			var where = credentials.indexOf(constants.ADMIN_CREDENTIALS);
+			if (where > -1) {
+				result = true;
+			}
+		}
+		return result;
+	};
 	
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
@@ -46,7 +58,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  // Routes
 	  /////////////////
 	  app.get('/issue', isPrivate,function(req,res) {
-	    res.render('issuehome',environment.getCoreUIData(req));
+		  var data = myEnvironment.getCoreUIData(req);
+		  //We can change the brand
+		  data.brand = "GetTheIssues";
+		  data.query = "/landing/"+__landingPageLocator;
+		  data.type = "landing";
+	    res.render('issuehome',data);
 	  });
+	  
+	  
 
 };

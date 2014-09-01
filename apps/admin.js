@@ -56,6 +56,18 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		}
 		res.redirect('/');
 	}
+	
+	///////////////
+	// View Selection
+	// Here since Admin is always an app in a system
+	// Otherapps can do the same to switch a view that is live
+	///////////////
+	app.get("/admin,setview/:id", function(req,res) {
+		var q = req.params.id;
+		console.log("Admin.setView "+q);
+		req.session.viewtype = q;
+		res.redirect('/');
+	});
 	///////////////
 	// LOGOUT
 	///////////////

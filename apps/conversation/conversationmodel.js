@@ -37,7 +37,7 @@ var ConversationModel = module.exports = function(environment) {
 	   * Update an existing conversation entry; no tags included
 	   */
 	  self.update = function(blog,user,callback) {
-		  topicMapEnvironment.logDebug("CONVERSATION.UPDATE "+JSON.stringify(blog));
+		  myEnvironment.logDebug("CONVERSATION.UPDATE "+JSON.stringify(blog));
 		  var credentials = user.credentials;
 		  var lox = blog.locator;
 		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
@@ -166,7 +166,7 @@ var ConversationModel = module.exports = function(environment) {
   
   self.createOtherNode = function(blog,user, credentials, callback) {
 	  console.log("ConversationModel.createOtherNode "+JSON.stringify(blog));
-	  topicMapEnvironment.logDebug("ConversationModel.createOtherNode- "+JSON.stringify(blog));
+	  myEnvironment.logDebug("ConversationModel.createOtherNode- "+JSON.stringify(blog));
 	  var typ = blog.nodefoo;
 	  var parentLocator = blog.locator;
 	  if (typ === MAPTYPE) {
@@ -250,8 +250,8 @@ var ConversationModel = module.exports = function(environment) {
 	  }
 	  
     var userLocator = user.handle;
-	topicMapEnvironment.logDebug("ConversationModel.create- "+parentNodeLocator+" "+nodeType);
-	topicMapEnvironment.logDebug("ConversationModel.create-- "+JSON.stringify(blog));
+	myEnvironment.logDebug("ConversationModel.create- "+parentNodeLocator+" "+nodeType);
+	myEnvironment.logDebug("ConversationModel.create-- "+JSON.stringify(blog));
 
     DataProvider.getNodeByLocator(parentNodeLocator, credentials, function(err,result) {
       var parent = result;
@@ -262,7 +262,7 @@ var ConversationModel = module.exports = function(environment) {
     		  blog.title, blog.body, language, smallIcon, largeIcon,
     		  credentials, userLocator, false, function(err,data) {
     	  //data is the created node
-    	  topicMapEnvironment.logDebug("ConversationModel.create "+parentNodeLocator+" "+data.toJSON());
+    	  myEnvironment.logDebug("ConversationModel.create "+parentNodeLocator+" "+data.toJSON());
     	  myEnvironment.addRecentConversation(data.getLocator(),blog.title);
     	  var article = data;
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
@@ -311,12 +311,12 @@ var ConversationModel = module.exports = function(environment) {
     });
   },
   
-  self.performTransclude = function(body, credentials, callback) {
-	  topicMapEnvironment.logDebug("ConversationModel.performTransclude- "+JSON.stringify(body));
+  self.performTransclude = function(body, credentials, isEvidence, callback) {
+	  myEnvironment.logDebug("ConversationModel.performTransclude- "+isEvidence+" "+ JSON.stringify(body));
 	  var fromNode = body.transcludeLocator;
 	  var toNode = body.myLocator;
 	  var contextLocator = body.contextLocator;
-	  topicMapEnvironment.logDebug("ConversationModel.performTransclude "+fromNode+" | "+toNode+" | "+contextLocator);
+	  myEnvironment.logDebug("ConversationModel.performTransclude "+fromNode+" | "+toNode+" | "+contextLocator);
 	  DataProvider.getNodeByLocator(fromNode, credentials, function(err,from) {
 		  var error = '';
 		  if (err) {error+=err;}
@@ -324,12 +324,35 @@ var ConversationModel = module.exports = function(environment) {
 		  DataProvider.getNodeByLocator(toNode, credentials, function(err,to) {
 			  if (err) {error+=err;}
 			  var targetNode = to;
-			  //TODO add parent to source
-			  sourceNode.addParentNode(contextLocator, targetNode.getSmallImage(), targetNode.getLocator(), targetNode.getSubject(constants.ENGLISH).theText);
-			  topicMapEnvironment.logDebug("ConversationModel.performTransclude-1 "+sourceNode.toJSON());
-			  //TODO add child to target
-			  targetNode.addChildNode(contextLocator,sourceNode.getSmallImage(),sourceNode.getLocator(),sourceNode.getSubject(constants.ENGLISH).theText);
-			  topicMapEnvironment.logDebug("ConversationModel.performTransclude-2 "+targetNode.toJSON());
+			  // add parent to source
+			  var title = targetNode.getLabel(constants.ENGLISH);
+			  if (!title) {
+				  title = targetNode.getSubject(constants.ENGLISH).theText;
+			  }
+			  sourceNode.addParentNode(contextLocator, targetNode.getSmallImage(), targetNode.getLocator(), title);
+			  myEnvironment.logDebug("ConversationModel.performTransclude-1 "+sourceNode.toJSON());
+			  // add child to target
+			  title = sourceNode.getLabel(constants.ENGLISH);
+			  if (!title) {
+				  title = sourceNode.getSubject(constants.ENGLISH).theText;
+			  }
+			  targetNode.addChildNode(contextLocator,sourceNode.getSmallImage(),sourceNode.getLocator(),title);
+			  if (isEvidence === "T") {
+				  //perform surgery on that childnode
+				  var l = targetNode.listChildNodes(contextLocator);
+				  var len = l.length;
+				  var x;
+				  //find it
+				  for(var i=0;i<len;i++) {
+					  x = l[i];
+					  if (x.locator === sourceNode.getLocator()) {
+						  //set a flag
+						  x.isevidence="T";
+						  break;
+					  }
+				  }
+			  }
+			  myEnvironment.logDebug("ConversationModel.performTransclude-2 "+targetNode.toJSON());
 			  //TODO save them both
 			  DataProvider.putNode(sourceNode, function(err,data) {
 				  if (err) {error+=err;}
@@ -343,7 +366,8 @@ var ConversationModel = module.exports = function(environment) {
 		  });
 		  
 	  });
-  }
+  },
+
   self.listConversations = function(start, count, credentials, callback) {
 	  DataProvider.listInstanceNodes(types.CONVERSATION_MAP_TYPE, start,count,credentials, function(err,data,total) {
     //var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.CONVERSATION_MAP_TYPE);

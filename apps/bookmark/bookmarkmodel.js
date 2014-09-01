@@ -25,8 +25,63 @@ var BookmarkModel =  module.exports = function(environment) {
 		});
 	},
 	
+	  /**
+	   * Update an existing blog entry; no tags included
+	   */
+	  self.update = function(blog,user,credentials,callback) {
+		  myEnvironment.logDebug("Bookmark.UPDATE "+JSON.stringify(blog));
+		  var lox = blog.locator;
+		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
+			  var error = '';
+			  if (err) {error += err;}
+			  var title = blog.title;
+			  var body = blog.body;
+	    	  var lang = blog.language;
+	    	  var comment = "an edit by "+user.handle;
+	    	  if (!lang) {lang = "en";}
+			  var isNotUpdateToBody = true;
+	    	  var lang = blog.language;
+	    	  if (!lang) {lang = "en";}
+	    	  var oldBody;
+	    	  if(result.getBody(lang)) {
+	    		  oldBody = result.getBody(lang).theText;
+	    	  }
+	    	  myEnvironment.logDebug("Bookmark.UPDATE-1 "+oldBody+" | "+body);
+	    	  if (!oldBody) {
+	    		  oldBody="";
+	    	  }
+	    	  isNotUpdateToBody = (oldBody === body);
+	    	  var oldLabel = result.getSubject(lang).theText;
+	    	  var isNotUpdateToLabel = (title === oldLabel);
+	    	  myEnvironment.logDebug("Bookmark.UPDATE-2 "+isNotUpdateToLabel+" | "+isNotUpdateToLabel);
+	    	  if (!isNotUpdateToLabel) {
+	    		  //crucial update to label
+	    		  result.updateSubject(title,lang,user.handle,comment);
+	    		  if (!isNotUpdateToBody) {
+	    			  result.updateBody(body,lang,user.handle,comment);
+	    		  }
+		    	  result.setLastEditDate(new Date());
+		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+		    		  if (err) {error += err;}
+		    		  console.log("BookmarkModel.update "+error+" "+oldLabel+" "+title);
+		    		  callback(error,data);
+		    	  });
+	    	  } else {
+	    		  if (!isNotUpdateToBody) {
+	    			  result.updateBody(body,lang,user.handle,comment);
+	    			  result.setLastEditDate(new Date());
+			    	  DataProvider.putNode(result, function(err,data) {
+			    		  if (err) {error += err;}
+			    		  callback(error,data);
+			    	  });
+	    		  } else {
+	    			  callback(error,null);
+	    		  }
+	    	  };
+		  });
+	  },
 	self.createPositionAndTags = function(bookmarkNode, blog, userTopic, credentials, callback) {
-		topicMapEnvironment.logDebug("BBBB "+JSON.stringify(userTopic));
+		myEnvironment.logDebug("BBBB "+JSON.stringify(userTopic));
 		//TODO create the position node
 		//copy from conversationmodel (move to common model?)
 		//Deal with tags
@@ -35,7 +90,7 @@ var BookmarkModel =  module.exports = function(environment) {
 
 	  if (!lang) {lang = "en";}
 		var error = '';
-		topicMapEnvironment.logDebug("BookmarkModel.createPositionAndTags "+bookmarkNode.toJSON());
+		myEnvironment.logDebug("BookmarkModel.createPositionAndTags "+bookmarkNode.toJSON());
 		//contextLocator, parentNode,newLocator, 
 		//nodeType, subject, body, language, smallIcon, largeIcon,
 		//  credentials, userLocator, isPrivate, callback
@@ -107,7 +162,7 @@ var BookmarkModel =  module.exports = function(environment) {
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,utpx) {
 	      userTopic = utpx;
 	      if (err) {error+=err;}
-	      topicMapEnvironment.logDebug('BookmarkModel.create- '+userLocator+' | '+userTopic.toJSON());
+	      myEnvironment.logDebug('BookmarkModel.create- '+userLocator+' | '+userTopic.toJSON());
 	      //see if the bookmark exists
 	      DataProvider.getNodeByURL(url, credentials, function(err,dNode) {
 		      if (err) {error+=err;}
@@ -116,7 +171,7 @@ var BookmarkModel =  module.exports = function(environment) {
 		      try {
 		    	  lox = dNode.getLocator();
 		      } catch (err) {}
-		      topicMapEnvironment.logDebug("BookmarkModel.create-1 "+url+" "+lox);
+		      myEnvironment.logDebug("BookmarkModel.create-1 "+url+" "+lox);
 		      if (lox) {
 		    	  bookmarkTopic = dNode;
 		    	  //MAKE POSITION
@@ -130,13 +185,14 @@ var BookmarkModel =  module.exports = function(environment) {
 			      TopicModel.newInstanceNode(uuid.newUUID(), types.BOOKMARK_TYPE,
 				      		"", "", constants.ENGLISH, userLocator,
 				      		icons.BOOKMARK_SM, icons.BOOKMARK, false, credentials, function(err, article) {
-			    	  topicMapEnvironment.logDebug("BookmarkModel.create-2 "+err+" "+article);
+			    	  myEnvironment.logDebug("BookmarkModel.create-2 "+err+" "+article);
 				      if (err) {error+=err;}
 				      bookmarkTopic = article;
 			    	  var lang = blog.language;
 			    	  if (!lang) {lang = "en";}
 			    	  var subj = blog.title;
 			    	  article.setSubject(subj,lang,userLocator);
+			    	  article.setBody("",lang,userLocator);
 			    	  article.setResourceUrl(url);
 					  myEnvironment.addRecentBookmark(bookmarkTopic.getLocator(),blog.title);
 					  DataProvider.putNode(bookmarkTopic, function(err,data) {

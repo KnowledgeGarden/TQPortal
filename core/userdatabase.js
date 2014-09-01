@@ -56,7 +56,7 @@ var UserDatabase = module.exports = function(db) {
 	 * @param callback: signature (err,data) returns a JSON object
 	 */
 	self.findOne = function(email, callback) {
-		console.log("UserDatabase.findOne "+email);
+//		console.log("UserDatabase.findOne "+email);
 		database.collection(constants.USER_COLLECTION, function(err, collection) {
 			var q = {};
 			q.email = email;

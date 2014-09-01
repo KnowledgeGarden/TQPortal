@@ -9,76 +9,127 @@
  */
 var __pageCount = 30;
 
+var navtoggle = false;
+var currentLocator;
+var locator;
+var query;
+var isDoubleClick = false;
+
+function fetchFromTree(lox, quex) {
+	locator = lox;
+	query = quex;
+	//alert(isDoubleClick);
+	isDoubleClick = false;
+	//alert(locator);
+	//alert(locator+" | "+currentLocator+" | "+query)
+	//}
+}
+
+
 /**
  * Boots a page by fetching data according to 
  * content on the page
  */
 function initPage() {
+	try {
+		$('.miller-container').taxonomyBrowser({
+	        source       : 'json',                  /* Data Source: html | json */
+	        json         : '/json/taxonomy.json',    /* JSON url */
+			  columns: 4
+			});
+	} catch (e) {}
+//	if ("WebSocket" in window) {
+//		alert("WS");
+//	} else {
+//		alert("NoWS");
+//	}
+	//test for chatroom
+	if ($("#chatroom")) {
+		//TODO nickname could be picked up from handle in a div
+/*		var nickname = "foobar:";
+
+		var connection = new WebSocket("ws://"+window.location.hostname+":4444")
+		connection.onopen = function () {
+			console.log("Connection opened");
+			connection.send(nickname);
+			$("#chatroom").onsubmit = function (event) {
+				var msg = document.getElementById("msg")
+				if (msg.value) {
+					console.log("Sending "+msg.value);
+					connection.send(msg.value)
+				}
+				msg.value = "";
+				event.preventDefault();
+			}	
+		}
+		connection.onclose = function () {
+			console.log("Connection closed")
+		}
+		connection.onerror = function () {
+			console.error("Connection error")
+		}
+		connection.onmessage = function (event) {
+			
+			var div = $("#output");
+			var val = event.data +"<br/>";
+			console.log("Got "+val);
+			var where = val.indexOf("Received:");
+			var where1 = val.indexOf("Sent:");
+			console.log(where+" "+where1);
+			if (where === -1 && where1 === -1) {
+				var content =div.html()+val;
+				div.html(content);
+			}
+		} */
+	}
 
 	var test = $("#tabledata").attr("query");
 	//first, see if this is an index page
 	if (test) {
 		pageSetup();
 	} else {
-	//paint virtual page
+		//paint  page
+		//types are either
+		//	viewspec
+		//    Dashboard
+		//    Conversation
+		//  landing
+		
+		var type = $(".vfpage").attr("type");
 		var q = $(".vfpage").attr("query");
+	//	if (type === landing) {
+	//		paintLanding(q)
+	//	}
+		var rootLocator = $(".vfpage").attr("rootLocator");
+		var lox = $(".vfpage").attr("locator");
+		currentLocator = lox;
+		
+		if (type !== "Conversation") {
+			navtoggle = false;
+		}
 		if (q) {
 		  var language = $(".vfpage").attr("language");
-		  var type = $(".vfpage").attr("type");
 		  var cl = $(".vfpage").attr("contextLocator");
-		  var query = q+"?language="+language;
+		  var query = q+"?language="+language+"&viewspec="+type;
 		  if (cl) {
 			  query += "&contextLocator="+cl;
-		}
-	
-		$.get( query, function( data ) {
-		//	alert(data);
-			  //now, paint the page
-			  $("div.topictitle").html(data.title);
-			  $("div.userref").html(data.user);
-			  if (data.url) {
-				  $("div.urlref").html(data.url);
-			  }
-			  $("div.body").html(data.body);
-			  if (data.responsebuttons) {
-				  $("div.responsebuttons").html(data.responsebuttons);
-			  }
-			  if (data.transclude) {
-				  $("div.transclude").html(data.transclude);
-			  }
-			  $("div.sourcecode").html(data.source);
-			  if (data.tags) {
-				  paintTags(data.tags, data.isAuthenticated, data.locator);
-			  } else if (data.isAuthenticated) {
-				  paintTags([], data.isAuthenticated, data.locator);
-			  }
-			  if (data.users) {
-				  paintUsers(data.users);
-			  }
-			  if (data.documents) {
-				  paintDocs(data.documents);
-			  }
-			  if (data.ccontable) {
-				  paintCConTable(data.ccontable.data);
-			  }
-			  if (data.pcontable) {
-				  paintPConTable(data.pcontable.data);
-			  }
-			  if (data.isAuthenticated) {
-				  if ($("div.newconform")) {
-					  paintNewCon(data.locator, data.newnodetype);
-				  }
-			  }
-			  
-			  if (data.jtree) {
-				 // if ($("#jstree_div"))
-				  paintTree(data.jtree);
-			  }
-		});
+		  }
+		  if (rootLocator) {
+			  query +="&rootLocator="+rootLocator;
+		  }
+		  getPage(type, query);
+
+			
 		}
 	}
 }
 
+function paintColNav(data) {
+	var html = data.colnav;
+//	alert("HTML "+html);
+	$("ul#myConTree").html(html);
+
+}
 /**
  * ViewFirst tables:
  * Since different index tables will vary,
@@ -198,14 +249,6 @@ function pagePrevious() {
 
 }
 
-function paintNewCon(locator, type) {
-	html = "<div class=\"form-group\">";
-	html+="<form method=\"post\" action=\"/conversation/new/"+locator+"\"  role=\"form\" class=\"form-horizontal\">";
-	html += "<input type=\"hidden\" name=\"nodefoo\" value=\""+type+"\">";
-	html+="<button type=\"submit\" class=\"btn btn-btn-success btn-small\">New Conversation</button>";
-	html+="</form></div>";
-	$("div.newconform").html(html);
-}
 
 function paintCConTable(data) {
 	var html = "<h4>Subject</h4>";
@@ -219,10 +262,10 @@ function paintCConTable(data) {
 
 function paintPConTable(data) {
 	var html = "<h4>Subject</h4>";
-	 html += "<ol class=\"list-unstyled\">";
-	 html+="</ol></div>";
+	html += "<ol class=\"list-unstyled\">";
+	html+="</ol></div>";
 	for (var i=0;i<data.length;i++) {
-	    	html+= "<li>"+data[i][0]+"</li>"
+		html+= "<li>"+data[i][0]+"</li>"
 	}
 	$("div.pcontable").html(html);
 }
@@ -280,42 +323,48 @@ function paintDocs(docs) {
    $("div.doclist").html(html);
 }
 
-/**
-{
-  id          : "string" // will be autogenerated if omitted
-  text        : "string" // node text
-  icon        : "string" // string for custom
-  state       : {
-    opened    : boolean  // is the node open
-    disabled  : boolean  // is the node disabled
-    selected  : boolean  // is the node selected
-  },
-  children    : []  // array of strings or objects
-  li_attr     : {}  // attributes for the generated LI node
-  a_attr      : {}  // attributes for the generated A node
+function clearEvidence() {
+	$("div.evidencelist").html("");
 }
+function paintEvidence(docs) {
+    var html = "<h4>Evidence</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
+    html += "<ol class=\"list-unstyled\">"
+    var urx, typ;
+    for (var i=0;i<docs.length;i++) {
+ //   	alert(JSON.stringify(docs[i]));
+   	urx="/conversation/"; //default
+    	typ = docs[i].documentType;
+    	if (typ) {
+    		if (typ === "WikiNodeType") {
+    			urx = "/wiki/";
+    		} else if (typ === "BlogNodeType") {
+    			urx = "/blog/";
+    		} else if (typ === "BookmarkNodeType") {
+    			urx = "/bookmark/";
+    		}
+    	} else {
+    		//try to infer from image
+    		typ = docs[i].icon;
+    		if (typ === "/images/bookmark_sm.png") {
+    			urx = "/bookmark/";
+    		} else if (typ === "/images/publication_sm.png") {
+    			//could be a wiki or a blog (until we get different icons
+    			urx = "/blog/";
+    		}
+    	}
+    	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].smallImagePath+"\">&nbsp;"+docs[i].subject+"</a></li>"
+    }
+   html+="</ol></div>";
+//	alert(html);
 
-        {
-            "locator": "16d55530-27ae-11e4-b75f-057310846a0f",
-            "label": "16d55530-27ae-11e4-b75f-057310846a0f",
-            "img": "/images/ibis/map_sm.png",
-            "typ": "ConversationMapNodeType",
-            "children": [
-                {
-                    "locator": "09e2a6b0-27ff-11e4-9e44-af27f0222d89",
-                    "label": "09e2a6b0-27ff-11e4-9e44-af27f0222d89",
-                    "img": "/images/ibis/plus_sm.png",
-                    "typ": "ProNodeType"
-                },
-
-*/
-
+   $("div.evidencelist").html(html);
+}
 function createNode(data) {
+	
 	var html = "<li data-jstree='{ \"icon\" : \""+data.img+"\" }'>"+data.label;
 	var kids = data.children;
 	if (kids) {
 		if (kids.length > 0) {
-	//		alert("Foo "+html);
 			var shtml = "<ul>";
 			var kid;
 			for (var i=0;i<kids.length;i++) {
@@ -327,19 +376,110 @@ function createNode(data) {
 		}
 	}
 	html+="</li>";
+
 	return html;
 }
 function paintTree(root) {
-//	alert("P0 "+root);
 	var html = "<ul>";
 	html+= createNode(root);
 	html+="</ul>";
 //	alert("P1 "+html);
 	if (html) {
+		//set the html
 		$('#jstree_div').html(html);
+		//initialize tree
 		$('#jstree_div').jstree();
 
 	}
 }
 
 
+function getPage(type, query) {
+//	alert("XX "+query);
+	$.get( query, function( data ) {
+		currentLocator = data.locator;
+		if (type === "Conversation") {
+		//	alert("here "+navtoggle);
+			if (!navtoggle) {
+				paintColNav(data);
+				$("ul#myConTree").columnNavigation({
+					containerPosition:"relative",
+					containerWidth:"900px",
+					containerHeight:"210px",
+					containerBackgroundColor:"rgb(255,255,255)",
+					containerFontColor:"rgb(50,50,50)",
+					columnWidth:300,
+					columnFontFamily:"'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif",
+					columnFontSize:"90%",
+					columnSeperatorStyle:"1px solid rgb(220,220,220)",
+					columnDeselectFontWeight:"normal",
+					columnDeselectColor:"rgb(50,50,50)",
+					columnSelectFontWeight:"normal",
+					columnSelectColor:"rgb(255,255,255)",
+					columnSelectBackgroundColor:"rgb(27,115,213)",
+					columnSelectBackgroundPosition:"top",
+					columnItemPadding:"3px 3px 5px 3px",
+					columnScrollVelocity:50,
+				});
+			}
+			if (!navtoggle) {
+				navtoggle = true;
+			}
+		} else {
+				//paint p-con
+			if (data.pcontable) {
+				paintPConTable(data.pcontable.data);
+			}
+		}
+		//now, paint the page
+		$("div.topictitle").html(data.title);
+		$("div.userref").html(data.user);
+		if (data.url) {
+			$("div.urlref").html(data.url);
+		}
+		$("div.body").html(data.body);
+		if (data.responsebuttons) {
+			$("div.responsebuttons").html(data.responsebuttons);
+		}
+		if (data.transclude) {
+			$("div.transclude").html(data.transclude);
+		}
+		if (data.transcludeevidence) {
+			$("div.transcludeevidence").html(data.transcludeevidence);
+		}
+		$("div.sourcecode").html(data.source);
+		if (data.tags) {
+			paintTags(data.tags, data.isAuthenticated, data.locator);
+		} else if (data.isAuthenticated) {
+			paintTags([], data.isAuthenticated, data.locator);
+		}
+		if (data.users) {
+			paintUsers(data.users);
+		}
+		if (data.documents) {
+			paintDocs(data.documents);
+		}
+		if (data.evidence) {
+			paintEvidence(data.evidence);
+		} else {
+			clearEvidence();
+		}
+		if (data.ccontable) {
+			paintCConTable(data.ccontable.data);
+		}
+		if (data.jtree) {
+			paintTree(data.jtree);
+		}
+	});
+}
+
+/**
+ * Called from javascript in html nodes
+ */
+function doDoubleClick() {
+	isDoubleClick = true;
+	if (locator !== currentLocator) {
+		currentLocator = locator;
+		getPage("Conversation", query);
+	}
+}

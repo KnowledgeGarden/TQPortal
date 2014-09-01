@@ -32,7 +32,7 @@ var BlogModel =  module.exports = function(environment) {
    * Update an existing blog entry; no tags included
    */
   self.update = function(blog,user,credentials,callback) {
-	  topicMapEnvironment.logDebug("BLOG.UPDATE "+JSON.stringify(blog));
+	  myEnvironment.logDebug("BLOG.UPDATE "+JSON.stringify(blog));
 	  var lox = blog.locator;
 	  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
 		  var error = '';

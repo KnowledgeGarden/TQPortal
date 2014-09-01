@@ -3783,7 +3783,7 @@
 						"keydown" : function (event) {
 							var key = event.which;
 							if(key === 27) {
-								this.value = t;
+								this.nodeValue = t;
 							}
 							if(key === 27 || key === 13 || key === 37 || key === 38 || key === 39 || key === 40 || key === 32) {
 								event.stopImmediatePropagation();
@@ -3796,7 +3796,7 @@
 						"click" : function (e) { e.stopImmediatePropagation(); },
 						"mousedown" : function (e) { e.stopImmediatePropagation(); },
 						"keyup" : function (event) {
-							h2.width(Math.min(h1.text("pW" + this.value).width(),w));
+							h2.width(Math.min(h1.text("pW" + this.nodeValue).width(),w));
 						},
 						"keypress" : function(event) {
 							if(event.which === 13) { return false; }
@@ -4021,8 +4021,8 @@
 		if(node && node.attributes) {
 			$.each(node.attributes, function (i, v) {
 				if($.inArray(v.nodeName.toLowerCase(),['style','contenteditable','hasfocus','tabindex']) !== -1) { return; }
-				if(v.nodeValue !== null && $.trim(v.nodeValue) !== '') {
-					if(with_values) { attr[v.nodeName] = v.nodeValue; }
+				if(v.value !== null && $.trim(v.value) !== '') { //CHANGED nodeValue to value
+					if(with_values) { attr[v.nodeName] = v.value; } //CHANGED nodeValue to value
 					else { attr.push(v.nodeName); }
 				}
 			});

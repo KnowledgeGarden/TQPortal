@@ -43,6 +43,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	console.log("CLIPBOARD: "+sess.clipboard);
     var idx = 'recenthome';
     var data = __get(req);
+    data.pageref="/admin/dashboardview";
+    data.treeref="/admin/treeview";
     data.tags = HomeModel.listRecentTags();
     data.blogs = HomeModel.listRecentBlogs();
     data.wikis = HomeModel.listRecentWikis();

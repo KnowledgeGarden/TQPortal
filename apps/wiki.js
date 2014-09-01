@@ -3,8 +3,9 @@
  */
 var wm = require('./wiki/wikimodel')
  , types = require('../node_modules/tqtopicmap/lib/types')
-, common = require('./common/commonmodel')
-  , constants = require('../core/constants')
+//  , colnavwidget = require('./widgets/jquerycolnav')
+ , common = require('./common/commonmodel')
+ , constants = require('../core/constants')
 ;
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
@@ -12,6 +13,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var CommonModel = environment.getCommonModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
+//	var ColNavWidget = new colnavwidget(environment,Dataprovider);
     var WikiModel = new wm(environment);
 	var MAPTYPE = "1";
 
@@ -102,7 +104,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var data =  myEnvironment.getCoreUIData(req);
 	data.formtitle = "Edit Topic";
 	Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-		topicMapEnvironment.logDebug("WIKI.edit "+q+" "+result);
+		myEnvironment.logDebug("WIKI.edit "+q+" "+result);
 		if (result) {
 			//A blog post is an AIR
 			data.title = result.getSubject(constants.ENGLISH).theText;
@@ -117,8 +119,49 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   });
   
   app.get("/wiki/ajaxfetch/:id", isPrivate, function(req,res) {
+		//establish the node's identity
+		var q = req.params.id;
+		//establish credentials
+		//defaults to an empty array if no user logged in
+		var credentials = [];
+		var usr = req.user;
+		if (usr) { credentials = usr.credentials;}
+		//fetch the node itself
+		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+			console.log('WIKIrout-1 '+err+" "+result);
+			var data =  myEnvironment.getCoreUIData(req);
+			//Fetch the tags
+			var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+			if (!tags) {
+				tags = [];
+			}
+			var docs=[];
+			var users=[];
+			var transcludes=[];
+			//Tell the view that it will start a new conversation with a MAPTYPE node
+			//NOTE: this could change: we might actually install that map when the node is built
+			data.newnodetype = MAPTYPE;
+			myEnvironment.logDebug("Wiki.ajaxfetch "+JSON.stringify(data));
+			CommonModel.__doAjaxFetch(result, credentials,"/wiki/",tags,docs,users,transcludes,data,req,function(json) {
+				myEnvironment.logDebug("Wiki.ajaxfetch-1 "+JSON.stringify(json));
+					//send the response
+					try {
+						res.set('Content-type', 'text/json');
+					}  catch (e) { }
+					res.json(json);
+			} );
+		});	  
+/*
 	    var q = req.params.id;
 		var lang = req.query.language;
+		if (!lang) {
+			lang = "en";
+		}
+		var viewspec = req.query.viewspec;
+		var rootLocator = req.query.rootLocator;
+		if (!viewspec) {
+			viewspec = "Dashboard";
+		}
 	    console.log('WIKIajax '+q+" "+lang);
 	    var credentials = [];
 	    var usr = req.user;
@@ -149,8 +192,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			      if (!tags) {
 			    	  tags = [];
 			      }
-
-	      CommonModel.generateViewFirstData(result, tags, [],[],credentials, canEdit, data, contextLocator, "/wiki/", clipboard, lang, function(json) {
+			      var transcludeUser = "";  //TODO
+	      CommonModel.generateViewFirstData(result, tags, [],[],credentials, canEdit, data, contextLocator, "/wiki/", clipboard, lang, transcludeUser,viewspec, function(json) {
 	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
 	    	  json.myLocator = q;
 			  //get all parents
@@ -165,35 +208,49 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					  }
 				      json.newnodetype = MAPTYPE;
 
-				      console.log("XXXX "+JSON.stringify(json));
+					  if (viewspec === "ColNav") {
+				    	  if (!rootLocator) {rootLocator = q;}
+				    	  var colnav = ColNavWidget.makeColNav(rootLocator,result,contextLocator,lang, credentials, function(err,html) {
+				    		  json.colnav = html;
+				//		      console.log("XXXX "+JSON.stringify(json));
+						      	
+						        try {
+						            res.set('Content-type', 'text/json');
+						          }  catch (e) { }
+						          res.json(json);
+				    	  });
+
+					  } else {
+				//      console.log("YYYY "+JSON.stringify(json));
 				      	
 				        try {
 				            res.set('Content-type', 'text/json');
 				          }  catch (e) { }
 				          res.json(json);
-				  });
+					  }
+				});
 
 			  });
 	    	  
 	      });
 	    });
-	      
+*/	      
   });
   
   /**
    * Fill ViewFirst
    */
   app.get('/wiki/:id', isPrivate,function(req,res) {
-	    var q = req.params.id;
-	    console.log('BLOGrout '+q);
-	    var data = myEnvironment.getCoreUIData(req);
-	    data.query = "/wiki/ajaxfetch/"+q;
-	    data.language = "en";
-	    data.type = "foo";
-	    if (req.query.contextLocator) {
-	    	data.contextLocator = req.query.contextLocator;
-	    }
-	    res.render('vf_topic', data);
+	var q = req.params.id;
+	var data = myEnvironment.getCoreUIData(req);
+	myEnvironment.logDebug("WIKIY "+JSON.stringify(req.query));
+	CommonModel.__doGet(q,"/wiki/",data, req, function(viewspec, data) {
+		if (viewspec === "Dashboard") {
+			return res.render('vf_topic', data);
+		} else {
+			return res.render('vfcn_topic',data);
+		}
+	});
   });
 
   
@@ -205,7 +262,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var data =  myEnvironment.getCoreUIData(req);
 		data.formtitle = "Edit Topic";
 		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-			topicMapEnvironment.logDebug("Wiki.edit "+q+" "+result);
+			myEnvironment.logDebug("Wiki.edit "+q+" "+result);
 			if (result) {
 				//A blog post is an AIR
 				data.title = result.getSubject(constants.ENGLISH).theText;

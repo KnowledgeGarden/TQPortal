@@ -78,7 +78,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  var start = parseInt(req.query.start);
 	  var count = parseInt(req.query.count);
 //	  var isNext = req.query.isNext.trim();
-//	  topicMapEnvironment.logDebug("BLOG INDEX "+start+" "+count+" "+isNext);
+//	  myEnvironment.logDebug("BLOG INDEX "+start+" "+count+" "+isNext);
 	  var credentials= [];
 	  if (req.user) {credentials = req.user.credentials;}
 
@@ -91,7 +91,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//	  cursor = start-countsent;
 		 // }
 		//  if (cursor < 0) {cursor = 0;}
-		//  topicMapEnvironment.logDebug("BLOG INDEX2 "+start+" "+countsent+" "+isNext+" "+cursor);
+		//  myEnvironment.logDebug("BLOG INDEX2 "+start+" "+countsent+" "+isNext+" "+cursor);
 		  var json = {};
 		  json.start = cursor;
 		  json.count = constants.MAX_HIT_COUNT; //pagination size
@@ -110,7 +110,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (usx) {credentials = usx.credentials;}
 		var data =  myEnvironment.getCoreUIData(req);
 		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-			topicMapEnvironment.logDebug("User.edit "+q+" "+result);
+			myEnvironment.logDebug("User.edit "+q+" "+result);
 			if (result) {
 				if (result.getBody(constants.ENGLISH)) {
 					data.body = result.getBody(constants.ENGLISH).theText;
@@ -142,6 +142,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   app.get("/user/ajaxfetch/:id", isPrivate, function(req,res) {
 	    var q = req.params.id;
 		var lang = req.query.language;
+		var viewspec = "Dashboard";
 	    console.log('USERajax '+q+" "+lang);
 	    var credentials = [];
 	    var usr = req.user;
@@ -176,8 +177,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			      if (!docs) {
 			    	  docs = [];
 			      }
-
-	      CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, function(json) {
+			      var transcludeUser = "";  //TODO
+	      CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, transcludeUser, viewspec,function(json) {
 	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
 	    	  json.myLocator = q;
 		      json.newnodetype = MAPTYPE;

@@ -8,28 +8,26 @@
   <li><a data-toggle="tab" href="#source">Source</a></li>
 </ul>
  <!-- ViewFirst data -->
- <div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}} contextLocator={{contextLocator}}"></div>
+<div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}}" contextLocator="{{contextLocator}}" locator="{{locator}} rootLocator="{{rootLocator}}"></div>
 
 <div class="tab-content">
   <div id="topic" class="tab-pane fade in active">
-   <div class="blog-post col-xs-7">
+  <div class="row">
+   <div class="home col-xs-8 col-sm-8 ">
     <div class="topictitle">foo</div>
     <p class="blog-post-meta"> 
      <div class="userref"></div>
      <div class="urlref"></div>
     </p>
     <div class="body pre-scrollable span12" style="border: 1px solid #e1e1e8; resize:both;overflow: auto;"></div>
-        <p><div class="transclude"></div>
-    
-   </div>
-
- <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
-  <div class="sidebar-module sidebar-module-inset">
+    <div class="transclude"></div> 
+   </div> <!-- /col 8 -->
+   <div class="col-xs-4 col-sm-4">
     <div class="taglist"></div>
     <div class="userlist"></div>
     <div class="doclist"></div>
-  </div>
- </div>
+   </div> <!-- /col 4 -->
+  </div> <!-- /row -->
  </div> <!-- /topic -->
  <div id="list" class="tab-pane fade">
    <div class="blog-post col-xs-7">
@@ -48,7 +46,6 @@
     <div class="ccontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
  </div> <!-- /cconv -->
  <div id="pconv" class="tab-pane fade">
-  <div class="newconform"></div><br/>
   <div class="pcontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
  </div> <!-- /pconv -->
  

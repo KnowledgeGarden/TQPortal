@@ -1,60 +1,60 @@
-<h1></h1><div class="home col-xs-7">
-   <span><h3 class="text-danger">{{themessage}}</h3><span>
 
+<div class="row">
+ <div class= col-xs-12 col-sm-12>
+  <img src="/images/earthrise2.png">
+ </div>
+</div>
+<div class="row">
+ <div class="home col-xs-7 col-sm-7 ">
+  <span><h3 class="text-danger">{{themessage}}</h3><span>
   <center>
-<h1 class="text-info">TopicQuests Experimental Portal</h1>
+   <h1 class="text-info">TopicQuests Experimental Portal</h1>
    <img src="/images/tree-1_sm.jpg"><br/>
    <h3 class="text-success"><i>"In every deliberation, we must consider the impact on the seventh generation..."</i></h3><b>Great Law of the Iroquois</b>
   </center>
-</div>
+ </div> <!-- /col 8 -->
 
- <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
-  <div class="sidebar-module sidebar-module-inset">
-    <h4>Recent Tags</h4>
-    <div class="sidebar-module pre-scrollable" style="border: 1px solid #e1e1e8;">
+ <div class="col-xs-4 col-sm-4 ">
+  <h4>Recent Tags</h4>
+  <div class="sidebar-module pre-scrollable" style="border: 1px solid #e1e1e8;">
       <ol class="list-unstyled">
        {{#each tags}}
          <li><a href="/tag/{{locator}}">{{label}}</a></li>
        {{/each}}
       </ol>
-      </textarea>
-    </div><br/>
-    <h4>Recent Blog Posts</h4>
-    <div class="sidebar-module pre-scrollable" style="border: 1px solid #e1e1e8;">
+  </div><br/>
+  <h4>Recent Blog Posts</h4>
+  <div class="sidebar-module pre-scrollable" style="border: 1px solid #e1e1e8;">
       <ol class="list-unstyled">
        {{#each blogs}}
          <li><a href="/blog/{{locator}}">{{label}}</a></li>
        {{/each}}
       </ol>
-      </textarea>
-    </div><br/>
-
-   <h4>Recent Wiki Topics</h4>
-   <div class="sidebar-module pre-scrollable" style="border: 1px solid #e1e1e8;">
+  </div><br/>
+  <h4>Recent Wiki Topics</h4>
+  <div class="sidebar-module pre-scrollable" style="border: 1px solid #e1e1e8;">
       <ol class="list-unstyled">
        {{#each wikis}}
          <li><a href="/wiki/{{locator}}">{{label}}</a></li>
        {{/each}}
       </ol>
-    </div><br/>
-    
-    <h4>Recent Conversations</h4>
-    <div class="sidebar-module  pre-scrollable" style="border: 1px solid #e1e1e8;">
+  </div><br/>
+  <h4>Recent Conversations</h4>
+  <div class="sidebar-module  pre-scrollable" style="border: 1px solid #e1e1e8;">
        <ol class="list-unstyled">
        {{#each conv}}
          <li><a href="/conversation/{{locator}}">{{label}}</a></li>
        {{/each}}
       </ol>
-    </div><br/>
-    <h4>Recent Bookmarks</h4>
-    <div class="sidebar-module  pre-scrollable" style="border: 1px solid #e1e1e8;">
+  </div><br/>
+  <h4>Recent Bookmarks</h4>
+  <div class="sidebar-module  pre-scrollable" style="border: 1px solid #e1e1e8;">
        <ol class="list-unstyled">
        {{#each bkmks}}
          <li><a href="/bookmark/{{locator}}">{{label}}</a></li>
        {{/each}}
       </ol>
-    </div>
-    
   </div>
- </div>
+ </div> <!-- /col 4 -->
+ </div> <!-- /row -->
  
