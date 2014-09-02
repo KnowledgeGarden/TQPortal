@@ -12,7 +12,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
 var AdminModel =  module.exports = function(environment) {
 	var userDatabase = environment.getUserDatabase();
 	var self = this;
-	console.log("AdminModel");
+	console.log("AdminModel "+userDatabase);
 	/**
 	 * If default user doesn't exist, create it
 	 */

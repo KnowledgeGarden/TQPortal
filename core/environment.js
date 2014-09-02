@@ -6,8 +6,12 @@ var lgr = require('log4js')
   //topicmap
   ,idx = require('../node_modules/tqtopicmap/index')
   //database
-  , mongo = require('mongodb')
   , udb = require('./userdatabase')
+  //logging platform
+  , lp = require('./logplatform')
+//  , plogger = require('./logging/plogger')
+//  , mlogger = require('./logging/mlogger')
+//  , alogger = require('./logging/alogger')
   //misc
   , rbuf = require('./util/ringbuffer')
   , constants = require('./constants')
@@ -20,6 +24,8 @@ var lgr = require('log4js')
 var Environment = module.exports = function(callback) {
 	//create a logging system
 	var logger;
+	var monitorLogger;
+	var apiLogger;
 	var configProperties;
 	var database;
 	var userdatabase;
@@ -37,111 +43,96 @@ var Environment = module.exports = function(callback) {
 	var self = this;
 
 self.init = function() {
-  ///////////////////////
-  //Populate the environment
-  ///////////////////////
+	///////////////////////
+	//Populate the environment
+	///////////////////////
 	var path = __dirname+"/../config/config.json";
-	var path1 = __dirname+"/../config/logger.json";
 	var recentspath = __dirname+"/../config/recents.json";
+	//get the logs
+	var lgr = new lp(function(logp) {
+		logger = logp.getLogger();
+		monitorLogger = logp.getMonitorLogger();
+		apiLogger = logp.getAPILogger();
   //read the config file
   fs.readFile(path, function(err, configfile) {
     configProperties = JSON.parse(configfile);
-    // build the databases and dataprovider
-    var MongoClient = mongo.MongoClient;
-    lgr.configure(/*"./logger.json"*/path1);
-    logger = lgr.getLogger("Portal");
-    logger.setLevel('ERROR');
-    var x = logger.setLevel('debug');
     helpMenu = configProperties.helpMenu;
     if (!helpMenu) {helpMenu = [];}
     //bring up mongo
     //TODO improve the connect string with credentials, etc
-    MongoClient.connect(configProperties.mongoString, function(err, db) {
-      console.log("BOOTING DB "+err+" "+db);
-      database = db;
-      var myCollection;
-      if(!err) {
-        console.log("We are connected "+database);
-      }
-      //now create the user collection
-      database.createCollection(constants.USER_COLLECTION, {strict:true}, function(err, collection) {
-        console.log('---'+err+" "+collection);
-        //create invitation collection
-        database.createCollection(constants.INVITATION_COLLECTION, {strict:true}, function(err, collection) {
-            console.log('----'+err+" "+collection);
-	            //user databasea
-	            userdatabase = new udb(database);
-	            //now boot the topic map
-	            var foo = new idx(function(err, environment) {
-	            	TopicMapEnvironment = environment;
-	            	//load recents
-	            	fs.readFile(recentspath, function(err, recents) {
-	            		var rx = JSON.parse(recents);
-	            		console.log("RECENTS "+err+" "+JSON.stringify(rx));
-		            	blogRing = new rbuf(20, "blog", TopicMapEnvironment);
-		            	wikiRing= new rbuf(20, "wiki", TopicMapEnvironment);
-		            	tagRing= new rbuf(20,"tag", TopicMapEnvironment);
-		            	bookmarkRing = new rbuf(20,"bookmark",TopicMapEnvironment);
-		            	conversationRing = new rbuf(20,"conversation",TopicMapEnvironment);
-		            	transcludeRing = new rbuf(20, "Transcludes",TopicMapEnvironment);
-		            	var len, ix, i, x = rx.blog;
-		            	if (x) {
-		            		len = x.length;
-			            	for (i=0;i<len;i++) {
-			            		ix=x[i];
-			            		self.addRecentBlog(ix.locator, ix.label);
-			            	}
-		            	}
-			            	x = rx.wiki;
-			            	if (x) {
-			            	len = x.length;
-			            	for (i=0;i<len;i++) {
-			            		ix=x[i];
-			            		self.addRecentWiki(ix.locator, ix.label);
-			            	}
-		            	}
-		            	x = rx.tag;
-			            	if (x) {
-			            	len = x.length;
-			            	for (i=0;i<len;i++) {
-			            		ix=x[i];
-			            		self.addRecentTag(ix.locator, ix.label);
-			            	}
-		            	}
-		            	x = rx.bkmrk;
-			            	if (x) {
-			            	len = x.length;
-			            	for (i=0;i<len;i++) {
-			            		ix=x[i];
-			            		self.addRecentBookmark(ix.locator, ix.label);
-			            	}
-		            	}
-		            	x = rx.convers;
-			            	if (x) {
-			            	len = x.length;
-			            	for (i=0;i<len;i++) {
-			            		ix=x[i];
-			            		self.addRecentConversation(ix.locator, ix.label);
-			            	}
-		            	}
-		            	//It is a fact that anything constructed below cannot call this Environment
-		            	// since it is not yet finished building
-		            	theMessage = "";
-		            	CommonModel = new cm(this, TopicMapEnvironment);
-		            	//fire up the program
-		            	console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
-		            	self.logDebug("Portal Environment started ");
-		            	TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
-		            	callback("foo","bar");
-		            	
-	            	});
-	            });
- //           });
-        });
-      });
-    });
-  });
-};
+    userdatabase = new udb(configProperties, function(err,dx) {
+    	//user databasea
+    	//userdatabase = dx;
+    	//now boot the topic map
+    	var foo = new idx(function(err, environment) {
+    		TopicMapEnvironment = environment;
+    		//load recents
+    		fs.readFile(recentspath, function(err, recents) {
+    			var rx = JSON.parse(recents);
+    			console.log("RECENTS "+err+" "+JSON.stringify(rx));
+    			blogRing = new rbuf(20, "blog", TopicMapEnvironment);
+    			wikiRing= new rbuf(20, "wiki", TopicMapEnvironment);
+    			tagRing= new rbuf(20,"tag", TopicMapEnvironment);
+    			bookmarkRing = new rbuf(20,"bookmark",TopicMapEnvironment);
+    			conversationRing = new rbuf(20,"conversation",TopicMapEnvironment);
+    			transcludeRing = new rbuf(20, "Transcludes",TopicMapEnvironment);
+    			var len, ix, i, x = rx.blog;
+    			if (x) {
+    				len = x.length;
+    				for (i=0;i<len;i++) {
+    					ix=x[i];
+    					self.addRecentBlog(ix.locator, ix.label);
+    				}
+    			}
+    			x = rx.wiki;
+    			if (x) {
+    				len = x.length;
+    				for (i=0;i<len;i++) {
+    					ix=x[i];
+    					self.addRecentWiki(ix.locator, ix.label);
+    				}
+    			}
+    			x = rx.tag;
+    			if (x) {
+    				len = x.length;
+    				for (i=0;i<len;i++) {
+    					ix=x[i];
+    					self.addRecentTag(ix.locator, ix.label);
+    				}
+    			}
+    			x = rx.bkmrk;
+    			if (x) {
+    				len = x.length;
+    				for (i=0;i<len;i++) {
+    					ix=x[i];
+    					self.addRecentBookmark(ix.locator, ix.label);
+    				}
+    			}
+    			x = rx.convers;
+    			if (x) {
+    				len = x.length;
+    				for (i=0;i<len;i++) {
+    					ix=x[i];
+    					self.addRecentConversation(ix.locator, ix.label);
+    				}
+    			}
+    			//It is a fact that anything constructed below cannot call this Environment
+    			// since it is not yet finished building
+    			theMessage = "";
+    			CommonModel = new cm(this, TopicMapEnvironment);
+    			//fire up the program
+    			console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
+    			self.logDebug("Portal Environment started ");
+    			self.logMonitorDebug("Portal Environment started ");
+    			self.logAPIDebug("Portal Environment started ");
+    			TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
+    			callback("foo","bar");  	
+    		}); // read file
+        });  // foo topicmap
+      }); //udb
+    }); //config
+	}); //logging
+}; //init
 self.init();
 
 ///////////////////////
@@ -307,13 +298,25 @@ self.init();
 	//logging utils
 	//////////////////////////////////////
 	self.logInfo = function(message) {
-	  logger.info(message);
+		logger.info(message);
 	},
 	self.logDebug = function(message) {
-	  logger.debug(message);
+		logger.debug(message);
 	},
 	self.logError = function(message) {
-	  logger.error(message);
+		logger.error(message);
+	},
+	self.logMonitorDebug = function(message) {
+		monitorLogger.debug(message);
+	},
+	self.logMonitorError = function(message) {
+		monitorLogger.error(message);
+	},
+	self.logAPIDebug = function(message) {
+		apiLogger.debug(message);
+	},
+	self.logAPIError = function(message) {
+		apiLogger.error(message);
 	};
 };
 

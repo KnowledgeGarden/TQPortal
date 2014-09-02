@@ -77,7 +77,40 @@ var Environment = new env(function(err,env) {
 		  }
 		  // boot the plugin apps
 		  loadApps();
+		  //now watch for anything else that comes in which routers don't catch
+		  //and log it to monitor
+		  app.get("/*", function(req,res) {
+			  var path = req.path;
+			  var query = req.query;
+			  if (query) {query = JSON.stringify(query);}
+			  var trusted = app.enabled('trust proxy');
+			  var ip = req.ip;
+			  var msg = "GET: "+path+" | "+query+" | "+ip+" | "+trusted;
+			  Environment.logMonitorDebug(msg);
+			  res.redirect("/");
+		  });
 		  
+		  app.post("/*", function(req,res) {
+			  var path = req.path;
+			  var query = req.query;
+			  if (query) {query = JSON.stringify(query);}
+			  var trusted = app.enabled('trust proxy');
+			  var ip = req.ip;
+			  var msg = "POST: "+path+" | "+query+" | "+ip+" | "+trusted;
+			  Environment.logMonitorDebug(msg);
+			  res.redirect("/");
+		  });
+		  app.put("/*", function(req,res) {
+			  var path = req.path;
+			  var query = req.query;
+			  if (query) {query = JSON.stringify(query);}
+			  var trusted = app.enabled('trust proxy');
+			  var ip = req.ip;
+			  var msg = "PUT: "+path+" | "+query+" | "+ip+" | "+trusted;
+			  Environment.logMonitorDebug(msg);
+			  res.redirect("/");
+		  });
+
 		  ////////////////////////////
 		  //Server
 		  //TODO need to use server and port, not just port
