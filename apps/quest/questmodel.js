@@ -1,6 +1,5 @@
 /**
- * IssueModel
- * Issues, not to be confused with IBIS ISSUE_TYPE (question) is a CHALLENGE_TYPE
+ * QuestModel
  */
 var types = require('../../node_modules/tqtopicmap/lib/types')
 	, icons = require('../../node_modules/tqtopicmap/lib/icons')
@@ -99,11 +98,11 @@ var IssueModel =  module.exports = function(environment) {
 	      userTopic = result;
 	      console.log('IssueModel.create-1 '+userLocator+' | '+userTopic);
 	      // create the blog post
-	      console.log("FOO "+types.CHALLENGE_TYPE);
+	      console.log("FOO "+types.QUEST_TYPE);
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
-	      TopicModel.newInstanceNode(uuid.newUUID(), types.CHALLENGE_TYPE,
+	      TopicModel.newInstanceNode(uuid.newUUID(), types.QUEST_TYPE,
 	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.CHALLENGE_SM, icons.CHALLENGE, false, credentials, function(err, article) {
+	      		"/images/game/quest_sm.png", "/images/game/quest.png", false, credentials, function(err, article) {
 	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
 	    	  var subj = blog.title;
@@ -152,10 +151,10 @@ var IssueModel =  module.exports = function(environment) {
 	    });
 	  },
 	  
-	  self.listIssues = function(start, count, credentials, callback) {
-	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.CHALLENGE_TYPE,start,count);
+	  self.listQuests = function(start, count, credentials, callback) {
+	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.QUEST_TYPE,start,count);
 	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
-	      console.log("IssueModel.listIssues "+err+" "+data);
+	      console.log("QuestModel.listIssues "+err+" "+data);
 	      callback(err,data, total);
 	    });
 	  },
@@ -167,9 +166,9 @@ var IssueModel =  module.exports = function(environment) {
 	   * @param callback signatur (data, countsent, totalavailable)
 	   */
 	  self.fillDatatable = function(start, count,credentials, callback) {
-		  self.listIssues(start,count,credentials,function(err,result, totalx) {
-		      console.log('IssueModel.fillDatatable '+err+' '+totalx+" "+result);
-		      CommonModel.fillSubjectAuthorDateTable(result,"/issue/",totalx, function(html,len,total) {
+		  self.listQuests(start,count,credentials,function(err,result, totalx) {
+		      console.log('QuestModel.fillDatatable '+err+' '+totalx+" "+result);
+		      CommonModel.fillSubjectAuthorDateTable(result,"/guild/",totalx, function(html,len,total) {
 			      console.log("FILLING "+start+" "+count+" "+total);
 			      callback(html,len,total);
 		    	  

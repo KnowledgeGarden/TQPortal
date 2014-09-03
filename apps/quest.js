@@ -1,14 +1,7 @@
 /**
- * IssueApp
- * This is the portal of entry into a Game system.
- * <ul>
- * <li>Issues are the primary element</li>
- * <li>Quests form around issues</li>
- * <li>Guilds form to go on quests</li>
- * <li>Avatars participate in guilds</li>
- * </ul>
+ * quest
  */
-var issue = require('./issue/issuemodel')
+var quest = require('./quest/questmodel')
   , constants = require('../core/constants')
  , types = require('../node_modules/tqtopicmap/lib/types');
 
@@ -16,7 +9,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
-	var IssueModel = new issue(environment);
+	var QuestModel = new quest(environment);
 	var CommonModel = environment.getCommonModel();
 	
 	var isAdmin = function(credentials) {
@@ -53,28 +46,27 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/////////////////
 	// Menu
 	/////////////////
-	environment.addApplicationToMenu("/issue","Issue");
+	//environment.addApplicationToMenu("/quest","Quest");
 	  /////////////////
 	  // Routes
 	  /////////////////
-	  app.get('/issue', isPrivate,function(req,res) {
+	  app.get('/quest', isPrivate,function(req,res) {
 		  var data = myEnvironment.getCoreUIData(req);
 		  //We can change the brand
 		  data.brand = "GetTheIssues";
 		  data.issuestart=0;
 		  data.issuecount=constants.MAX_HIT_COUNT; //pagination size
 		  data.issuetotal=0;
-		  data.issuequery="/issue/index";
-		  data.type = "landing";
+		  data.issuequery="/quest/index";
 	    res.render('issuehome',data);
 	  });
 	  
 	  /**
 	   * Fire up the blog new post form
 	   */
-	  app.get('/issue/new', isLoggedIn, function(req,res) {
+	  app.get('/quest/new', isLoggedIn, function(req,res) {
 		var data =  myEnvironment.getCoreUIData(req);
-		data.formtitle = "New Issue";
+		data.formtitle = "New Quest";
 	    data.isNotEdit = true;
 		res.render('issueform',data); //,
 	  });
@@ -82,14 +74,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  /**
 	   * Fetch based on page Next and Previous buttons from ajax
 	   */
-	  app.get("/issue/index", isPrivate,function(req,res) {
+	  app.get("/quest/index", isPrivate,function(req,res) {
 		var start = parseInt(req.query.start);
 		var count = parseInt(req.query.count);
 		var credentials= [];
 		if (req.user) {credentials = req.user.credentials;}
 
-		IssueModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
-			console.log("Issue.index "+data);
+		QuestModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+			console.log("Quest.index "+data);
 			var cursor = start+countsent;
 			var json = {};
 			//pagination is based on start and count
@@ -108,14 +100,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  /**
 	   * Function which ties the app-embedded route back to here
 	   */
-	  var _issuesupport = function(body,usx, callback) {
+	  var _questsupport = function(body,usx, callback) {
 		var credentials = usx.credentials;
 		if (body.locator === "") {
-			IssueModel.create(body, usx, credentials, function(err,result) {
+			QuestModel.create(body, usx, credentials, function(err,result) {
 				callback(err,result);
 			});
 		} else {
-	        IssueModel.update(body, usx, credentials, function(err,result) {
+	        QuestModel.update(body, usx, credentials, function(err,result) {
 	            callback(err,result);
 	        });
 		}
@@ -123,20 +115,20 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  /**
 	   * Handles posts from new and from edit
 	   */
-	  app.post('/issue', isLoggedIn, function(req,res) {
+	  app.post('/quest', isLoggedIn, function(req,res) {
 	    var body = req.body;
 	    var usx = req.user;
-	    console.log('ISSUE_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
-	    _issuesupport(body, usx, function(err,result) {
-	      console.log('ISSUE_NEW_POST-1 '+err+' '+result);
+	    console.log('QUEST_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
+	    _questupport(body, usx, function(err,result) {
+	      console.log('QUEST_NEW_POST-1 '+err+' '+result);
 	      //technically, this should return to "/" since Lucene is not ready to display
 	      // the new post; you have to refresh the page in any case
-	      return res.redirect('/issue');
+	      return res.redirect('/issuehome');
 	    });
 	  });
 	  
 	  
-	  app.get("/issue/ajaxfetch/:id", isPrivate, function(req,res) {
+	  app.get("/quest/ajaxfetch/:id", isPrivate, function(req,res) {
 			//establish the node's identity
 			var q = req.params.id;
 			//establish credentials
@@ -146,7 +138,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			if (usr) { credentials = usr.credentials;}
 			//fetch the node itself
 			Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-				console.log('ISSUErout-1 '+err+" "+result);
+				console.log('QUESTrout-1 '+err+" "+result);
 				var data =  myEnvironment.getCoreUIData(req);
 				//Fetch the tags
 				var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
@@ -156,9 +148,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				var docs=[];
 				var users=[];
 				var transcludes=[];
-				myEnvironment.logDebug("Issue.ajaxfetch "+JSON.stringify(data));
-				CommonModel.__doAjaxFetch(result, credentials,"/issue/",tags,docs,users,transcludes,data,req,function(json) {
-					myEnvironment.logDebug("Issue.ajaxfetch-1 "+JSON.stringify(json));
+				myEnvironment.logDebug("Quest.ajaxfetch "+JSON.stringify(data));
+				CommonModel.__doAjaxFetch(result, credentials,"/quest/",tags,docs,users,transcludes,data,req,function(json) {
+					myEnvironment.logDebug("Quest.ajaxfetch-1 "+JSON.stringify(json));
 						//send the response
 						try {
 							res.set('Content-type', 'text/json');
@@ -171,11 +163,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  /**
 		   * Model Fill ViewFirst: get cycle starts here
 		   */
-		  app.get('/issue/:id', isPrivate,function(req,res) {
+		  app.get('/quest/:id', isPrivate,function(req,res) {
 			var q = req.params.id;
 			var data = myEnvironment.getCoreUIData(req);
-			myEnvironment.logDebug("ISSUY "+JSON.stringify(req.query));
-			CommonModel.__doGet(q,"/issue/",data, req, function(viewspec, data) {
+			myEnvironment.logDebug("QUESTY "+JSON.stringify(req.query));
+			CommonModel.__doGet(q,"/quest/",data, req, function(viewspec, data) {
 				if (viewspec === "Dashboard") {
 					return res.render('vf_topic', data);
 				} else {

@@ -1,6 +1,5 @@
 /**
- * IssueModel
- * Issues, not to be confused with IBIS ISSUE_TYPE (question) is a CHALLENGE_TYPE
+ * GuildModel
  */
 var types = require('../../node_modules/tqtopicmap/lib/types')
 	, icons = require('../../node_modules/tqtopicmap/lib/icons')
@@ -11,7 +10,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
 	, tagmodel = require('../tag/tagmodel')
 ;
 
-var IssueModel =  module.exports = function(environment) {
+var GuildModel =  module.exports = function(environment) {
 	var myEnvironment = environment;
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var DataProvider = topicMapEnvironment.getDataProvider();
@@ -32,7 +31,7 @@ var IssueModel =  module.exports = function(environment) {
 	   * Update an existing blog entry; no tags included
 	   */
 	  self.update = function(blog,user,credentials,callback) {
-		  myEnvironment.logDebug("Issue.UPDATE "+JSON.stringify(blog));
+		  myEnvironment.logDebug("Quest.UPDATE "+JSON.stringify(blog));
 		  var lox = blog.locator;
 		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
 			  var error = '';
@@ -97,13 +96,13 @@ var IssueModel =  module.exports = function(environment) {
 	    var userTopic;
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
 	      userTopic = result;
-	      console.log('IssueModel.create-1 '+userLocator+' | '+userTopic);
+	      console.log('GuildModel.create-1 '+userLocator+' | '+userTopic);
 	      // create the blog post
-	      console.log("FOO "+types.CHALLENGE_TYPE);
+	      console.log("FOO "+types.GUILD_TYPE);
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
-	      TopicModel.newInstanceNode(uuid.newUUID(), types.CHALLENGE_TYPE,
+	      TopicModel.newInstanceNode(uuid.newUUID(), types.GUILD_TYPE,
 	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.CHALLENGE_SM, icons.CHALLENGE, false, credentials, function(err, article) {
+	      		"/images/game/guild_sm.png", "/images/game/guild.png", false, credentials, function(err, article) {
 	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
 	    	  var subj = blog.title;
@@ -152,10 +151,10 @@ var IssueModel =  module.exports = function(environment) {
 	    });
 	  },
 	  
-	  self.listIssues = function(start, count, credentials, callback) {
-	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.CHALLENGE_TYPE,start,count);
+	  self.listGuilds = function(start, count, credentials, callback) {
+	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.GUILD_TYPE,start,count);
 	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
-	      console.log("IssueModel.listIssues "+err+" "+data);
+	      console.log("GuildModel.listIssues "+err+" "+data);
 	      callback(err,data, total);
 	    });
 	  },
@@ -167,9 +166,9 @@ var IssueModel =  module.exports = function(environment) {
 	   * @param callback signatur (data, countsent, totalavailable)
 	   */
 	  self.fillDatatable = function(start, count,credentials, callback) {
-		  self.listIssues(start,count,credentials,function(err,result, totalx) {
-		      console.log('IssueModel.fillDatatable '+err+' '+totalx+" "+result);
-		      CommonModel.fillSubjectAuthorDateTable(result,"/issue/",totalx, function(html,len,total) {
+		  self.listGuilds(start,count,credentials,function(err,result, totalx) {
+		      console.log('GuildModel.fillDatatable '+err+' '+totalx+" "+result);
+		      CommonModel.fillSubjectAuthorDateTable(result,"/guild/",totalx, function(html,len,total) {
 			      console.log("FILLING "+start+" "+count+" "+total);
 			      callback(html,len,total);
 		    	  

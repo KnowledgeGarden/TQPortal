@@ -40,6 +40,9 @@ var Environment = module.exports = function(callback) {
 	var appMenu = [];
 	var helpMenu = [];
 	var theMessage = "";
+	//A list of Environment objects from apps which
+	// need to save their recents and other things
+	var saveRecentListeners = [];
 	var self = this;
 
 self.init = function() {
@@ -138,6 +141,10 @@ self.init();
 ///////////////////////
 // API
 ///////////////////////
+	self.addRecentListener = function(listener) {
+		if (!saveRecentListeners) {saveRecentListeners = [];}
+		saveRecentListeners.push(listener);
+	},
 	/////////////////////////
 	// Application UI
 	/////////////////////////
@@ -157,6 +164,12 @@ self.init();
 		dx.convers = self.listRecentConversations();
 		dx.bkmrk = self.listRecentBookmarks();
 		fs.writeFileSync(recentspath, JSON.stringify(dx));
+		if (saveRecentListeners) {
+			var len = saveRecentListeners.length;
+			for (var i=0;i<len;i++) {
+				saveRecentListeners[i].persistRecents();
+			}
+		}
 	},
 	self.saveProperties = function() {
 		var path = __dirname+"/../config/config.json";

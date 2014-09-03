@@ -1,4 +1,4 @@
-<div class="row">
+
 <ul class="nav nav-tabs">
   <li class="active"><a data-toggle="tab" href="#landing">IssueCentral Home</a></li>
   <li><a data-toggle="tab" href="#issues">Issues</a></li>
@@ -20,8 +20,8 @@
       <br/><br/>This text will disappear after an <i>admin</i> edits it to suit the particular needs.<br/>
       <br/>Of course, it's always possible that nobody will get around to editing this, so know this:<br/>
       <b>GTI</b> is a <i>Role-playing Game Environment</i> in which <i>Guilds</i> form to go on <i>Quests</i> which are organized around particular <i>Issues</i>.
-    </div>
-   </div> <!-- /col 8 -->
+    </div>    
+   </div> <!-- /col 7 -->
    <div class="col-xs-4 col-sm-4 ">
     <h4>Recent Issues</h4>
     <div class="sidebar-module pre-scrollable" style="border: 1px solid #e1e1e8;">
@@ -57,17 +57,51 @@
      </div>
     </div> <!-- /col 4 -->
     </div> <!-- /row -->
-  </div>
-  <div id="issues" class="tab-pane fade">
-   <h1>Where Issues Live</h1>
-  </div>
-  <div id="quests" class="tab-pane fade">
-   <h1>Where Quests Live</h1>
-   <h2>Actually, Quests emerge based on specific issues; this is just where we aggregate all quests</h2>
-  </div>
-   <div id="guilds" class="tab-pane fade">
-   <h1>Where Guilds Live</h1>
-  </div>
+  </div> <!-- /landing -->
   
-
+  <div id="issues" class="tab-pane fade">
+   <div class="row">
+   <h1>Where Issues Live</h1>
+   {{#if isAuthenticated}}
+	<div class="form-group">
+  	<a href="/issue/new"><button type="submit" class="btn btn-btn-success btn-small">New Issue</button></a><br />
+	</div>
+   {{/if}}
+   
+   <div id="issuetabledata" query="{{issuequery}}" start="{{issuestart}}" count="{{issuecount}}" total="{{issuetotal}}"></div>
+   <div class="col-xs-12 pre-scrollable" position:"left"; style="border: 1px solid #e1e1e8;">
+  	 <div class="issuetableindex"></div>
+   </div>
+   <div class="col-xs-12" position:"left">
+    <div class="issuepagination"></div>
+   </div> 
+  </div> <!-- /row-->
+  </div> <!-- /issues -->
+  
+  <div id="quests" class="tab-pane fade">
+   <div class="row">
+    <h1>Where Quests Live</h1>
+    <h2>Actually, Quests emerge based on specific issues; this is just where we aggregate all quests</h2>
+    <div id="questtabledata" query="{{questquery}}" start="{{queststart}}" count="{{questcount}}" total="{{questtotal}}"></div>
+    <div class="col-xs-12 pre-scrollable" position:"left"; style="border: 1px solid #e1e1e8;">
+  	 <div class="questtableindex"></div>
+    </div>
+    <div class="col-xs-12" position:"left">
+     <div class="questpagination"></div>
+    </div> 
+   </div> <!-- /row -->
+   </div> <!-- /quests -->
+   
+   <div id="guilds" class="tab-pane fade">
+    <div class="row">
+     <h1>Where Guilds Live</h1>
+     <div id="guildtabledata" query="{{guildquery}}" start="{{guildstart}}" count="{{guildissuecount}}" total="{{guildissuetotal}}"></div>
+	 <div class="col-xs-12 pre-scrollable" position:"left"; style="border: 1px solid #e1e1e8;">
+  	  <div class="guildtableindex"></div>
+	 </div>
+    <div class="col-xs-12" position:"left">
+     <div class="guildpagination"></div>
+    </div> 
+   </div> <!-- /row -->
+  </div> <!-- /guilds -->
 </div> <!-- tab-content -->
