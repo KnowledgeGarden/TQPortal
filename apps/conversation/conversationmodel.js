@@ -32,59 +32,16 @@ var ConversationModel = module.exports = function(environment) {
 	, EVIDENCE = "10"; //uses literature-analysis icons
 
 	var self = this;	
-  
-	  /**
-	   * Update an existing conversation entry; no tags included
-	   */
-	  self.update = function(blog,user,callback) {
-		  myEnvironment.logDebug("CONVERSATION.UPDATE "+JSON.stringify(blog));
-		  var credentials = user.credentials;
-		  var lox = blog.locator;
-		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
-			  var error = '';
-			  if (err) {error += err;}
-			  var title = blog.title;
-			  var body = blog.body;
-	    	  var lang = blog.language;
-			  var isNotUpdateToBody = true;
-	    	  var lang = blog.language;
-	    	  if (!lang) {lang = "en";}
-	    	  var comment = "an edit by "+user.handle;
-	    	  var oldBody;
-	    	  if(result.getBody(lang)) {
-	    		  oldBody = result.getBody(lang).theText;
-	    	  }
-	    	  if (oldBody) {
-	    		  isNotUpdateToBody = (oldBody === body);
-	    	  }
-	    	  var oldLabel = result.getSubject(lang).theText;
-	    	  var isNotUpdateToLabel = (title === oldLabel);
-	    	  if (!isNotUpdateToLabel) {
-	    		  //crucial update to label
-	    		  result.updateSubject(title,lang,user.handle,comment);
-	    		  if (!isNotUpdateToBody) {
-	    			  result.updateBody(body,lang,user.handle,comment);
-	    		  }
-		    	  result.setLastEditDate(new Date());
-		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
-		    		  if (err) {error += err;}
-		    		  console.log("ConversationModel.update "+error+" "+oldLabel+" "+title);
-		    		  callback(error,data);
-		    	  });
-	    	  } else {
-	    		  if (!isNotUpdateToBody) {
-	    			  result.updateBody(body,lang,user.handle,comment);
-	    			  result.setLastEditDate(new Date());
-			    	  DataProvider.putNode(result, function(err,data) {
-			    		  if (err) {error += err;}
-			    		  callback(error,data);
-			    	  });
-	    		  } else {
-	    			  callback(error,null);
-	    		  }
-	    	  };		 
-	    });
-	  },
+	/**
+	 * Update an existing node; no tags included
+	 */
+	self.update = function(json,user,credentials,callback) {
+		PortalNodeModel.update(json,user,function(err,result) {
+			callback(err,null);
+		});
+	},
+
+
   ///////////////////////////////
   //TODO
   // We need a create for each node type

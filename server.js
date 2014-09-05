@@ -77,6 +77,8 @@ var Environment = new env(function(err,env) {
 		  }
 		  // boot the plugin apps
 		  loadApps();
+			//initialize internal models
+			Environment.getPortalNodeModel().init(Environment);
 		  //now watch for anything else that comes in which routers don't catch
 		  //and log it to monitor
 		  app.get("/*", function(req,res) {

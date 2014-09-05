@@ -12,6 +12,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
 var BookmarkModel =  module.exports = function(environment) {
 	var myEnvironment = environment;
 	var CommonModel = environment.getCommonModel();
+	var PortalNodeModel = environment.getPortalNodeModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var DataProvider = topicMapEnvironment.getDataProvider();
 	var TopicModel = topicMapEnvironment.getTopicModel();
@@ -24,10 +25,18 @@ var BookmarkModel =  module.exports = function(environment) {
 			console.log('BookmarkModel.getNodeByURL '+url+" "+err+" "+data);
 		});
 	},
+	/**
+	 * Update an existing node; no tags included
+	 */
+	self.update = function(json,user,callback) {
+		PortalNodeModel.update(json,user,function(err,result) {
+			callback(err,null);
+		});
+	},
 	
 	  /**
 	   * Update an existing blog entry; no tags included
-	   */
+	   * /
 	  self.update = function(blog,user,credentials,callback) {
 		  myEnvironment.logDebug("Bookmark.UPDATE "+JSON.stringify(blog));
 		  var lox = blog.locator;
@@ -80,7 +89,8 @@ var BookmarkModel =  module.exports = function(environment) {
 	    	  };
 		  });
 	  },
-	self.createPositionAndTags = function(bookmarkNode, blog, userTopic, credentials, callback) {
+	  */
+	self.createAnnotationAndTags = function(bookmarkNode, blog, userTopic, credentials, callback) {
 		myEnvironment.logDebug("BBBB "+JSON.stringify(userTopic));
 		//TODO create the position node
 		//copy from conversationmodel (move to common model?)
@@ -90,12 +100,12 @@ var BookmarkModel =  module.exports = function(environment) {
 
 	  if (!lang) {lang = "en";}
 		var error = '';
-		myEnvironment.logDebug("BookmarkModel.createPositionAndTags "+bookmarkNode.toJSON());
+		myEnvironment.logDebug("BookmarkModel.createAnnotationAndTags "+bookmarkNode.toJSON());
 		//contextLocator, parentNode,newLocator, 
 		//nodeType, subject, body, language, smallIcon, largeIcon,
 		//  credentials, userLocator, isPrivate, callback
-		TopicModel.createTreeNode(bookmarkNode.getLocator(),bookmarkNode,"",types.ISSUE_TYPE,
-	    		  blog.subject, blog.body, lang, icons.POSITION_SM, icons.POSITION,
+		TopicModel.createTreeNode(bookmarkNode.getLocator(),bookmarkNode,"",types.NOTE_TYPE,
+	    		  blog.subject, blog.body, lang, icons.NOTE_SM, icons.NOTE,
 	    		  credentials, userTopic.getLocator(), false, function(err,data) {
 			var positionNode = data;
 			positionNode.setResourceUrl(url);
@@ -176,7 +186,7 @@ var BookmarkModel =  module.exports = function(environment) {
 		    	  bookmarkTopic = dNode;
 		    	  //MAKE POSITION
 		    	  //TAGS to Bookmark and Position
-		    	  self.createPositionAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
+		    	  self.createAnnotationAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
 				      if (err) {error+=err;}
 		    		  callback(error,result);
 		    	  });
@@ -203,7 +213,7 @@ var BookmarkModel =  module.exports = function(environment) {
 					  			  if (err) {error += err;}
 					  			  //MAKE POSITION
 					  			  //TAGS to Bookmark and Position
-					  			  self.createPositionAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
+					  			  self.createAnnotationAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
 					  				  if (err) {error+=err;}
 					  				  callback(error,result);
 					  			  });

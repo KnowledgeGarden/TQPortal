@@ -103,7 +103,7 @@ var IssueModel =  module.exports = function(environment) {
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
 	      TopicModel.newInstanceNode(uuid.newUUID(), types.CHALLENGE_TYPE,
 	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.CHALLENGE_SM, icons.CHALLENGE, false, credentials, function(err, article) {
+	      		icons.WARNING_SM, icons.WARNING, false, credentials, function(err, article) {
 	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
 	    	  var subj = blog.title;

@@ -4,7 +4,6 @@
 var acls = require('./blog/blogmodel')
   , constants = require('../core/constants')
   , common = require('./common/commonmodel')
-//  , colnavwidget = require('./widgets/jquerycolnav')
   , types = require('../node_modules/tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
@@ -12,9 +11,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var CommonModel = environment.getCommonModel();
 	var topicMapEnvironment = environment.getTopicMapEnvironment();
 	var Dataprovider = topicMapEnvironment.getDataProvider();
-//	var ColNavWidget = new colnavwidget(environment,Dataprovider);
 	var BlogModel = new acls(environment);
-	var MAPTYPE = "1";
 
 	console.log("Starting Blog "+this.BlogModel);
   
@@ -172,9 +169,6 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var docs=[];
 		var users=[];
 		var transcludes=[];
-		//Tell the view that it will start a new conversation with a MAPTYPE node
-		//NOTE: this could change: we might actually install that map when the node is built
-		data.newnodetype = MAPTYPE;
 		myEnvironment.logDebug("Blog.ajaxfetch "+JSON.stringify(data));
 		CommonModel.__doAjaxFetch(result, credentials,"/blog/",tags,docs,users,transcludes,data,req,function(json) {
 			myEnvironment.logDebug("Blog.ajaxfetch-1 "+JSON.stringify(json));
@@ -207,13 +201,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    * Function which ties the app-embedded route back to here
    */
   var _blogsupport = function(body,usx, callback) {
-	var credentials = usx.credentials;
 	if (body.locator === "") {
-		BlogModel.create(body, usx, credentials, function(err,result) {
+		BlogModel.create(body, usx, function(err,result) {
 			callback(err,result);
 		});
 	} else {
-        BlogModel.update(body, usx, credentials, function(err,result) {
+        BlogModel.update(body, usx, function(err,result) {
             callback(err,result);
         });
 	}

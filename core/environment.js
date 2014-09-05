@@ -16,6 +16,7 @@ var lgr = require('log4js')
   , rbuf = require('./util/ringbuffer')
   , constants = require('./constants')
   , cm = require('../apps/common/commonmodel')
+  , pnm = require('../apps/common/portalnodemodel')
  ;
 
 /**
@@ -30,6 +31,7 @@ var Environment = module.exports = function(callback) {
 	var database;
 	var userdatabase;
 	var CommonModel;
+	var PortalNodeModel;
 	var TopicMapEnvironment;
 	var blogRing;
 	var wikiRing;
@@ -67,8 +69,8 @@ self.init = function() {
     	//user databasea
     	//userdatabase = dx;
     	//now boot the topic map
-    	var foo = new idx(function(err, environment) {
-    		TopicMapEnvironment = environment;
+    	var foo = new idx(function(err, tmx) {
+    		TopicMapEnvironment = tmx;
     		//load recents
     		fs.readFile(recentspath, function(err, recents) {
     			var rx = JSON.parse(recents);
@@ -123,6 +125,7 @@ self.init = function() {
     			// since it is not yet finished building
     			theMessage = "";
     			CommonModel = new cm(this, TopicMapEnvironment);
+    			PortalNodeModel = new pnm(this,TopicMapEnvironment, CommonModel);
     			//fire up the program
     			console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
     			self.logDebug("Portal Environment started ");
@@ -141,6 +144,9 @@ self.init();
 ///////////////////////
 // API
 ///////////////////////
+	/**
+	 * Register an environment which must save recents
+	 */
 	self.addRecentListener = function(listener) {
 		if (!saveRecentListeners) {saveRecentListeners = [];}
 		saveRecentListeners.push(listener);
@@ -233,6 +239,9 @@ self.init();
 	
 	self.getCommonModel = function() {
 		return CommonModel;
+	},
+	self.getPortalNodeModel = function() {
+		return PortalNodeModel;
 	},
 	/////////////////////////
 	// Recent events recording

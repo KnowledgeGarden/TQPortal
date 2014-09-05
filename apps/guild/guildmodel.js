@@ -102,7 +102,7 @@ var GuildModel =  module.exports = function(environment) {
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
 	      TopicModel.newInstanceNode(uuid.newUUID(), types.GUILD_TYPE,
 	      		"", "", constants.ENGLISH, userLocator,
-	      		"/images/game/guild_sm.png", "/images/game/guild.png", false, credentials, function(err, article) {
+	      		icons.COLLABORATION_SM, icons.COLLABORATION, false, credentials, function(err, article) {
 	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
 	    	  var subj = blog.title;

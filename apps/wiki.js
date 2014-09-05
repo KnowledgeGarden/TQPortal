@@ -151,90 +151,6 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					res.json(json);
 			} );
 		});	  
-/*
-	    var q = req.params.id;
-		var lang = req.query.language;
-		if (!lang) {
-			lang = "en";
-		}
-		var viewspec = req.query.viewspec;
-		var rootLocator = req.query.rootLocator;
-		if (!viewspec) {
-			viewspec = "Dashboard";
-		}
-	    console.log('WIKIajax '+q+" "+lang);
-	    var credentials = [];
-	    var usr = req.user;
-	    if (usr) { credentials = usr.credentials;}
-	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-	      console.log('WIKIrout-1 '+err+" "+result);
-	      var data = myEnvironment.getCoreUIData(req);
-			    var contextLocator;
-			    if (req.query.contextLocator) {
-			    	contextLocator = req.query.contextLocator;
-			    } else {
-			    	//if it's a map node, use that
-			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
-			    		contextLocator = result.getLocator();
-			    	} else {
-			    		contextLocator = q;
-			    	}
-			    	//TODO
-			    	//Otherwise, grab some context from the node
-			    }
-		    	  var canEdit = self.canEdit(result,credentials);
-		    	  var clipboard = req.session.clipboard;
-		    	  
-		    	  var editLocator = "/wiki/edit/"+result.getLocator();
-		    	  
-
-			      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-			      if (!tags) {
-			    	  tags = [];
-			      }
-			      var transcludeUser = "";  //TODO
-	      CommonModel.generateViewFirstData(result, tags, [],[],credentials, canEdit, data, contextLocator, "/wiki/", clipboard, lang, transcludeUser,viewspec, function(json) {
-	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
-	    	  json.myLocator = q;
-			  //get all parents
-			  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
-				  if (cresult) {
-					  json.ccontable = cresult;
-				  }
-				  //get just my parents in particular context
-				  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
-					  if (presult) {
-						  json.pcontable = presult;
-					  }
-				      json.newnodetype = MAPTYPE;
-
-					  if (viewspec === "ColNav") {
-				    	  if (!rootLocator) {rootLocator = q;}
-				    	  var colnav = ColNavWidget.makeColNav(rootLocator,result,contextLocator,lang, credentials, function(err,html) {
-				    		  json.colnav = html;
-				//		      console.log("XXXX "+JSON.stringify(json));
-						      	
-						        try {
-						            res.set('Content-type', 'text/json');
-						          }  catch (e) { }
-						          res.json(json);
-				    	  });
-
-					  } else {
-				//      console.log("YYYY "+JSON.stringify(json));
-				      	
-				        try {
-				            res.set('Content-type', 'text/json');
-				          }  catch (e) { }
-				          res.json(json);
-					  }
-				});
-
-			  });
-	    	  
-	      });
-	    });
-*/	      
   });
   
   /**
@@ -289,21 +205,18 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Function which ties the app-embedded route back to here
    */
-  var __wikisupport = function(body,usx, callback) {
+	var __wikisupport = function(body,usx, callback) {
 //	  console.log("WIKIXXX "+JSON.stringify(body));
-	    if (body.locator === "") {
-    WikiModel.create(body, usx, function(err,result) {
-      callback(err,result);
-    });
-	    } else {
-	    	var credentials = usx.credentials;
-	    	
-	        WikiModel.update(body, usx, function(err,result) {
-	            callback(err,result);
-	          });
-	    	
-	    }
-  };
+		if (body.locator === "") {
+			WikiModel.create(body, usx, function(err,result) {
+				callback(err,result);
+			});
+		} else {
+			WikiModel.update(body, usx, function(err,result) {
+				callback(err,result);
+			});  	
+		}
+	};
 
   app.post('/wiki', isLoggedIn, function(req,res) {
 	  var body = req.body;

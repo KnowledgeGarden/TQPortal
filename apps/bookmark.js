@@ -274,7 +274,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			callback(err,result);
 		});
 	} else {
-		BookmarkModel.update(body, usx, credentials, function(err,result) {
+		BookmarkModel.update(body, usx, function(err,result) {
 			callback(err,result);
 		});
 	}
