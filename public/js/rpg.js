@@ -24,7 +24,7 @@ function pageSetup() {
 	//	alert(data);
 		paintIssueIndex(data);
 	});
-	data = ${"#questtabledata"};
+	data = $("#questtabledata");
 	q = data.attr("query");
 	cursor = data.attr("start");
 	count = data.attr("count");
@@ -32,9 +32,9 @@ function pageSetup() {
 //	alert(query);
 	$.get( query, function( data ) {
 	//	alert(data);
-		paintQuestIndex(data);
+		pageQuestNext(data);
 	});
-	data = ${"#guildtabledata"};
+	data = $("#guildtabledata");
 	q = data.attr("query");
 	cursor = data.attr("start");
 	count = data.attr("count");
@@ -83,10 +83,11 @@ function paintIssuePaginationButtons(data) {
 		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssueNext();\"><b>Next</a>";
 	}
 	if (surplus > 0) {
-		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssuePrevious();\"><b>Previous</a>";	
+		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssuePrevious();\"><b>Previous</a>";
 	}
 	$("div.issuepagination").html(html);
 }
+
 function pageIssueNext() {
 	var data = $("div.issuetabledata");
 	var q = data.attr("query");
@@ -133,6 +134,7 @@ function painQuestIndex(data) {
 	$("#questtabledata").attr("total",parseInt(data.total));
 	paintIssuePaginationButtons(data);
 }
+
 function paintQuestPaginationButtons(data) {
 	var cursor = parseInt(data.start);
 	var count = parseInt(data.count);
@@ -150,10 +152,11 @@ function paintQuestPaginationButtons(data) {
 		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssueNext();\"><b>Next</a>";
 	}
 	if (surplus > 0) {
-		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssuePrevious();\"><b>Previous</a>";	
+		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssuePrevious();\"><b>Previous</a>";
 	}
 	$("div.questpagination").html(html);
 }
+
 function pageQuestNext() {
 	var data = $("div.questtabledata");
 	var q = data.attr("query");
@@ -165,7 +168,7 @@ function pageQuestNext() {
 //	alert(cursor+" "+count);
 	var query = q+"?start="+cursor+"&count="+count;
 	$.get( query, function( data ) {
-		paintQuestIndex(data);
+		painQuestIndex(data);
 	});
 }
 
@@ -184,7 +187,7 @@ function pageQuestPrevious() {
 //	alert(cursor+" "+count+" "+start);
 	var query = q+"?start="+start+"&count="+count;
 	$.get( query, function( data ) {
-		paintQuestIndex(data);
+		painQuestIndex(data);
 	});
 
 }
@@ -200,6 +203,7 @@ function paintGuildIndex(data) {
 	$("#guildtabledata").attr("total",parseInt(data.total));
 	paintGuildPaginationButtons(data);
 }
+
 function paintGuildPaginationButtons(data) {
 	var cursor = parseInt(data.start);
 	var count = parseInt(data.count);
@@ -217,10 +221,11 @@ function paintGuildPaginationButtons(data) {
 		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssueNext();\"><b>Next</a>";
 	}
 	if (surplus > 0) {
-		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssuePrevious();\"><b>Previous</a>";	
+		html+="&nbsp;&nbsp;<a href=\"javascript:pageIssuePrevious();\"><b>Previous</a>";
 	}
 	$("div.guildpagination").html(html);
 }
+
 function pageGuildNext() {
 	var data = $("#guildtabledata");
 	var q = data.attr("query");
@@ -253,5 +258,4 @@ function pageGuildPrevious() {
 	$.get( query, function( data ) {
 		paintGuildIndex(data);
 	});
-
 }

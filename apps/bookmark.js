@@ -4,39 +4,19 @@
  *   encodeURIComponent(location.href)+'&title='+         
  *   encodeURIComponent(document.title)
  */
-var bkmrk = require('./bookmark/bookmarkmodel')
-//  , colnavwidget = require('./widgets/jquerycolnav')
-  , constants = require('../core/constants')
-  , types = require('../node_modules/tqtopicmap/lib/types');
+var bkmrk = require('./bookmark/bookmarkmodel'),
+    constants = require('../core/constants'),
+    types = require('../node_modules/tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var CommonModel = environment.getCommonModel();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-//	var ColNavWidget = new colnavwidget(environment,Dataprovider);
-    var BookmarkModel = new bkmrk(environment);
-	var MAPTYPE = "1";
+	var myEnvironment = environment,
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        CommonModel = environment.getCommonModel(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        BookmarkModel = new bkmrk(environment),
+        self = this;
 
   console.log("Starting Bookmark "+BookmarkModel);
-	var self = this;
-	self.canEdit = function(node, credentials) {
-		console.log("BOOKMARK.canEdit "+JSON.stringify(credentials));
-		var result = false;
-		if (credentials) {
-			// node is deemed editable if the user created the node
-			// or if user is an admin
-			var cid = node.getCreatorId();
-			var where = credentials.indexOf(cid);
-			if (where < 0) {
-				var where2 = credentials.indexOf(constants.ADMIN_CREDENTIALS);
-				if (where > -1) {result = true;}
-			} else {
-				result = true;
-			}
-		}
-		return result;
-	};
  
   function isPrivate(req,res,next) {
 	if (isPrivatePortal) {
@@ -156,10 +136,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			}
 			var docs=[];
 			var users=[];
-			var transcludes=[];
-			//Tell the view that it will start a new conversation with a MAPTYPE node
-			//NOTE: this could change: we might actually install that map when the node is built
-			data.newnodetype = MAPTYPE;
+			var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+            if (!transcludes) {
+                transcludes = [];
+            }
 			myEnvironment.logDebug("Bookmark.ajaxfetch "+JSON.stringify(data));
 			CommonModel.__doAjaxFetch(result, credentials,"/bookmark/",tags,docs,users,transcludes,data,req,function(json) {
 				myEnvironment.logDebug("Bookmark.ajaxfetch-1 "+JSON.stringify(json));
@@ -169,86 +149,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					}  catch (e) { }
 					res.json(json);
 			} );
-		});
-/**	    var q = req.params.id;
-		var lang = req.query.language;
-		if (!lang) {
-			lang = "en";
-		}
-		var viewspec = req.query.viewspec;
-		var rootLocator = req.query.rootLocator;
-		if (!viewspec) {
-			viewspec = "Dashboard";
-		}
-	    console.log('Bookmarkajax '+q+" "+lang);
-	    var credentials = [];
-	    var usr = req.user;
-	    if (usr) { credentials = usr.credentials;}
-	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-	      console.log('Bookmarkrout-1 '+err+" "+result);
-	      var data = myEnvironment.getCoreUIData(req);
-			    var contextLocator;
-			    if (req.query.contextLocator) {
-			    	contextLocator = req.query.contextLocator;
-			    } else {
-			    	//if it's a map node, use that
-			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
-			    		contextLocator = result.getLocator();
-			    	} else {
-			    		//This is a bookmark; it can be its own context
-			    		//but that's not good enough; we'll punt for now
-			    		contextLocator = q;
-			    	}
-			    }
-			    myEnvironment.logDebug("Bookmark.ajaxfetch "+q+" "+contextLocator);
-		    	  var canEdit = self.canEdit(result,credentials);
-		    	  var clipboard = req.session.clipboard;
-		    	  
-		    	  var editLocator = "/bookmark/edit/"+result.getLocator();
-		    	  
-
-			      var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-			      if (!tags) {
-			    	  tags = [];
-			      }
-			      var transcludeUser = "";  //TODO
-	      CommonModel.generateViewFirstData(result, tags, [],[],credentials, canEdit, data, contextLocator, "/bookmark/", clipboard, lang, transcludeUser,viewspec,function(json) {
-			  //get all parents
-			  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
-				  if (cresult) {
-					  json.ccontable = cresult;
-				  }
-				  //get just my parents in particular context
-				  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
-					  if (presult) {
-						  json.pcontable = presult;
-					  }
-				      json.newnodetype = MAPTYPE;
-					  if (viewspec === "ColNav") {
-				    	  if (!rootLocator) {rootLocator = q;}
-				    	  var colnav = ColNavWidget.makeColNav(rootLocator,result,contextLocator,lang, credentials, function(err,html) {
-				    		  json.colnav = html;
-				//		      console.log("XXXX "+JSON.stringify(json));
-						      	
-						        try {
-						            res.set('Content-type', 'text/json');
-						          }  catch (e) { }
-						          res.json(json);
-				    	  });
-
-					  } else {
-				//      console.log("YYYY "+JSON.stringify(json));
-				      	
-				        try {
-				            res.set('Content-type', 'text/json');
-				          }  catch (e) { }
-				          res.json(json);
-					  }				  });
-
-			  });
-	      });
-	    });
-	  */    
+		}); 
   });
   
   /**

@@ -1,17 +1,17 @@
 /**
  * guild
  */
-var guild = require('./guild/guildmodel')
-	, constants = require('../core/constants')
-	, types = require('../node_modules/tqtopicmap/lib/types')
+var guild = require('./guild/guildmodel'),
+    constants = require('../core/constants'),
+    types = require('../node_modules/tqtopicmap/lib/types')
 ;
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-	var GuildModel = new guild(environment);
-	var CommonModel = environment.getCommonModel();
+	var myEnvironment = environment,
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        GuildModel = new guild(environment),
+        CommonModel = environment.getCommonModel();
 	
 	var isAdmin = function(credentials) {
 		console.log("BLOG.canEdit "+JSON.stringify(credentials));

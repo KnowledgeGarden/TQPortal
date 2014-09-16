@@ -1,3 +1,4 @@
 {"nodes":[ {"comment":"TQPortal extensions to the topic map typology"},
 {"lox":"FollowerListProperty","sbOf":"PropertyType","label":"FollowerListProperty","details":"TQPortal extension FollowerList property type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]}
+{"lox":"JointTagListProperty","sbOf":"PropertyType","label":"JointTagListProperty","details":"TQPortal extension JointTagList  property type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]}
 ]}

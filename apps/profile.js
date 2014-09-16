@@ -4,8 +4,8 @@
 var mdl = require('./profile/profilemodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var ProfileModel = new mdl(environment)
+	var myEnvironment = environment,
+        ProfileModel = new mdl(environment)
 	console.log("Profile "+ProfileModel);
 	
 	function isLoggedIn(req, res, next) {

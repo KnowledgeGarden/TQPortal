@@ -1,69 +1,49 @@
 /**
  * Wiki app
  */
-var wm = require('./wiki/wikimodel')
- , types = require('../node_modules/tqtopicmap/lib/types')
-//  , colnavwidget = require('./widgets/jquerycolnav')
- , common = require('./common/commonmodel')
- , constants = require('../core/constants')
+var wm = require('./wiki/wikimodel'),
+    types = require('../node_modules/tqtopicmap/lib/types'),
+    common = require('./common/commonmodel'),
+    constants = require('../core/constants')
 ;
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var CommonModel = environment.getCommonModel();
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-//	var ColNavWidget = new colnavwidget(environment,Dataprovider);
-    var WikiModel = new wm(environment);
-	var MAPTYPE = "1";
+	var myEnvironment = environment,
+        CommonModel = environment.getCommonModel(),
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        WikiModel = new wm(environment),
+        self = this;
 
-  console.log("Starting Wiki "+WikiModel);
-	var self = this;
-	self.canEdit = function(node, credentials) {
-		console.log("Wiki.canEdit "+JSON.stringify(credentials));
-		var result = false;
-		if (credentials) {
-			// node is deemed editable if the user created the node
-			// or if user is an admin
-			var cid = node.getCreatorId();
-			var where = credentials.indexOf(cid);
-			if (where < 0) {
-				var where2 = credentials.indexOf(constants.ADMIN_CREDENTIALS);
-				if (where > -1) {result = true;}
-			} else {
-				result = true;
-			}
-			console.log("Wiki.canEdit_ "+cid+" "+where+" "+result);
+	console.log("Starting Wiki "+WikiModel);
+
+	function isPrivate(req,res,next) {
+		if (isPrivatePortal) {
+			if (req.isAuthenticated()) {return next();}
+			res.redirect('/login');
+		} else {
+			{return next();}
 		}
-		return result;
-	};
-
-  function isPrivate(req,res,next) {
-    if (isPrivatePortal) {
-      if (req.isAuthenticated()) {return next();}
-      res.redirect('/login');
-	} else {
-		{return next();}
 	}
-  }
-  function isLoggedIn(req, res, next) {
-    // if user is authenticated in the session, carry on 
-    console.log('ISLOGGED IN '+req.isAuthenticated());
-    if (req.isAuthenticated()) {return next();}
-    // if they aren't redirect them to the home page
-    // really should issue an error message
-    if (isPrivatePortal) {
-      return res.redirect('/login');
-    }
-    res.redirect('/');
-  }
+	
+	function isLoggedIn(req, res, next) {
+		// if user is authenticated in the session, carry on 
+		console.log('ISLOGGED IN '+req.isAuthenticated());
+		if (req.isAuthenticated()) {return next();}
+		// if they aren't redirect them to the home page
+		// really should issue an error message
+		if (isPrivatePortal) {
+			return res.redirect('/login');
+	    }
+		res.redirect('/');
+	}
 	/////////////////
 	// Menu
 	/////////////////
 	environment.addApplicationToMenu("/wiki","Wiki");
-  /////////////////
-  // Routes
-  /////////////////
+	/////////////////
+	// Routes
+	/////////////////
   app.get('/wiki', isPrivate,function(req,res) {
 	  var credentials= [];
 	  if (req.user) {credentials = req.user.credentials;}
@@ -137,10 +117,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			}
 			var docs=[];
 			var users=[];
-			var transcludes=[];
-			//Tell the view that it will start a new conversation with a MAPTYPE node
-			//NOTE: this could change: we might actually install that map when the node is built
-			data.newnodetype = MAPTYPE;
+			var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+            if (!transcludes) {
+                transcludes = [];
+            }
 			myEnvironment.logDebug("Wiki.ajaxfetch "+JSON.stringify(data));
 			CommonModel.__doAjaxFetch(result, credentials,"/wiki/",tags,docs,users,transcludes,data,req,function(json) {
 				myEnvironment.logDebug("Wiki.ajaxfetch-1 "+JSON.stringify(json));

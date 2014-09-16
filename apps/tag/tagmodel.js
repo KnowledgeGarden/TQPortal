@@ -2,12 +2,13 @@
  * TagModel
  */
 var types = require('../../node_modules/tqtopicmap/lib/types')
-, icons = require('../../node_modules/tqtopicmap/lib/icons')
-, sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder')
-, properties = require('../../node_modules/tqtopicmap/lib/properties')
-
-  , constants = require('../../core/constants')
-   , rpa = require('../../core/util/stringutil');
+	, icons = require('../../node_modules/tqtopicmap/lib/icons')
+	, sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder')
+	, properties = require('../../node_modules/tqtopicmap/lib/properties')
+	, extendedtypes = require("../../core/extendedtypology")
+	, constants = require('../../core/constants')
+	, rpa = require('../../core/util/stringutil')
+;
 
 var TagModel = module.exports = function(environment) {
 	var myEnvironment = environment;
@@ -85,6 +86,14 @@ var TagModel = module.exports = function(environment) {
 	    	  }
 		  });
 	  },
+	  
+	  self.__makeLocator = function(tagString) {
+		  var label = tagString.trim();
+	      var locator = replaceAll(label, ' ', '_');
+	      locator = locator+'_TAG';
+	      return locator;
+	  },
+	  
   /**
    * Process new tags into Topic objects
    * @param tags: one of String or []
@@ -95,6 +104,8 @@ var TagModel = module.exports = function(environment) {
    */
   //{"locators":["First_Tag_TAG","First_Post_TAG","Bitchen_TAG"],
   //"labels":["First Tag","First Post","Bitchen"]}	
+	  //TODO
+	  //ADD ability to setIntersect joint tags
   self.processTagList = function(tagList, usertopic, docTopic, credentials, callback) {
     console.log('TAGS.processTagList '+tagList+' '+usertopic);
     var labels = [];
@@ -111,18 +122,18 @@ var TagModel = module.exports = function(environment) {
         return callback(error, myTags);
       }
       label = tagList[cursor++].trim();
-      locator = replaceAll(label, ' ', '_');
-      locator = locator+'_TAG';
+      locator = self.__makeLocator(label);
       console.log('TAGS.processTagList-1 '+locator);
-      self.__findOrCreateTag(locator, label, usertopic,docTopic, credentials, function(err,aTag) {
+      self.__findOrCreateTag(tagList,locator, label, usertopic,docTopic, credentials, function(err,aTag) {
         console.log('TAGS.processTagList-2 '+err+' '+aTag);
         if (err) {error += err;}
-        if (aTag) // sanity 
+        if (aTag) {// sanity 
           myTags.push(aTag);
+        }
       });
       //stay in the loop
       loop();
-    };
+    }
     //start the loop
     loop();
   },
@@ -155,7 +166,7 @@ var TagModel = module.exports = function(environment) {
       locator = buf.toString()+'_TAG';
       var myTags = [];
       //find or create this tag
-      self.__findOrCreateTag(locator, label, usertopic,docTopic, credentials, function(err,aTag) {
+      self.__findOrCreateTag(taglist,locator, label, usertopic,docTopic, credentials, function(err,aTag) {
         console.log('TAGS.processTag-1 '+err+' '+aTag);
         if (aTag) // sanity 
           myTags.push(aTag);
@@ -163,12 +174,41 @@ var TagModel = module.exports = function(environment) {
       });
     }
   },
+  
+  /**
+   * Creates and maintains a set of shared tags
+   * @param tagNode
+   * @param tagList
+   */
+  self.__joinTags = function(tagNode, tagList) {
+	  var lox = tagNode.getLocator();
+	  var jl = tagNode.getProperty(extendedtypes.JOINT_TAG_LIST);
+	  if (!jl) {jl = [];}
+	  var n, tlox;
+	  var len = tagList.length;
+	  for (var i=0;i<len;i++) {
+		  tlox = tagList[i];
+		  //must be a tag locator, not a tag without a locator
+		  if (tlox.indexOf("_TAG") > -1) {
+			  if (tlox !== lox) {
+				  if (jl.indexOf(tlox < 0)) {
+					  jl.push(tlox);
+				  }
+			  }
+		  } else {
+			  tlox = self.__makeLocator(tlox);
+			  jl.push(tlox);
+		  }
+	  }
+	  tagNode.setProperty(extendedtypes.JOINT_TAG_LIST, jl);
+  }
 
   /**
    * Utility to see if a tag with <code>tagLocator</code> exists. If not, create it.
    * NOTE: there is an axynch issue: we call this and let it run at its own pace. It
    * might happen that the calling model, typically BlogModel, might begin doing the
    * relationship wiring before this completes.
+   * @param taglist
    * @param tagLocator
    * @param label
    * @param usertopic
@@ -176,7 +216,7 @@ var TagModel = module.exports = function(environment) {
    * @param credentials
    * @param callback: signature (err, aTag)
    */
-  self.__findOrCreateTag = function(tagLocator, label, usertopic, docTopic, credentials, callback) {
+  self.__findOrCreateTag = function(taglist, tagLocator, label, usertopic, docTopic, credentials, callback) {
 	console.log('TagModel.__findOrCreateTag '+tagLocator+' '+usertopic);
 	var error='';
 	DataProvider.getNodeByLocator(tagLocator,credentials, function(err,result) {
@@ -190,6 +230,7 @@ var TagModel = module.exports = function(environment) {
 			TopicModel.newInstanceNode(tagLocator, types.TAG_TYPE, label, "",constants.ENGLISH,
 					usertopic.getLocator(), icons.TAG_SM, icons.TAG, false, credentials, function(err, result) {
 				theTag = result;
+				self.__joinTags(theTag,taglist);
 				console.log('TagModel.__findOrCreateTag-2 '+theTag.toJSON());
 				DataProvider.putNode(theTag, function(err, result) {
 					console.log("TagModel.__findOrCreateTag-3 "+err+" "+result);
@@ -203,6 +244,7 @@ var TagModel = module.exports = function(environment) {
 				});
 			});
 		} else {
+			self.__joinTags(theTag,taglist);
 			topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
 			//wire this tag's relations
 			self.__wireRelations(theTag,  docTopic, usertopic,credentials, function(err,data) {
@@ -261,5 +303,5 @@ var TagModel = module.exports = function(environment) {
 	    	  
 	      });
 	});
-  }
+  };
 };

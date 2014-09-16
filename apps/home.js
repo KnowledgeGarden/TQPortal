@@ -5,8 +5,8 @@
 var home = require('./home/homemodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var HomeModel = new home(environment);
+	var myEnvironment = environment,
+        HomeModel = new home(environment);
   console.log("Starting Home "+HomeModel);
   
   function isPrivate(req,res,next) {

@@ -1,17 +1,18 @@
 /**
  * biography
  */
-var biog = require('./biography/biographymodel')
-  , constants = require('../core/constants')
-  , common = require('./common/commonmodel')
-  , types = require('../node_modules/tqtopicmap/lib/types');
+var biog = require('./biography/biographymodel'),
+    constants = require('../core/constants'),
+    common = require('./common/commonmodel'),
+    types = require('../node_modules/tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var CommonModel = environment.getCommonModel();
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-	var BiographyModel = new biog(environment);
+	var myEnvironment = environment,
+        CommonModel = environment.getCommonModel(),
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        BiographyModel = new biog(environment);
+    
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}

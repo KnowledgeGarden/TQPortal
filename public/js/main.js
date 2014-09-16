@@ -4,10 +4,6 @@
  * Must eventually handle table paging, table filling, etc
  */
 
-/**
- * A constant value (for now)
- */
-var __pageCount = 30;
 
 var navtoggle = false;
 var currentLocator;
@@ -18,133 +14,32 @@ var isDoubleClick = false;
 function fetchFromTree(lox, quex) {
 	locator = lox;
 	query = quex;
-	//alert(isDoubleClick);
 	isDoubleClick = false;
-	//alert(locator);
-	//alert(locator+" | "+currentLocator+" | "+query)
-	//}
 }
 
-
-/**
- * Boots a page by fetching data according to 
- * content on the page
- */
-function initPage() {
-	try {
-		$('.miller-container').taxonomyBrowser({
-	        source       : 'json',                  /* Data Source: html | json */
-	        json         : '/json/taxonomy.json',    /* JSON url */
-			  columns: 4
-			});
-	} catch (e) {}
-//	if ("WebSocket" in window) {
-//		alert("WS");
-//	} else {
-//		alert("NoWS");
-//	}
-	//test for chatroom
-	if ($("#chatroom")) {
-		//TODO nickname could be picked up from handle in a div
-/*		var nickname = "foobar:";
-
-		var connection = new WebSocket("ws://"+window.location.hostname+":4444")
-		connection.onopen = function () {
-			console.log("Connection opened");
-			connection.send(nickname);
-			$("#chatroom").onsubmit = function (event) {
-				var msg = document.getElementById("msg")
-				if (msg.value) {
-					console.log("Sending "+msg.value);
-					connection.send(msg.value)
-				}
-				msg.value = "";
-				event.preventDefault();
-			}	
-		}
-		connection.onclose = function () {
-			console.log("Connection closed")
-		}
-		connection.onerror = function () {
-			console.error("Connection error")
-		}
-		connection.onmessage = function (event) {
-			
-			var div = $("#output");
-			var val = event.data +"<br/>";
-			console.log("Got "+val);
-			var where = val.indexOf("Received:");
-			var where1 = val.indexOf("Sent:");
-			console.log(where+" "+where1);
-			if (where === -1 && where1 === -1) {
-				var content =div.html()+val;
-				div.html(content);
-			}
-		} */
-	}
-
-	var test = $("#tabledata").attr("query");
-	//first, see if this is an index page
-	if (test) {
-		pageSetup();
-	} else {
-		//paint  page
-		//types are either
-		//	viewspec
-		//    Dashboard
-		//    Conversation
-		//  landing
-		
-		var type = $(".vfpage").attr("type");
-		var q = $(".vfpage").attr("query");
-	//	if (type === landing) {
-	//		paintLanding(q)
-	//	}
-		var rootLocator = $(".vfpage").attr("rootLocator");
-		var lox = $(".vfpage").attr("locator");
-		currentLocator = lox;
-		
-		if (type !== "Conversation") {
-			navtoggle = false;
-		}
-		if (q) {
-		  var language = $(".vfpage").attr("language");
-		  var cl = $(".vfpage").attr("contextLocator");
-		  var query = q+"?language="+language+"&viewspec="+type;
-		  if (cl) {
-			  query += "&contextLocator="+cl;
-		  }
-		  if (rootLocator) {
-			  query +="&rootLocator="+rootLocator;
-		  }
-		  getPage(type, query);
-
-			
-		}
-	}
-}
-
-function paintColNav(data) {
-	var html = data.colnav;
-//	alert("HTML "+html);
-	$("ul#myConTree").html(html);
-
-}
 /**
  * ViewFirst tables:
  * Since different index tables will vary,
  * we let the server paint the html
  * query is based on <app>/index
  */
-function pageSetup() {
-	var data = $("#tabledata");
-	var q = data.attr("query");
-	var cursor = data.attr("start");
-	var count = data.attr("count");
+function doPageSetup() {
+	//var data = $("#tabledata");
+	var q = $("#tabledata").attr("query");
+//	alert(q);
+	var cursor = $("#tabledata").attr("start");
+	var count = $("#tabledata").attr("count");
 	var query = q+"?start="+cursor+"&count="+count;
+//	alert(query);
 	$.get( query, function( data ) {
 		paintIndex(data);
 	});
+}
+
+function paintColNav(data) {
+	var html = data.colnav;
+//	alert("HTML "+html);
+	$("ul#myConTree").html(html);
 }
 
 /**
@@ -167,6 +62,7 @@ function paintIndex(data) {
 	$("#tabledata").attr("total",parseInt(data.total));
 	paintPaginationButtons(data);
 }
+
 function paintPaginationButtons(data) {
 	var cursor = parseInt(data.start);
 	var count = parseInt(data.count);
@@ -188,6 +84,7 @@ function paintPaginationButtons(data) {
 	}
 	$("div.pagination").html(html);
 }
+
 function pageNext() {
 	var data = $("#tabledata");
 	var q = data.attr("query");
@@ -201,8 +98,8 @@ function pageNext() {
 	$.get( query, function( data ) {
 		paintIndex(data);
 	});
-
 }
+
 /////////////////////////
 //GEO Location
 /////////////////////////
@@ -210,7 +107,7 @@ function getLocationConstant()
 {
     if(navigator.geolocation)
     {
-        navigator.geolocation.getCurrentPosition(onGeoSuccess,onGeoError);  
+        navigator.geolocation.getCurrentPosition(onGeoSuccess,onGeoError);
     } else {
         alert("Your browser or device doesn't support Geolocation");
     }
@@ -229,6 +126,7 @@ function onGeoError(event)
 {
     alert("Error code " + event.code + ". " + event.message);
 }
+
 function pagePrevious() {
 	var data = $("#tabledata");
 	var q = data.attr("query");
@@ -283,6 +181,7 @@ function paintTags(tags, isAuthenticated, locator) {
    html+="</ol></div>";
    $("div.taglist").html(html);
 }
+
 function paintUsers(users) {
     var html = "<h4>Users</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
     html += "<ol class=\"list-unstyled\">";
@@ -291,6 +190,38 @@ function paintUsers(users) {
     }
    html+="</ol></div>";
    $("div.userlist").html(html);
+}
+
+function paintTranscludes(docs) {
+    alert(JSON.stringify(docs));
+    var html = "<h4>Transcludes</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
+    html += "<ol class=\"list-unstyled\">"
+    var urx, typ;
+    for (var i=0;i<docs.length;i++) {
+    	urx="/conversation/"; //default
+    	typ = docs[i].documentType;
+    	if (typ) {
+    		if (typ === "WikiNodeType") {
+    			urx = "/wiki/";
+    		} else if (typ === "BlogNodeType") {
+    			urx = "/blog/";
+    		} else if (typ === "BookmarkNodeType") {
+    			urx = "/bookmark/";
+    		}
+    	} else {
+    		//try to infer from image
+    		typ = docs[i].icon;
+    		if (typ === "/images/bookmark_sm.png") {
+    			urx = "/bookmark/";
+    		} else if (typ === "/images/publication_sm.png") {
+    			//could be a wiki or a blog (until we get different icons
+    			urx = "/blog/";
+    		}
+    	}
+    	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].icon+"\">&nbsp;"+docs[i].label+"</a></li>"
+    }
+   html+="</ol></div>";
+   $("div.transcludelist").html(html);
 }
 function paintDocs(docs) {
     var html = "<h4>Documents</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
@@ -326,13 +257,14 @@ function paintDocs(docs) {
 function clearEvidence() {
 	$("div.evidencelist").html("");
 }
+
 function paintEvidence(docs) {
     var html = "<h4>Evidence</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
-    html += "<ol class=\"list-unstyled\">"
+    html += "<ol class=\"list-unstyled\">";
     var urx, typ;
     for (var i=0;i<docs.length;i++) {
  //   	alert(JSON.stringify(docs[i]));
-   	urx="/conversation/"; //default
+    	urx="/conversation/"; //default
     	typ = docs[i].documentType;
     	if (typ) {
     		if (typ === "WikiNodeType") {
@@ -359,6 +291,7 @@ function paintEvidence(docs) {
 
    $("div.evidencelist").html(html);
 }
+
 function createNode(data) {
 	
 	var html = "<li data-jstree='{ \"icon\" : \""+data.img+"\" }'>"+data.label;
@@ -379,6 +312,7 @@ function createNode(data) {
 
 	return html;
 }
+
 function paintTree(root) {
 	var html = "<ul>";
 	html+= createNode(root);
@@ -459,6 +393,9 @@ function getPage(type, query) {
 		if (data.documents) {
 			paintDocs(data.documents);
 		}
+        if (data.transcludes) {
+            paintTranscludes(data.transcludes);
+        }
 		if (data.evidence) {
 			paintEvidence(data.evidence);
 		} else {
@@ -481,5 +418,98 @@ function doDoubleClick() {
 	if (locator !== currentLocator) {
 		currentLocator = locator;
 		getPage("Conversation", query);
+	}
+}
+
+/**
+ * Boots a page by fetching data according to 
+ * content on the page
+ */
+function initPage() {
+	try {
+		$('.miller-container').taxonomyBrowser({
+	        source       : 'json',                  /* Data Source: html | json */
+	        json         : '/json/taxonomy.json',    /* JSON url */
+			  columns: 4
+			});
+	} catch (e) {}
+//	if ("WebSocket" in window) {
+//		alert("WS");
+//	} else {
+//		alert("NoWS");
+//	}
+	//test for chatroom
+	if ($("#chatroom")) {
+		//TODO nickname could be picked up from handle in a div
+/*		var nickname = "foobar:";
+
+		var connection = new WebSocket("ws://"+window.location.hostname+":4444")
+		connection.onopen = function () {
+			console.log("Connection opened");
+			connection.send(nickname);
+			$("#chatroom").onsubmit = function (event) {
+				var msg = document.getElementById("msg")
+				if (msg.value) {
+					console.log("Sending "+msg.value);
+					connection.send(msg.value)
+				}
+				msg.value = "";
+				event.preventDefault();
+			}	
+		}
+		connection.onclose = function () {
+			console.log("Connection closed")
+		}
+		connection.onerror = function () {
+			console.error("Connection error")
+		}
+		connection.onmessage = function (event) {
+			
+			var div = $("#output");
+			var val = event.data +"<br/>";
+			console.log("Got "+val);
+			var where = val.indexOf("Received:");
+			var where1 = val.indexOf("Sent:");
+			console.log(where+" "+where1);
+			if (where === -1 && where1 === -1) {
+				var content =div.html()+val;
+				div.html(content);
+			}
+		} */
+	}
+
+	var isTable = $("#tabledata").attr("query");
+	//first, see if this is an index page
+	if (isTable) {
+		doPageSetup();
+	} else {
+		//paint  page
+		//types are either
+		//	viewspec
+		//    Dashboard
+		//    Conversation
+		//  landing
+		
+		var type = $(".vfpage").attr("type");
+		var q = $(".vfpage").attr("query");
+		var rootLocator = $(".vfpage").attr("rootLocator");
+		var lox = $(".vfpage").attr("locator");
+		currentLocator = lox;
+		
+		if (type !== "Conversation") {
+			navtoggle = false;
+		}
+		if (q) {
+		  var language = $(".vfpage").attr("language");
+		  var cl = $(".vfpage").attr("contextLocator");
+		  var query = q+"?language="+language+"&viewspec="+type;
+		  if (cl) {
+			  query += "&contextLocator="+cl;
+		  }
+		  if (rootLocator) {
+			  query +="&rootLocator="+rootLocator;
+		  }
+		  getPage(type, query);
+		}
 	}
 }

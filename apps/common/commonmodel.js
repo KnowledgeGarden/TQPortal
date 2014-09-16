@@ -1,28 +1,65 @@
 /**
  * commonmodel
  */
-var  types = require('../../node_modules/tqtopicmap/lib/types')
-	, sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder')
-	, constants = require('../../core/constants')
-	, colnavwidget = require('../widgets/jquerycolnav')
+var  types = require('../../node_modules/tqtopicmap/lib/types'),
+    sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder'),
+    constants = require('../../core/constants'),
+    colnavwidget = require('../widgets/jquerycolnav')
 ;
 
 var CommonModel = module.exports = function(environment, tmenv) {
-	var myEnvironment = environment;
-	var topicMapEnvironment = tmenv;
-	var DataProvider = topicMapEnvironment.getDataProvider();
-	var ColNavWidget = new colnavwidget(environment, DataProvider);
-	var self = this;
+	var myEnvironment = environment,
+        topicMapEnvironment = tmenv,
+        DataProvider = topicMapEnvironment.getDataProvider(),
+        ColNavWidget = new colnavwidget(environment, DataProvider),
+        self = this;
 	
+	////////////////////////////////
+	// Matters related to authentication
+	////////////////////////////////
+	/**
+	 * Return <code>true</code> if credentials are that of either
+	 * and Admin or the creator of <code>node</code>
+	 */
+	self.isOwnerOrAdmin = function(node, credentials) {
+		var result = false;
+		//TODO
+		return result;
+	};
+	
+	/**
+	 * Return <code>true</code> if <code>node</code> can be edited by
+	 * holder of <code>credentials</code>
+	 */
+	self.canEdit = function(node, credentials) {
+		console.log("CommonModel.canEdit "+JSON.stringify(credentials));
+		var result = false;
+		if (credentials) {
+			// node is deemed editable if the user created the node
+			// or if user is an admin
+			var cid = node.getCreatorId();
+			var where = credentials.indexOf(cid);
+			if (where < 0) {
+				var where2 = credentials.indexOf(constants.ADMIN_CREDENTIALS);
+				if (where > -1) {result = true;}
+			} else {
+				result = true;
+			}
+		}
+		return result;
+	};
+
+
 	//////////////////////
 	//Tend to the needs of the View Menu
 	//////////////////////
 	self.getColNavViewSpec = function(app, locator) {
 		return "{\"href\":\"/conversation/"+locator+"\" , \"nav\":\"Conversation\"}";
-	},
+	};
+    
 	self.getDashboardViewSpec = function(app, locator) {
 		return "{\"href\":\""+app+locator+"\" , \"nav\":\"Dashboard\"}";
-	},
+	};
 
 	
 	self.makeTagList = function(body) {
@@ -40,7 +77,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 			taglist.push(body.tag4);
 		}
 		return taglist;
-	},
+	};
 	
 	/**
 	 * Fill a conversation Tree; returns the root node
@@ -55,7 +92,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 			//myEnvironment.logDebug("CommonModel.fillTree "+)
 			callback(err, node);
 		});
-	},
+	};
 	
 	//TODO: this needs a lot of work.
 	// which relations depend on nodeType
@@ -69,7 +106,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	      if (!docs) {
 	    	  docs = [];
 	      }*/
-	},
+	};
+    
 	////////////////////////////////////////////
 	// For index pages where you page through nodes to select
 	////////////////////////////////////////////
@@ -107,7 +145,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		}
 		html+="</tbody></table>";
 		callback(html,len,total);
-	},
+	};
 
 	//////////////////////////
 	//In Dashboard View:
@@ -186,7 +224,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 //		  myEnvironment.logDebug("CommonModel.fillConversationTable+ "+isChild+" "+JSON.stringify(TheResult));
 			return callback(err,TheResult);
 		});
-	},
+	};
 
 	/////////////////////////////////
 	//ViewFirst
@@ -209,13 +247,13 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	 * @param contextLocator
 	 * @param app = "/blog/", "/bookmark/" etc
 	 * @param language
-	 * @param transcludeUser  can be <code>""</code>
+	 * @param transcludeList  can be []
 	 * @param viewspec: should be one of "Dashboard" or "Conversation"
 	 * @callback signature (result) which is the data to paint
 	 */
 	//TODO: use viewspec to decide whether to fillTree or not: not needed in Conversation mode
 	self.generateViewFirstData = function(theNode, tagList, docList, userList, credentials,
-			canEdit, coreData, contextLocator, app, clipboard, language, transcludeUser, viewspec, callback) {
+			canEdit, coreData, contextLocator, app, clipboard, language, transcludeList, viewspec, callback) {
 		var data = coreData;
 		var q = theNode.getLocator();
 		data.canEdit = canEdit;
@@ -225,6 +263,12 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		data.locator = q;
 		data.app = app;
 		data.smallIcon = theNode.getSmallImage();
+        //transcluder
+        var transcluderLocator;
+        var tc = theNode.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+        if (tc && tc.length > 0) {
+            //TODO
+        }
 		//some nodes have URLs, such as bookmarks
 		if (theNode.getResourceUrl()) {
 			data.url = "<a href=\""+theNode.getResourceUrl()+"\"><b>URL:&nbsp;"+theNode.getResourceUrl()+"</b></a>";
@@ -255,9 +299,9 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		//One approach is to include a transcludeuser parameter in a rest call if this is painted
 		//from a list, which means changing the signature of this method to include that.
 		var tu="";
-		if (transcludeUser) {
-			tu="&nbsp;&nbsp<a href=\"/user/"+transcludeUser+"\">Transcluded by: "+transcludeUser+"</a>";
-		}
+		//if (transcludeUser) {
+		//	tu="&nbsp;&nbsp<a href=\"/user/"+transcludeUser+"\">Transcluded by: "+transcludeUser+"</a>";
+		//}
 		data.user = theNode.getLastEditDate()+"&nbsp;&nbsp;<a href=\"/user/"+
 			theNode.getCreatorId()+"\">Created by: "+theNode.getCreatorId()+"</a>"+tu+edithtml;
 		if (contextLocator) {
@@ -285,6 +329,9 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		if (tagList.length > 0) {
 			data.tags = tagList;
 		}
+        if (transcludeList.length > 0) {
+            data.transcludes = transcludeList;
+        }
 		if (userList.length > 0) {
 			data.users = userList;
 		}
@@ -303,7 +350,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		} else {
 			return callback(data);
 		}
-	},
+	};
+    
 	self.canEdit = function(node, credentials) {
 		console.log("CommonModel.canEdit "+JSON.stringify(credentials));
 		var result = false;
@@ -368,11 +416,10 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		// node to transclude into this one
 		var clipboard = req.session.clipboard;
 		//if there is a node to transclude, it's nice to know who the user is
-		var transcludeUser = "";  //TODO
 		//generate the ViewFirst node data
 		//TODO must add transcludes
 		self.generateViewFirstData(theNode, tags, docs,users,credentials, canEdit, data,
-				contextLocator, app, clipboard, lang, transcludeUser,viewspec, function(json) {
+				contextLocator, app, clipboard, lang, transcludes,viewspec, function(json) {
 			json.myLocatorXP = q+"?contextLocator="+contextLocator;
 			json.myLocator = q;
 			myEnvironment.logDebug("CommonModel.__doAjax-1 "+JSON.stringify(json));
@@ -405,7 +452,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
 				});
 			});
 		});
-	},
+	};
+    
 	/**
 	 * Handles fetching an app given an id
 	 */

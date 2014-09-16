@@ -2,15 +2,15 @@
  * langing page form
  * does not appear on menu
  */
-var lm = require('./landing/landingmodel')
-  , constants = require('../core/constants')
+var lm = require('./landing/landingmodel'),
+    constants = require('../core/constants')
 ;
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-	var LandingModel = new lm(environment);
+	var myEnvironment = environment,
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        LandingModel = new lm(environment);
 	
 	var isAdmin = function(credentials) {
 		console.log("BLOG.canEdit "+JSON.stringify(credentials));

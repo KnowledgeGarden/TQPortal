@@ -1,24 +1,23 @@
 /**
  * User app
  */
-var userModel = require('./user/usermodel')
-  , constants = require('../core/constants')
-  , common = require('./common/commonmodel')
-
- , types = require('../node_modules/tqtopicmap/lib/types');
+var userModel = require('./user/usermodel'),
+    constants = require('../core/constants'),
+    common = require('./common/commonmodel'),
+    types = require('../node_modules/tqtopicmap/lib/types');
 
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-	var UserModel = new userModel(environment);
-	var CommonModel = environment.getCommonModel();
-	var MAPTYPE = "1";
+	var myEnvironment = environment,
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        UserModel = new userModel(environment),
+        CommonModel = environment.getCommonModel(),
+
+        self = this;
 
   console.log("Starting User "+UserModel);
   //TODO lots!
-	var self = this;
 	self.canEdit = function(node, credentials) {
 		console.log("USER.canEdit "+JSON.stringify(credentials));
 		var result = false;
@@ -45,7 +44,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	} else {
 		{return next();}
 	}
-  }
+  };
+    
   function isLoggedIn(req, res, next) {
 	// if user is authenticated in the session, carry on 
 	console.log('ISLOGGED IN '+req.isAuthenticated());
@@ -56,7 +56,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       return res.redirect('/login');
     }
     res.redirect('/');
-  }
+  };
+    
 	/////////////////
 	// Menu
 	/////////////////
@@ -102,7 +103,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  }  catch (e) { }
 	      res.json(json);
 	  });
-  });		
+  });
+
   app.get('/user/edit/:id', isLoggedIn, function(req,res) {
 		var q = req.params.id;
 		var usx = req.user;
@@ -177,11 +179,13 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			      if (!docs) {
 			    	  docs = [];
 			      }
-			      var transcludeUser = "";  //TODO
-	      CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, transcludeUser, viewspec,function(json) {
+			    var transcludeList =result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+            if (!transcludeList) {
+                transcludeList = [];
+            }
+	      CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, transcludeList, viewspec,function(json) {
 	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
 	    	  json.myLocator = q;
-		      json.newnodetype = MAPTYPE;
 		      console.log("XXXX "+JSON.stringify(json));
 		        try {
 		            res.set('Content-type', 'text/json');

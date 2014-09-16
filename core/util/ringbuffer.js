@@ -28,9 +28,9 @@ var RingBuffer = module.exports = function(size, name, environment) {
 //		if (data.length >= maxlen) {
 //			data = data.splice(0,1);
 //		}
-		if (myenv) {
-			myenv.logDebug("RingBuffer "+myname+" "+data);
-		}
+//		if (myenv) {
+//			myenv.logDebug("RingBuffer "+myname+" "+data);
+//		}
 		var s = {};
 		s.locator = locator;
 		s.label = label;
@@ -54,13 +54,13 @@ var RingBuffer = module.exports = function(size, name, environment) {
 		var result = [];
 		var len = data.length;
 		if (len > -1) {
-			if (myenv) {
-				myenv.logDebug("RingBuffer.getReversedData-1 "+myname+" "+len);
-			}
+//			if (myenv) {
+//				myenv.logDebug("RingBuffer.getReversedData-1 "+myname+" "+len);
+//			}
 			for (var i=len;i>0;i--) {
-				if (myenv) {
-					myenv.logDebug("RingBuffer.getReversedData-2 "+data[i-1]);
-				}
+//				if (myenv) {
+//					myenv.logDebug("RingBuffer.getReversedData-2 "+data[i-1]);
+//				}
 				result.push(data[i-1]);
 			}
 		}

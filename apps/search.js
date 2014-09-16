@@ -3,12 +3,12 @@
  * For now, not a menu app
  * But, it could get its own page for advanced search
  */
-var srch = require('./search/searchmodel')
-  , constants = require('../core/constants');
+var srch = require('./search/searchmodel'),
+    constants = require('../core/constants');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var SearchModel = new srch(environment);
+	var myEnvironment = environment,
+        SearchModel = new srch(environment);
 	
 	  function isPrivate(req,res,next) {
 		    if (isPrivatePortal) {

@@ -1,11 +1,1 @@
-{
-"server": "localhost",
-"port": "3000",
-"brand":"TopicQuests Portal",
-"defaultadminemail": "admin@topicquests.org",
-"defaultadminpwd": "testuser!",
-"portalIsPrivate": false,
-"invitationOnly": false,
-"mongoString": "mongodb://localhost:27017/portaldb2",
-"helpMenu":[]
-}
+{"server":"localhost","port":"3000","brand":"TopicQuests Portal","defaultadminemail":"admin@topicquests.org","defaultadminpwd":"testuser!","portalIsPrivate":false,"invitationOnly":false,"mongoString":"mongodb://localhost:27017/portaldb2","helpMenu":[{"url":"/conversation/01955140-36de-11e4-a8d2-495ed8cdc195","name":"HowTo"}]}

@@ -1,48 +1,33 @@
 /**
  * conversation app
  */
-var conmodel = require('./conversation/conversationmodel')
-, types = require('../node_modules/tqtopicmap/lib/types')
-, common = require('./common/commonmodel')
-, constants = require('../core/constants');
+var conmodel = require('./conversation/conversationmodel'),
+    types = require('../node_modules/tqtopicmap/lib/types'),
+    common = require('./common/commonmodel'),
+    constants = require('../core/constants');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var CommonModel = environment.getCommonModel();
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	//some constants
-	var MAPTYPE = "1"
-	, QUESTIONTYPE = "2"
-	, ANSWERTYPE = "3"
-	, PROTYPE = "4"
-	, CONTYPE = "5"
-	, DECISIONTYPE = "6"
-	, CLAIMTYPE = "7"
-	, REFERENCETYPE = "8"
-	, CHALLENGETYPE = "9"
-	, EVIDENCE = "10"; //uses literature-analysis icons
-	
-  var Dataprovider = topicMapEnvironment.getDataProvider();
-  var ConversationModel = new conmodel(environment);
+	var myEnvironment = environment,
+        CommonModel = environment.getCommonModel(),
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        ConversationModel = new conmodel(environment),
+       //some constants
+        MAPTYPE = "1",
+        QUESTIONTYPE = "2",
+        ANSWERTYPE = "3",
+        PROTYPE = "4",
+        CONTYPE = "5",
+        DECISIONTYPE = "6",
+        CLAIMTYPE = "7",
+        REFERENCETYPE = "8",
+        CHALLENGETYPE = "9",
+        EVIDENCE = "10", //uses literature-analysis icons
+        NOTE = "11",
+        self = this;
   console.log("Conversation started");
-	var self = this;
-	self.canEdit = function(node, credentials) {
-		console.log("BLOG.canEdit "+JSON.stringify(credentials));
-		var result = false;
-		if (credentials) {
-			// node is deemed editable if the user created the node
-			// or if user is an admin
-			var cid = node.getCreatorId();
-			var where = credentials.indexOf(cid);
-			if (where < 0) {
-				var where2 = credentials.indexOf(constants.ADMIN_CREDENTIALS);
-				if (where > -1) {result = true;}
-			} else {
-				result = true;
-			}
-		}
-		return result;
-	};
+	
+
 	
   function isPrivate(req,res,next) {
     if (isPrivatePortal) {
@@ -251,7 +236,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			
 
 			var users=[];
-			var transcludes=[];
+			var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+            if (!transcludes) {
+                transcludes = [];
+            }
 			//Tell the view that it will start a new conversation with a MAPTYPE node
 			//NOTE: this could change: we might actually install that map when the node is built
 			data.newnodetype = MAPTYPE;
@@ -389,23 +377,23 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   });
   
   app.post('/conversation/transclude', isLoggedIn, function(req,res) {
-	var credentials = req.user.credentials;
+      var user = req.user;
 	var body = req.body;
 	myEnvironment.logDebug("Conversation.postTransclude "+JSON.stringify(body));
 	req.session.clipboard = ""; //clear the clipboard
 	//TODO body.transcludeLocator and body.myLocator determine this transclusion
-	ConversationModel.performTransclude(body, credentials,"F",function(err,result) {
+	ConversationModel.performTransclude(body, user,"F",function(err,result) {
 		return res.redirect('/conversation');
 	});
   });
   
   app.post('/conversation/transcludeEvidence', isLoggedIn, function(req,res) {
-		var credentials = req.user.credentials;
+      var user = req.user;
 		var body = req.body;
 		myEnvironment.logDebug("Conversation.postTransclude "+JSON.stringify(body));
 		req.session.clipboard = ""; //clear the clipboard
 		//TODO body.transcludeLocator and body.myLocator determine this transclusion
-		ConversationModel.performTransclude(body, credentials,"T",function(err,result) {
+		ConversationModel.performTransclude(body, user,"T",function(err,result) {
 			return res.redirect('/conversation');
 		});
 	  });

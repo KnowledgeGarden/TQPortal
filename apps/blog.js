@@ -1,40 +1,21 @@
 /**
  * Blog app
  */
-var acls = require('./blog/blogmodel')
-  , constants = require('../core/constants')
-  , common = require('./common/commonmodel')
-  , types = require('../node_modules/tqtopicmap/lib/types');
+var acls = require('./blog/blogmodel'),
+    constants = require('../core/constants'),
+    common = require('./common/commonmodel'),
+    types = require('../node_modules/tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var CommonModel = environment.getCommonModel();
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-	var BlogModel = new acls(environment);
+	var myEnvironment = environment,
+        CommonModel = environment.getCommonModel(),
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        BlogModel = new acls(environment),
+        self = this;
 
 	console.log("Starting Blog "+this.BlogModel);
   
-	var self = this;
-	self.canEdit = function(node, credentials) {
-		console.log("BLOG.canEdit "+JSON.stringify(credentials));
-		var result = false;
-		if (credentials) {
-			// node is deemed editable if the user created the node
-			// or if user is an admin
-			var cid = node.getCreatorId();
-			var where = credentials.indexOf(cid);
-			if (where < 0) {
-				var where2 = credentials.indexOf(constants.ADMIN_CREDENTIALS);
-				if (where > -1) {result = true;}
-			} else {
-				result = true;
-			}
-		}
-		return result;
-	};
-	
-	
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
@@ -168,7 +149,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		}
 		var docs=[];
 		var users=[];
-		var transcludes=[];
+			var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+            if (!transcludes) {
+                transcludes = [];
+            }
 		myEnvironment.logDebug("Blog.ajaxfetch "+JSON.stringify(data));
 		CommonModel.__doAjaxFetch(result, credentials,"/blog/",tags,docs,users,transcludes,data,req,function(json) {
 			myEnvironment.logDebug("Blog.ajaxfetch-1 "+JSON.stringify(json));

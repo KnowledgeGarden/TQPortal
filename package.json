@@ -48,6 +48,6 @@
     "eslint": "^0.6.2"
   },
   "non-npmDependencies": {
-    "tqtopicmap": "0.8.4+"
+    "tqtopicmap": "0.9.0+"
   }
 }

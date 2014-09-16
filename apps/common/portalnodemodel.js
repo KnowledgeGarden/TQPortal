@@ -2,30 +2,31 @@
  * PortalNodeModel
  * A common place for node manipulation
  */
-var types = require('../../node_modules/tqtopicmap/lib/types')
-	, icons = require('../../node_modules/tqtopicmap/lib/icons')
-	, properties = require('../../node_modules/tqtopicmap/lib/properties')
-	, constants = require('../../core/constants')
-	, uuid = require('../../core/util/uuidutil')
-	, tagmodel = require('../tag/tagmodel')
+var types = require('../../node_modules/tqtopicmap/lib/types'),
+    icons = require('../../node_modules/tqtopicmap/lib/icons'),
+    properties = require('../../node_modules/tqtopicmap/lib/properties'),
+    constants = require('../../core/constants'),
+    uuid = require('../../core/util/uuidutil'),
+    tagmodel = require('../tag/tagmodel')
 ;
 
 var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
-	var CommonModel = com;
-	var myEnvironment = environment;
-	var topicMapEnvironment = tmenv;
-	var DataProvider = topicMapEnvironment.getDataProvider();
-	var TopicModel = topicMapEnvironment.getTopicModel();
-	var TagModel;
+	var CommonModel = com,
+        myEnvironment = environment,
+        topicMapEnvironment = tmenv,
+        DataProvider = topicMapEnvironment.getDataProvider(),
+        TopicModel = topicMapEnvironment.getTopicModel(),
+        TagModel,
 	
-	var self = this;
+        self = this;
 	
 	/**
 	 * Required to init just after Environment is built, in server.js
 	 */
 	self.init = function(env) {
 		TagModel = new tagmodel(env);
-	},
+	};
+    
 	/**
 	 * General purpose node creation for all nodes except<br/>
 	 * tags, users, conversation
@@ -97,7 +98,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 	          }    	
 	      });
 	    });
-	},
+	};
 	
 	/**
 	 * Update an existing node; no tags included

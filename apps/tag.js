@@ -1,19 +1,19 @@
 /**
  * tag app
  */
-var tagModel = require('./tag/tagmodel')
-  , constants = require('../core/constants')
-  , common = require('./common/commonmodel')
- , types = require('../node_modules/tqtopicmap/lib/types');
+var tagModel = require('./tag/tagmodel'),
+    constants = require('../core/constants'),
+    common = require('./common/commonmodel'),
+    types = require('../node_modules/tqtopicmap/lib/types')
+;
 
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-	var CommonModel = environment.getCommonModel();
-	var TagModel = new tagModel(environment);
-	var MAPTYPE = "1";
+	var myEnvironment = environment,
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        CommonModel = environment.getCommonModel(),
+        TagModel = new tagModel(environment);
 
 
 	function isPrivate(req,res,next) {
@@ -142,7 +142,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				    	//TODO
 				    	//Otherwise, grab some context from the node
 				    }
-				    //Allow Admins to edit tag
+			/**	    //Allow Admins to edit tag
 			    	  var canEdit = false;
 			    	  if (credentials.indexOf(constants.ADMIN_CREDENTIALS) > -1) {
 			    		  canEdit = true;
@@ -150,7 +150,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			    	  var clipboard = req.session.clipboard;
 			    	  
 			    	  var editLocator = "/tag/edit/"+result.getLocator();
-			    	  
+			    	  */
 
 				      var docs = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
 				      if (!docs) {
@@ -162,6 +162,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				      }
 				      var transcludeUser = "";  //TODO
 		      CommonModel.generateViewFirstData(result, [], docs,users,credentials, canEdit, data, contextLocator, "/tag/", clipboard, lang, transcludeUser, viewspec, function(json) {
+		  			json.canEdit = false; // prevent editing
 				  //get all parents
 				  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
 					  if (cresult) {
@@ -172,7 +173,6 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 						  if (presult) {
 							  json.pcontable = presult;
 						  }
-					      json.newnodetype = MAPTYPE;
 					      console.log("XXXX "+JSON.stringify(json));
 					      	
 					        try {

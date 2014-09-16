@@ -34,62 +34,7 @@ var BookmarkModel =  module.exports = function(environment) {
 		});
 	},
 	
-	  /**
-	   * Update an existing blog entry; no tags included
-	   * /
-	  self.update = function(blog,user,credentials,callback) {
-		  myEnvironment.logDebug("Bookmark.UPDATE "+JSON.stringify(blog));
-		  var lox = blog.locator;
-		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
-			  var error = '';
-			  if (err) {error += err;}
-			  var title = blog.title;
-			  var body = blog.body;
-	    	  var lang = blog.language;
-	    	  var comment = "an edit by "+user.handle;
-	    	  if (!lang) {lang = "en";}
-			  var isNotUpdateToBody = true;
-	    	  var lang = blog.language;
-	    	  if (!lang) {lang = "en";}
-	    	  var oldBody;
-	    	  if(result.getBody(lang)) {
-	    		  oldBody = result.getBody(lang).theText;
-	    	  }
-	    	  myEnvironment.logDebug("Bookmark.UPDATE-1 "+oldBody+" | "+body);
-	    	  if (!oldBody) {
-	    		  oldBody="";
-	    	  }
-	    	  isNotUpdateToBody = (oldBody === body);
-	    	  var oldLabel = result.getSubject(lang).theText;
-	    	  var isNotUpdateToLabel = (title === oldLabel);
-	    	  myEnvironment.logDebug("Bookmark.UPDATE-2 "+isNotUpdateToLabel+" | "+isNotUpdateToLabel);
-	    	  if (!isNotUpdateToLabel) {
-	    		  //crucial update to label
-	    		  result.updateSubject(title,lang,user.handle,comment);
-	    		  if (!isNotUpdateToBody) {
-	    			  result.updateBody(body,lang,user.handle,comment);
-	    		  }
-		    	  result.setLastEditDate(new Date());
-		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
-		    		  if (err) {error += err;}
-		    		  console.log("BookmarkModel.update "+error+" "+oldLabel+" "+title);
-		    		  callback(error,data);
-		    	  });
-	    	  } else {
-	    		  if (!isNotUpdateToBody) {
-	    			  result.updateBody(body,lang,user.handle,comment);
-	    			  result.setLastEditDate(new Date());
-			    	  DataProvider.putNode(result, function(err,data) {
-			    		  if (err) {error += err;}
-			    		  callback(error,data);
-			    	  });
-	    		  } else {
-	    			  callback(error,null);
-	    		  }
-	    	  };
-		  });
-	  },
-	  */
+
 	self.createAnnotationAndTags = function(bookmarkNode, blog, userTopic, credentials, callback) {
 		myEnvironment.logDebug("BBBB "+JSON.stringify(userTopic));
 		//TODO create the position node

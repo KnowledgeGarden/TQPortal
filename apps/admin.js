@@ -2,19 +2,19 @@
  * admin app
  * Admin must handle login/logout/admin
  */
-var User = require('../core/user')
-  , constants = require('../core/constants')
-  , adminmodel = require('./admin/adminmodel')
-  , usermodel = require('./user/usermodel');
+var User = require('../core/user'),
+    constants = require('../core/constants'),
+    adminmodel = require('./admin/adminmodel'),
+    usermodel = require('./user/usermodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var Dataprovider = topicMapEnvironment.getDataProvider();
-	var userDatabase = environment.getUserDatabase();
-	var UserModel = new usermodel(environment);
-	var passport = ppt;
-	var AdminModel = new adminmodel(environment);
-	var isInvitationOnly = environment.getIsInvitationOnly();
+	var topicMapEnvironment = environment.getTopicMapEnvironment(),
+        Dataprovider = topicMapEnvironment.getDataProvider(),
+        userDatabase = environment.getUserDatabase(),
+        UserModel = new usermodel(environment),
+        passport = ppt,
+        AdminModel = new adminmodel(environment),
+        isInvitationOnly = environment.getIsInvitationOnly();
 	console.log("Starting Admin ");
 
 	function isAdmin(req,res,next) {

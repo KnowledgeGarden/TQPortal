@@ -9,8 +9,8 @@
 var apim = require('./api/apimodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
-	var myEnvironment = environment;
-	var APIModel = new apim(environment);
+	var myEnvironment = environment,
+        APIModel = new apim(environment);
 	
 
 	app.get('/api', function(req,res) {
