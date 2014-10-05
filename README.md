@@ -6,7 +6,7 @@ In a sense, this portal mimics, as a scaled down prototype of ["https://github.c
 The platform uses MongoDB by way of mongodb for user persistence, Express 4, and Handlebars to craft a similation of a *topic map*. The platform uses an instance of [https://github.com/KnowledgeGarden/TQTopicMap](https://github.com/KnowledgeGarden/TQTopicMap)
 for persistence of all topics, which include blog posts and other artifacts.
 ## Usage
-Installation instructions are now [here](here "https://github.com/KnowledgeGarden/TQPortal/wiki/Installation")
+Installation instructions are now [here](here "https://github.com/KnowledgeGarden/TQPortal/wiki/Installation") 
 
 
 ## Developing
