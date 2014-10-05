@@ -7,6 +7,9 @@ The platform uses MongoDB by way of mongodb for user persistence, Express 4, and
 for persistence of all topics, which include blog posts and other artifacts.
 ## Usage
 Installation instructions are now [here](here "https://github.com/KnowledgeGarden/TQPortal/wiki/Installation") 
+((just in case GitHub refuses to show that link correctly, it is this: 
+https://github.com/KnowledgeGarden/TQPortal/wiki/Installation))
+
 
 
 ## Developing
