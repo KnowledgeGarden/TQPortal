@@ -2,26 +2,25 @@
  * IssueModel
  * Issues, not to be confused with IBIS ISSUE_TYPE (question) is a CHALLENGE_TYPE
  */
-var types = require('../../node_modules/tqtopicmap/lib/types')
-	, icons = require('../../node_modules/tqtopicmap/lib/icons')
-	, properties = require('../../node_modules/tqtopicmap/lib/properties')
-	, gameenv = require('../rpg/rpgenvironment')
-	, constants = require('../../core/constants')
-	, uuid = require('../../core/util/uuidutil')
-	, tagmodel = require('../tag/tagmodel')
+var types = require('../../node_modules/tqtopicmap/lib/types'),
+	icons = require('../../node_modules/tqtopicmap/lib/icons'),
+	properties = require('../../node_modules/tqtopicmap/lib/properties'),
+	Gameenv = require('../rpg/rpgenvironment'),
+	constants = require('../../core/constants'),
+	uuid = require('../../core/util/uuidutil'),
+	Tagmodel = require('../tag/tagmodel')
 ;
 
 var IssueModel =  module.exports = function(environment) {
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var DataProvider = topicMapEnvironment.getDataProvider();
-	var TopicModel = topicMapEnvironment.getTopicModel();
-	var TagModel = new tagmodel(environment);
-	var CommonModel = environment.getCommonModel();
-	var queryDSL = topicMapEnvironment.getQueryDSL();
-	var RPGEnvironment = new gameenv(environment,topicMapEnvironment);
-	
-	var self = this;
+	var myEnvironment = environment,
+	    TopicMapEnvironment = environment.getTopicMapEnvironment(),
+	    DataProvider = TopicMapEnvironment.getDataProvider(),
+	    TopicModel = TopicMapEnvironment.getTopicModel(),
+	    TagModel = new Tagmodel(environment),
+	    CommonModel = environment.getCommonModel(),
+	    queryDSL = TopicMapEnvironment.getQueryDSL(),
+        RPGEnvironment = environment.getRPGEnvironment(),
+        self = this;
 	
 	self.getRPGEnvironment = function() {
 		return RPGEnvironment;
@@ -43,8 +42,6 @@ var IssueModel =  module.exports = function(environment) {
 	    	  var comment = "an edit by "+user.handle;
 	    	  if (!lang) {lang = "en";}
 			  var isNotUpdateToBody = true;
-	    	  var lang = blog.language;
-	    	  if (!lang) {lang = "en";}
 	    	  var oldBody;
 	    	  if(result.getBody(lang)) {
 	    		  oldBody = result.getBody(lang).theText;
@@ -109,7 +106,7 @@ var IssueModel =  module.exports = function(environment) {
 	    	  var subj = blog.title;
 	    	  var body = blog.body;
 	    	  article.setSubject(subj,lang,userLocator);
-	    	  article.setBody(body,lang,userLocator);
+	    	  article.setBody(body.trim(),lang,userLocator);
 	    //	  console.log('BlogModel.create-2 '+article.toJSON());
 	    	  RPGEnvironment.addRecentIssue(article.getLocator(),blog.title);
 	    	     // now deal with tags
@@ -127,7 +124,7 @@ var IssueModel =  module.exports = function(environment) {
 
 	                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 	                      callback(err,article.getLocator());
 	                 }); //r1
@@ -141,10 +138,10 @@ var IssueModel =  module.exports = function(environment) {
 
 	                  TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                  		userTopic.getLocator(),
-	                        		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-	                      if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                        callback(err,article.getLocator());
-	                   }); //r1
+	                       icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+	                               if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+	                               callback(err,article.getLocator());
+	                       }); //r1
 	                }); //putnode 		  
 
 	          }    	
@@ -153,9 +150,8 @@ var IssueModel =  module.exports = function(environment) {
 	  },
 	  
 	  self.listIssues = function(start, count, credentials, callback) {
-	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.CHALLENGE_TYPE,start,count);
-	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
-	      console.log("IssueModel.listIssues "+err+" "+data);
+        DataProvider.listInstanceNodes(types.CHALLENGE_TYPE, start,count,credentials, function(err,data,total){
+                console.log("IssueModel.listIssues "+err+" "+data);
 	      callback(err,data, total);
 	    });
 	  },

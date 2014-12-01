@@ -1,7 +1,7 @@
 /**
  * conversation app
  */
-var conmodel = require('./conversation/conversationmodel'),
+var Conmodel = require('./conversation/conversationmodel'),
     types = require('../node_modules/tqtopicmap/lib/types'),
     common = require('./common/commonmodel'),
     constants = require('../core/constants');
@@ -11,7 +11,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         CommonModel = environment.getCommonModel(),
         topicMapEnvironment = environment.getTopicMapEnvironment(),
         Dataprovider = topicMapEnvironment.getDataProvider(),
-        ConversationModel = new conmodel(environment),
+        ConversationModel = new Conmodel(environment),
        //some constants
         MAPTYPE = "1",
         QUESTIONTYPE = "2",

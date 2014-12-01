@@ -14,8 +14,10 @@
 
   <script>
     jQuery(document).ready(function ($) {
+        //in main.js
 		initPage();
 		try {
+            //in rpg.js
 			initGamePage();
 		} catch (e) {}
 		try {
@@ -35,6 +37,16 @@
 				sendFile(files[0], editor, $editable);
 			}
 		});
+        //for templates with two summernote areas, we initialize the otherone
+        // which must have id="summernote1"
+        if ($('#summernote1')) {
+            $('#summernote1').summernote({
+			height: 300,
+			onImageUpload: function(files, editor, $editable) {
+				sendFile(files[0], editor, $editable);
+			}
+		});
+        }
 		//Deal with image uploading
 		function sendFile(file, editor, welEditable) {
             data = new FormData();

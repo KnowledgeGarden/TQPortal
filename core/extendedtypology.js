@@ -13,3 +13,6 @@ module.exports.JOINT_TAG_LIST		= "jntgl";
 // Pivots added to TQPortal
 ///////////////////////////
 module.exports.DOCUMENT_TRANSCLUDER_RELATION_TYPE	= "DocumentTranscluderRelationType";
+module.exports.ISSUE_QUEST_RELATION_TYPE            = "IssueQuestRelationType";
+module.exports.QUEST_GUILD_RELATION_TYPE            = "QuestGuildRelationType";
+module.exports.USER_GUILD_RELATION_TYPE             = "UserGuildRelationType";

@@ -1,4 +1,11 @@
 {"nodes":[ {"comment":"TQPortal extensions to the topic map typology"},
-{"lox":"FollowerListProperty","sbOf":"PropertyType","label":"FollowerListProperty","details":"TQPortal extension FollowerList property type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]}
-{"lox":"JointTagListProperty","sbOf":"PropertyType","label":"JointTagListProperty","details":"TQPortal extension JointTagList  property type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]}
+{"lox":"FollowerListProperty","sbOf":"PropertyType","label":"FollowerListProperty","details":"TQPortal extension FollowerList property type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]},
+{"lox":"JointTagListProperty","sbOf":"PropertyType","label":"JointTagListProperty","details":"TQPortal extension JointTagList  property type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]},
+
+  {"lox":"DocumentTranscluderRelationType","sbOf":"RelationType","label":"DocumentTranscluderRelationType","details":"TQPortal extension DocumentTranscluder relationtype", "sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]},
+
+  {"lox":"IssueQuestRelationType","sbOf":"RelationType","label":"IssueQuestRelationType","details":"TQPortal extension Issue-Quest relation type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]},
+  {"lox":"QuestGuildRelationType","sbOf":"RelationType","label":"QuestGuildRelationType","details":"TQPortal extension Quest-Guild relation type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]},
+  {"lox":"UserGuildRelationType","sbOf":"RelationType","label":"UserGuildRelationType","details":"TQPortal extension User-Guild relation type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]}
+
 ]}

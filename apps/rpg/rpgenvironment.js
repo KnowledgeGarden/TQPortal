@@ -1,26 +1,27 @@
 /**
  * RolePlayingGameEnvironment
  */
-var  types = require('../../node_modules/tqtopicmap/lib/types')
-	, sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder')
-	, constants = require('../../core/constants')
-	, rbuf = require('../../core/util/ringbuffer')
-	, ib = require('./rpginfoboxmodel')
+var types = require('../../node_modules/tqtopicmap/lib/types'),
+    sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder'),
+    constants = require('../../core/constants'),
+    Rbuf = require('../../core/util/ringbuffer'),
+    RGBib = require('./rpginfoboxmodel')
 ;
 
 var RPGEnvironment = module.exports = function(environment, tmenv) {
-	var myEnvironment = environment;
-	var TopicMapEnvironment = tmenv;
-	var DataProvider = TopicMapEnvironment.getDataProvider();
-	var RPGInfoBoxModel = new ib(environment);
-	var issueRing = new rbuf(20, "issue", TopicMapEnvironment);
-	var questRing = new rbuf(20, "quest", TopicMapEnvironment);
-	var guildRing = new rbuf(20, "guild", TopicMapEnvironment);
+	var myEnvironment = environment,
+	    TopicMapEnvironment = tmenv,
+	    DataProvider = TopicMapEnvironment.getDataProvider(),
+	    RPGInfoBoxModel = new RGBib(environment, tmenv),
+	    issueRing = new Rbuf(20, "issue", TopicMapEnvironment),
+	    questRing = new Rbuf(20, "quest", TopicMapEnvironment),
+	    guildRing = new Rbuf(20, "guild", TopicMapEnvironment),
+        self = this;
 
 	//register for persisting recents
-	environment.addRecentListener(this);
+    //TODO: don't get to do this here because Environment is still building
+	// environment.addRecentListener(this);
 	console.log("RPGEnvironment started");
-	var self = this;
 	//TODO
 	
 	self.getInfoBoxModel = function() {

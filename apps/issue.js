@@ -65,6 +65,16 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  data.issuecount=constants.MAX_HIT_COUNT; //pagination size
 		  data.issuetotal=0;
 		  data.issuequery="/issue/index";
+          data.queststart = 0;
+		  data.questcount=constants.MAX_HIT_COUNT; //pagination size
+		  data.questtotal = 0;
+		  data.questquery = "/quest/index";
+		  data.brand = "GetTheIssues";
+		  data.guildstart=0;
+		  data.guildcount=constants.MAX_HIT_COUNT; //pagination size
+		  data.guildtotal=0;
+		  data.guildquery="/guild/index";
+
 		  data.type = "landing";
 	    res.render('issuehome',data);
 	  });
@@ -94,13 +104,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			var json = {};
 			//pagination is based on start and count
 			//both values are maintained in an html div
-			json.start = cursor;
-			json.count = constants.MAX_HIT_COUNT; //pagination size
-			json.total = totalavailable;
+			json.issuestart = cursor;
+			json.issuecount = constants.MAX_HIT_COUNT; //pagination size
+			json.issuetotal = totalavailable;
 			json.table = data;
-			try {
-				res.set('Content-type', 'text/json');
-			}  catch (e) { }
 			res.json(json);
 		});
 	  });
@@ -126,7 +133,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  app.post('/issue', isLoggedIn, function(req,res) {
 	    var body = req.body;
 	    var usx = req.user;
-	    console.log('ISSUE_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
+	    myEnvironment.logDebug('ISSUE_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
 	    _issuesupport(body, usx, function(err,result) {
 	      console.log('ISSUE_NEW_POST-1 '+err+' '+result);
 	      //technically, this should return to "/" since Lucene is not ready to display
@@ -156,13 +163,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				var docs=[];
 				var users=[];
 				var transcludes=[];
+                //TODO list its quests
+                
 				myEnvironment.logDebug("Issue.ajaxfetch "+JSON.stringify(data));
 				CommonModel.__doAjaxFetch(result, credentials,"/issue/",tags,docs,users,transcludes,data,req,function(json) {
 					myEnvironment.logDebug("Issue.ajaxfetch-1 "+JSON.stringify(json));
 						//send the response
-						try {
-							res.set('Content-type', 'text/json');
-						}  catch (e) { }
 						res.json(json);
 				} );
 			});
@@ -177,9 +183,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			myEnvironment.logDebug("ISSUY "+JSON.stringify(req.query));
 			CommonModel.__doGet(q,"/issue/",data, req, function(viewspec, data) {
 				if (viewspec === "Dashboard") {
-					return res.render('vf_topic', data);
+					return res.render('vf_issue', data);
 				} else {
-					return res.render('vfcn_topic',data);
+					return res.render('vfcn_issue',data);
 				}
 			});
 		  });

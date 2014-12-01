@@ -3,21 +3,21 @@
     {
       "type": "file",
       "filename": "./logs/portal.log",
-      "maxLogSize": 20480,
+      "maxLogSize": 20000000,
       "backups": 20,
       "category": ["relative-logger","Portal"]
      },
     {
         "type": "file",
         "filename": "./logs/monitor/monitor.log",
-        "maxLogSize": 20480,
+        "maxLogSize": 20000000,
         "backups": 20,
         "category": ["relative-logger","Monitor"]
       },
     {
         "type": "file",
         "filename": "./logs/api/api.log",
-        "maxLogSize": 20480,
+        "maxLogSize": 20000000,
         "backups": 20,
         "category": ["relative-logger","API"]
       }

@@ -59,8 +59,8 @@ var Environment = new env(function(err,env) {
 		   */
 		  function startApp(file) {
 		    var v = file;
-		    var p = require('./apps/' + v).plugin;
-		    p(app, Environment, passport, Environment.getIsPrivatePortal());
+		    var px = require('./apps/' + v).plugin;
+		    px(app, Environment, passport, Environment.getIsPrivatePortal());
 		   }
 
 		  /**

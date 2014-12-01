@@ -12,7 +12,7 @@
    <div id="row">
    <div class="home col-xs-7 col-sm-7">
     <h1 class="text-info">GetTheIssues</h1>
-    {{#if canEdit}}
+    {{#if canEdit}} <!-- what is this for? -->
     <form method="post" action="/issue"  role="form" class="form-horizontal">
     </form>
     {{/if}}
@@ -67,13 +67,13 @@
   	<a href="/issue/new"><button type="submit" class="btn btn-btn-success btn-small">New Issue</button></a><br />
 	</div>
    {{/if}}
-   
+               
    <div id="issuetabledata" query="{{issuequery}}" start="{{issuestart}}" count="{{issuecount}}" total="{{issuetotal}}"></div>
    <div class="col-xs-12 pre-scrollable" position:"left"; style="border: 1px solid #e1e1e8;">
-  	 <div class="issuetableindex"></div>
+  	 <div id="issuetableindex"></div>
    </div>
    <div class="col-xs-12" position:"left">
-    <div class="issuepagination"></div>
+    <div id="issuepagination"></div>
    </div> 
   </div> <!-- /row-->
   </div> <!-- /issues -->
@@ -84,23 +84,28 @@
     <h2>Actually, Quests emerge based on specific issues; this is just where we aggregate all quests</h2>
     <div id="questtabledata" query="{{questquery}}" start="{{queststart}}" count="{{questcount}}" total="{{questtotal}}"></div>
     <div class="col-xs-12 pre-scrollable" position:"left"; style="border: 1px solid #e1e1e8;">
-  	 <div class="questtableindex"></div>
+  	 <div id="questtableindex"></div>
     </div>
     <div class="col-xs-12" position:"left">
-     <div class="questpagination"></div>
+     <div id="questpagination"></div>
     </div> 
    </div> <!-- /row -->
-   </div> <!-- /quests -->
+  </div> <!-- /quests -->
    
    <div id="guilds" class="tab-pane fade">
     <div class="row">
      <h1>Where Guilds Live</h1>
-     <div id="guildtabledata" query="{{guildquery}}" start="{{guildstart}}" count="{{guildissuecount}}" total="{{guildissuetotal}}"></div>
+   {{#if isAuthenticated}}
+	<div class="form-group">
+  	<a href="/guild/new"><button type="submit" class="btn btn-btn-success btn-small">New Guild</button></a><br />
+	</div>
+   {{/if}}
+     <div id="guildtabledata" query="{{guildquery}}" start="{{guildstart}}" count="{{guildcount}}" total="{{guildtotal}}"></div>
 	 <div class="col-xs-12 pre-scrollable" position:"left"; style="border: 1px solid #e1e1e8;">
-  	  <div class="guildtableindex"></div>
+  	  <div id="guildtableindex"></div>
 	 </div>
     <div class="col-xs-12" position:"left">
-     <div class="guildpagination"></div>
+     <div id="guildpagination"></div>
     </div> 
    </div> <!-- /row -->
   </div> <!-- /guilds -->

@@ -10,15 +10,21 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
 	, rpa = require('../../core/util/stringutil')
 ;
 
-var TagModel = module.exports = function(environment) {
-	var myEnvironment = environment;
-	var CommonModel = environment.getCommonModel();
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var DataProvider = topicMapEnvironment.getDataProvider();
-	var TopicModel = topicMapEnvironment.getTopicModel();
-	var queryDSL = topicMapEnvironment.getQueryDSL();
-	var replaceAll = rpa.replaceAll;
-	var self = this;
+var TagModel = module.exports = function(environment, cm, tmenv) {
+	var myEnvironment = environment,
+        CommonModel = cm;
+    if (!cm) {
+        CommonModel = environment.getCommonModel();
+    }
+	var topicMapEnvironment = tmenv;
+    if (!topicMapEnvironment) {
+        topicMapEnvironment = environment.getTopicMapEnvironment();
+    }
+    var DataProvider = topicMapEnvironment.getDataProvider(),
+        TopicModel = topicMapEnvironment.getTopicModel(),
+        queryDSL = topicMapEnvironment.getQueryDSL(),
+        replaceAll = rpa.replaceAll,
+        self = this;
 	
 	self.addTagsToNode = function(blog, user, credentials, callback) {
 		var taglist = CommonModel.makeTagList(blog);
@@ -89,7 +95,12 @@ var TagModel = module.exports = function(environment) {
 	  
 	  self.__makeLocator = function(tagString) {
 		  var label = tagString.trim();
-	      var locator = replaceAll(label, ' ', '_');
+          label = label.toLowerCase();
+	      var locator = label.replace(" ", "_");
+          locator = replaceAll(locator,"'", "_");
+          locator = replaceAll(locator, ":", "_");
+          locator = replaceAll(locator, "+", "P");
+          locator = replaceAll(locator, "-", "M");
 	      locator = locator+'_TAG';
 	      return locator;
 	  },
@@ -266,13 +277,13 @@ var TagModel = module.exports = function(environment) {
 	topicMapEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
 	TopicModel.relateExistingNodesAsPivots(theUser,theTag,types.TAG_CREATOR_RELATION_TYPE,
 			theUser.getLocator(),
-			icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+			icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function(err,data) {
 		if (err) {error+=err;}
 		//myEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
 		topicMapEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
 		TopicModel.relateExistingNodesAsPivots(theTag,theDoc,types.TAG_DOCUMENT_RELATION_TYPE,
 				theUser.getLocator(),
-				icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+				icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function(err,data) {
 			if (err) {error+=err;}
 			callback(error,null);
 		});

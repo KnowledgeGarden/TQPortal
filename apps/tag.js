@@ -142,12 +142,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				    	//TODO
 				    	//Otherwise, grab some context from the node
 				    }
+			    	  var clipboard = req.session.clipboard;
 			/**	    //Allow Admins to edit tag
 			    	  var canEdit = false;
 			    	  if (credentials.indexOf(constants.ADMIN_CREDENTIALS) > -1) {
 			    		  canEdit = true;
 			    	  }
-			    	  var clipboard = req.session.clipboard;
 			    	  
 			    	  var editLocator = "/tag/edit/"+result.getLocator();
 			    	  */

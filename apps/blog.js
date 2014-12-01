@@ -21,7 +21,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
 			res.redirect('/login');
 		} else {
-			{return next();}
+			return next();
 		}
 	}
 	
@@ -34,7 +34,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (isPrivatePortal) {
 			return res.redirect('/login');
 		}
-		res.redirect('/');
+		return res.redirect('/');
 	}
  
 	/////////////////
@@ -56,7 +56,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	data.total=0;
 	data.query="/blog/index";
 	//rendering this will cause an ajax query to blog/index
-	res.render('blogindex',data);
+	return res.render('blogindex',data);
   });
 
   /**
@@ -78,10 +78,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		json.count = constants.MAX_HIT_COUNT; //pagination size
 		json.total = totalavailable;
 		json.table = data;
-		try {
-			res.set('Content-type', 'text/json');
-		}  catch (e) { }
-		res.json(json);
+		return res.json(json);
 	});
   });
 		
@@ -92,7 +89,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var data =  myEnvironment.getCoreUIData(req);
 	data.formtitle = "New Article";
     data.isNotEdit = true;
-	res.render('blogform',data); //,
+	return res.render('blogform', data); //,
   });
   
   /**
@@ -116,7 +113,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			data.locator = result.getLocator();
 			data.isNotEdit = false;
 		}
-		res.render('blogform', data); //,
+		return res.render('blogform', data); //,
 	});
   });
   
@@ -130,7 +127,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   //TODO this will become more complex when we use viewspec to
   //decide if to fill the P-Conversation tab, which isn't used
   //in Conversation mode
-  app.get("/blog/ajaxfetch/:id", isPrivate, function(req,res) {
+  app.get("/blog/ajaxfetch/:id", isPrivate, function(req, res) {
 	//establish the node's identity
 	var q = req.params.id;
 	//establish credentials
@@ -154,13 +151,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                 transcludes = [];
             }
 		myEnvironment.logDebug("Blog.ajaxfetch "+JSON.stringify(data));
-		CommonModel.__doAjaxFetch(result, credentials,"/blog/",tags,docs,users,transcludes,data,req,function(json) {
+		CommonModel.__doAjaxFetch(result, credentials, "/blog/", tags, docs, users, transcludes, data, req, function(json) {
 			myEnvironment.logDebug("Blog.ajaxfetch-1 "+JSON.stringify(json));
 				//send the response
-				try {
-					res.set('Content-type', 'text/json');
-				}  catch (e) { }
-				res.json(json);
+				return res.json(json);
 		} );
 	});
   });
@@ -172,11 +166,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var q = req.params.id;
 	var data = myEnvironment.getCoreUIData(req);
 	myEnvironment.logDebug("BLOGGY "+JSON.stringify(req.query));
-	CommonModel.__doGet(q,"/blog/",data, req, function(viewspec, data) {
+	CommonModel.__doGet(q,"/blog/", data, req, function(viewspec, data) {
 		if (viewspec === "Dashboard") {
 			return res.render('vf_topic', data);
 		} else {
-			return res.render('vfcn_topic',data);
+			return res.render('vfcn_topic', data);
 		}
 	});
   });
@@ -186,12 +180,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    */
   var _blogsupport = function(body,usx, callback) {
 	if (body.locator === "") {
-		BlogModel.create(body, usx, function(err,result) {
-			callback(err,result);
+		BlogModel.create(body, usx, function(err, result) {
+			return callback(err, result);
 		});
 	} else {
-        BlogModel.update(body, usx, function(err,result) {
-            callback(err,result);
+        BlogModel.update(body, usx, function(err, result) {
+            return callback(err, result);
         });
 	}
   };
@@ -199,10 +193,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Handles posts from new and from edit
    */
-  app.post('/blog', isLoggedIn, function(req,res) {
+  app.post('/blog', isLoggedIn, function(req, res) {
     var body = req.body;
     var usx = req.user;
     console.log('BLOG_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
+      myEnvironment.logDebug("BLOG POST "+JSON.stringify(body));
     _blogsupport(body, usx, function(err,result) {
       console.log('BLOG_NEW_POST-1 '+err+' '+result);
       //technically, this should return to "/" since Lucene is not ready to display

@@ -5,10 +5,13 @@
 var User = require('../core/user'),
     constants = require('../core/constants'),
     adminmodel = require('./admin/adminmodel'),
+    proxy = require('../node_modules/tqtopicmap/lib/models/subjectproxy'),
+
     usermodel = require('./user/usermodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var topicMapEnvironment = environment.getTopicMapEnvironment(),
+        myEnvironment = environment,
         Dataprovider = topicMapEnvironment.getDataProvider(),
         userDatabase = environment.getUserDatabase(),
         UserModel = new usermodel(environment),
@@ -341,4 +344,76 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
 	  
   });
+  /////////////////////////////////
+  // Node Editing -- very dangerous
+  /////////////////////////////////
+    /**
+     * Fired by Admin panel button
+     */
+  app.get('/editnode', isAdmin, function(req,res) {
+    var data = environment.getCoreUIData(req);
+    res.render('adminnodeedit', data);
+  });
+    
+  app.get('/choosenode', isAdmin, function(req,res) {
+      //It's interesting that req.query works on this one
+     // var foo = req.body;
+     // if (foo) {
+     //     console.log("FOO "+JSON.stringify(foo));
+     // }
+     // var bar = req.query;
+     // if (bar) {
+     //   console.log("BAR "+JSON.stringify(bar));
+     // }
+      var locator = req.query.locator;
+      console.log("Admin.choosenode "+locator);
+      var creds = req.body.credentials;
+      Dataprovider.getNodeByLocator(locator,creds,function(err,ndx) {
+        console.log("BAR "+err+" "+ndx.toJSON());
+          var data = environment.getCoreUIData(req);
+          data.locator = locator;
+          data.json = ndx.toJSON();
+          return res.render('nodeeditform',data);
+      });
+	  
+  });
+  app.post('/updatenode', isAdmin, function(req,res) {
+      //it's interesting that req.body works on this one
+//     var foo = req.body;
+//      if (foo) {
+//          console.log("FOO "+JSON.stringify(foo));
+//      }
+//      var bar = req.query;
+//      if (bar) {
+//        console.log("BAR "+JSON.stringify(bar));
+ //     }
+	var locator = req.body.locator;
+	var json = req.body.body;
+      var node,
+          error,
+          data = myEnvironment.getCoreUIData(req);
+     // console.log("BAR "+json);
+      try {
+          var jo = JSON.parse(json);
+     //     console.log("FOO "+jo);
+          node = new proxy(jo);
+          node.setLastEditDate(new Date());
+          console.log(" BAH "+node.toJSON()); // this works!
+      } catch (e) {
+          console.log("GAK "+e);
+          myEnvironment.logError("Admin.postUpdateNode-1 "+err);
+           return res.render('500', data);
+      }
+        Dataprovider.putNode(node, function(err,dx) {
+          if (err) {
+              myEnvironment.logError("Admin.postUpdateNode-2 "+err);
+              console.log("GOK "+err);
+              data.errormessage = err;
+              return res.render('500', data);
+              
+          }
+            return res.redirect("/admin");
+        });
+  });
+
 };

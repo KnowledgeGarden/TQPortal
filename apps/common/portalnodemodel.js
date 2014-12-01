@@ -57,7 +57,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 	    	  var subj = json.title;
 	    	  var body = json.body;
 	    	  article.setSubject(subj,lang,userLocator);
-	    	  article.setBody(body,lang,userLocator);
+	    	  article.setBody(body.trim(),lang,userLocator);
 	    //	  console.log('BlogModel.create-2 '+article.toJSON());
 				
 	    	     // now deal with tags
@@ -75,7 +75,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 
 	                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 	                      callback(err,article.getLocator());
 	                 }); //r1
@@ -89,7 +89,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 
 	                  TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                  		userTopic.getLocator(),
-	                        		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	                        		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 	                      if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 	                        callback(err,article.getLocator());
 	                   }); //r1
@@ -117,8 +117,6 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 	    	  var comment = "an edit by "+user.handle;
 	    	  if (!lang) {lang = "en";}
 			  var isNotUpdateToBody = true;
-	    	  var lang = json.language;
-	    	  if (!lang) {lang = "en";}
 	    	  var oldBody;
 	    	  if(result.getBody(lang)) {
 	    		  oldBody = result.getBody(lang).theText;

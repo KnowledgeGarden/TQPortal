@@ -24,14 +24,15 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		return result;
 	};
 	
-	function isPrivate(req,res,next) {
+	function isPrivate(req, res, next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
 			res.redirect('/login');
 		} else {
-			{return next();}
+			return next();
 		}
 	}
+    
 	function isLoggedIn(req, res, next) {
 		// if user is authenticated in the session, carry on 
 		console.log('ISLOGGED IN '+req.isAuthenticated());
@@ -41,7 +42,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (isPrivatePortal) {
 			return res.redirect('/login');
 		}
-		res.redirect('/');
+		return res.redirect('/');
 	}
 	/////////////////
 	// Menu
@@ -50,34 +51,41 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  /////////////////
 	  // Routes
 	  /////////////////
-	  app.get('/quest', isPrivate,function(req,res) {
+    /**
+     * In the present design,this is never called since
+     * this is really just a tab in issuehome, which means this belongs
+     * in issue.js
+     */
+	  app.get('/quest', isPrivate, function(req, res) {
 		  var data = myEnvironment.getCoreUIData(req);
 		  //We can change the brand
 		  data.brand = "GetTheIssues";
-		  data.issuestart=0;
-		  data.issuecount=constants.MAX_HIT_COUNT; //pagination size
-		  data.issuetotal=0;
-		  data.issuequery="/quest/index";
-	    res.render('issuehome',data);
+		  data.queststart = 0;
+		  data.questcount=constants.MAX_HIT_COUNT; //pagination size
+		  data.questtotal = 0;
+		  data.questquery = "/quest/index";
+	    return res.render('issuehome',data);
 	  });
 	  
 	  /**
 	   * Fire up the blog new post form
 	   */
-	  app.get('/quest/new', isLoggedIn, function(req,res) {
-		var data =  myEnvironment.getCoreUIData(req);
-		data.formtitle = "New Quest";
-	    data.isNotEdit = true;
-		res.render('issueform',data); //,
+	  app.get('/quest/new/:id', isLoggedIn, function(req, res) {
+          var q = req.params.id,
+              data =  myEnvironment.getCoreUIData(req);
+          data.formtitle = "New Quest";
+          data.isNotEdit = true;
+          data.parent = q;
+          return res.render('questform', data);
 	  });
 	  
 	  /**
 	   * Fetch based on page Next and Previous buttons from ajax
 	   */
-	  app.get("/quest/index", isPrivate,function(req,res) {
+	  app.get("/quest/index", isPrivate, function(req, res) {
 		var start = parseInt(req.query.start);
 		var count = parseInt(req.query.count);
-		var credentials= [];
+		var credentials = [];
 		if (req.user) {credentials = req.user.credentials;}
 
 		QuestModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
@@ -86,49 +94,47 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			var json = {};
 			//pagination is based on start and count
 			//both values are maintained in an html div
-			json.start = cursor;
-			json.count = constants.MAX_HIT_COUNT; //pagination size
-			json.total = totalavailable;
+			json.queststart = cursor;
+			json.questcount = constants.MAX_HIT_COUNT; //pagination size
+			json.questtotal = totalavailable;
 			json.table = data;
-			try {
-				res.set('Content-type', 'text/json');
-			}  catch (e) { }
-			res.json(json);
+			return res.json(json);
 		});
 	  });
-
-	  /**
-	   * Function which ties the app-embedded route back to here
-	   */
-	  var _questsupport = function(body,usx, callback) {
-		var credentials = usx.credentials;
-		if (body.locator === "") {
-			QuestModel.create(body, usx, credentials, function(err,result) {
-				callback(err,result);
-			});
-		} else {
-	        QuestModel.update(body, usx, credentials, function(err,result) {
-	            callback(err,result);
-	        });
-		}
-	  };
+    
 	  /**
 	   * Handles posts from new and from edit
 	   */
-	  app.post('/quest', isLoggedIn, function(req,res) {
-	    var body = req.body;
-	    var usx = req.user;
-	    console.log('QUEST_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
-	    _questupport(body, usx, function(err,result) {
-	      console.log('QUEST_NEW_POST-1 '+err+' '+result);
-	      //technically, this should return to "/" since Lucene is not ready to display
-	      // the new post; you have to refresh the page in any case
-	      return res.redirect('/issuehome');
-	    });
+	  app.post('/quest', isLoggedIn, function(req, res) {
+	    var body = req.body,
+            usx = req.user,
+            credentials = usx.credentials;
+          //Two hidden variables: locator means this is an edit
+          //  parent means this is a new quest against a parent issue
+		if (body.locator === "") {
+            console.log("Quest-2");
+			QuestModel.create(body, usx, credentials, function(err, result) {
+                myEnvironment.logDebug('QUEST_NEW_POST-3 '+res.headersSent);
+                //TODO: we really mostly ignore err here; ought to find something
+                // really sophisticated to do with error messages
+                //technically, this should return to "/" since Lucene is not ready to display
+                // the new post; you have to refresh the page in any case
+                return res.redirect('/issue');
+			});
+		} else {
+ 	        QuestModel.update(body, usx, credentials, function(err,result) {
+                 console.log("Quest-5 "+err);
+               //TODO: we really mostly ignore err here; ought to find something
+                // really sophisticated to do with error messages
+                //technically, this should return to "/" since Lucene is not ready to display
+                // the new post; you have to refresh the page in any case
+                return res.redirect('/issue');
+	        });
+		}
 	  });
 	  
 	  
-	  app.get("/quest/ajaxfetch/:id", isPrivate, function(req,res) {
+	  app.get("/quest/ajaxfetch/:id", isPrivate, function(req, res) {
 			//establish the node's identity
 			var q = req.params.id;
 			//establish credentials
@@ -152,11 +158,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				CommonModel.__doAjaxFetch(result, credentials,"/quest/",tags,docs,users,transcludes,data,req,function(json) {
 					myEnvironment.logDebug("Quest.ajaxfetch-1 "+JSON.stringify(json));
 						//send the response
-						try {
-							res.set('Content-type', 'text/json');
-						}  catch (e) { }
-						res.json(json);
-				} );
+						return res.json(json);
+				});
 			});
 		  });
 		  
@@ -169,9 +172,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			myEnvironment.logDebug("QUESTY "+JSON.stringify(req.query));
 			CommonModel.__doGet(q,"/quest/",data, req, function(viewspec, data) {
 				if (viewspec === "Dashboard") {
-					return res.render('vf_topic', data);
+					return res.render('vf_quest', data);
 				} else {
-					return res.render('vfcn_topic',data);
+					return res.render('vfcn_quest',data);
 				}
 			});
 		  });

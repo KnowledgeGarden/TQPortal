@@ -4,7 +4,9 @@
 
 function initGamePage() {
 //	alert("Gamestart");
-	pageSetup();
+    if ( $("ul#metaConTree")) {
+	   pageSetup();
+    }
 }
 
 /**
@@ -14,7 +16,48 @@ function initGamePage() {
  * query is based on <app>/index
  */
 function pageSetup() {
-	var data = $("#issuetabledata");
+    
+ $("ul#metaConTree").columnNavigation({
+    containerPosition:"relative",
+    containerWidth:"900px",
+    containerHeight:"210px",
+    containerBackgroundColor:"rgb(255,255,255)",
+    containerFontColor:"rgb(50,50,50)",
+    columnWidth:300,
+    columnFontFamily:"'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif",
+    columnFontSize:"90%",
+    columnSeperatorStyle:"1px solid rgb(220,220,220)",
+    columnDeselectFontWeight:"normal",
+    columnDeselectColor:"rgb(50,50,50)",
+    columnSelectFontWeight:"normal",
+    columnSelectColor:"rgb(255,255,255)",
+    columnSelectBackgroundColor:"rgb(27,115,213)",
+    columnSelectBackgroundPosition:"top",
+    columnItemPadding:"3px 3px 5px 3px",
+    columnScrollVelocity:50,
+ });
+
+ $("ul#gameConTree").columnNavigation({
+    containerPosition:"relative",
+    containerWidth:"900px",
+    containerHeight:"210px",
+    containerBackgroundColor:"rgb(255,255,255)",
+    containerFontColor:"rgb(50,50,50)",
+    columnWidth:300,
+    columnFontFamily:"'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif",
+    columnFontSize:"90%",
+    columnSeperatorStyle:"1px solid rgb(220,220,220)",
+    columnDeselectFontWeight:"normal",
+    columnDeselectColor:"rgb(50,50,50)",
+    columnSelectFontWeight:"normal",
+    columnSelectColor:"rgb(255,255,255)",
+    columnSelectBackgroundColor:"rgb(27,115,213)",
+    columnSelectBackgroundPosition:"top",
+    columnItemPadding:"3px 3px 5px 3px",
+    columnScrollVelocity:50,
+ });
+
+/**	var data = $("#issuetabledata");
 	var q = data.attr("query");
 	var cursor = data.attr("start");
 	var count = data.attr("count");
@@ -44,7 +87,7 @@ function pageSetup() {
 	//	alert(data);
 		paintGuildIndex(data);
 	});
-
+*/
 }
 /**
  * Server must send back 

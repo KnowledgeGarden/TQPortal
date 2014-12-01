@@ -1,26 +1,26 @@
 /**
  * GuildModel
  */
-var types = require('../../node_modules/tqtopicmap/lib/types')
-	, icons = require('../../node_modules/tqtopicmap/lib/icons')
-	, properties = require('../../node_modules/tqtopicmap/lib/properties')
-	, gameenv = require('../rpg/rpgenvironment')
-	, constants = require('../../core/constants')
-	, uuid = require('../../core/util/uuidutil')
-	, tagmodel = require('../tag/tagmodel')
+var types = require('../../node_modules/tqtopicmap/lib/types'),
+    icons = require('../../node_modules/tqtopicmap/lib/icons'),
+    properties = require('../../node_modules/tqtopicmap/lib/properties'),
+    Gameenv = require('../rpg/rpgenvironment'),
+    constants = require('../../core/constants'),
+    uuid = require('../../core/util/uuidutil'),
+    Tagmodel = require('../tag/tagmodel')
 ;
 
 var GuildModel =  module.exports = function(environment) {
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var DataProvider = topicMapEnvironment.getDataProvider();
-	var TopicModel = topicMapEnvironment.getTopicModel();
-	var TagModel = new tagmodel(environment);
-	var CommonModel = environment.getCommonModel();
-	var queryDSL = topicMapEnvironment.getQueryDSL();
-	var RPGEnvironment = new gameenv(environment,topicMapEnvironment);
+	var myEnvironment = environment,
+        topicMapEnvironment = environment.getTopicMapEnvironment(),
+        DataProvider = topicMapEnvironment.getDataProvider(),
+        TopicModel = topicMapEnvironment.getTopicModel(),
+        TagModel = new Tagmodel(environment),
+        CommonModel = environment.getCommonModel(),
+        queryDSL = topicMapEnvironment.getQueryDSL(),
+        RPGEnvironment = environment.getRPGEnvironment(),
 	
-	var self = this;
+        self = this;
 	
 	self.getRPGEnvironment = function() {
 		return RPGEnvironment;
@@ -42,8 +42,6 @@ var GuildModel =  module.exports = function(environment) {
 	    	  var comment = "an edit by "+user.handle;
 	    	  if (!lang) {lang = "en";}
 			  var isNotUpdateToBody = true;
-	    	  var lang = blog.language;
-	    	  if (!lang) {lang = "en";}
 	    	  var oldBody;
 	    	  if(result.getBody(lang)) {
 	    		  oldBody = result.getBody(lang).theText;
@@ -101,14 +99,15 @@ var GuildModel =  module.exports = function(environment) {
 	      console.log("FOO "+types.GUILD_TYPE);
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
 	      TopicModel.newInstanceNode(uuid.newUUID(), types.GUILD_TYPE,
-	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.COLLABORATION_SM, icons.COLLABORATION, false, credentials, function(err, article) {
+                                     "", "", constants.ENGLISH, userLocator,
+                                     icons.COLLABORATION_SM, icons.COLLABORATION, false, credentials, function(err, article) {
 	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
 	    	  var subj = blog.title;
 	    	  var body = blog.body;
 	    	  article.setSubject(subj,lang,userLocator);
 	    	  article.setBody(body,lang,userLocator);
+              myEnvironment.logDebug("GuildModel.create-1 "+icons.COLLABORATION+" "+article.toJSON());
 	    //	  console.log('BlogModel.create-2 '+article.toJSON());
 	    	  RPGEnvironment.addRecentIssue(article.getLocator(),blog.title);
 	    	     // now deal with tags
@@ -126,9 +125,9 @@ var GuildModel =  module.exports = function(environment) {
 
 	                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                      callback(err,article.getLocator());
+	                   return callback(err,article.getLocator());
 	                 }); //r1
 	              }); //putnode 		  
 	        	}); // processtaglist
@@ -140,9 +139,9 @@ var GuildModel =  module.exports = function(environment) {
 
 	                  TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                  		userTopic.getLocator(),
-	                        		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	                        		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 	                      if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                        callback(err,article.getLocator());
+	                       return callback(err,article.getLocator());
 	                   }); //r1
 	                }); //putnode 		  
 

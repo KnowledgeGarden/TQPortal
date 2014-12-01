@@ -7,7 +7,7 @@
 var  types = require('../../node_modules/tqtopicmap/lib/types'), 
     icons = require('../../node_modules/tqtopicmap/lib/icons'), 
     properties = require('../../node_modules/tqtopicmap/lib/properties'), 
-    tagmodel = require('../tag/tagmodel'), 
+    Tagmodel = require('../tag/tagmodel'), 
     uuid = require('../../core/util/uuidutil'), 
     constants = require('../../core/constants');
 
@@ -17,7 +17,7 @@ var ConversationModel = module.exports = function(environment) {
         topicMapEnvironment = environment.getTopicMapEnvironment(),
         DataProvider = topicMapEnvironment.getDataProvider(),
         TopicModel = topicMapEnvironment.getTopicModel(),
-        TagModel = new tagmodel(environment),
+        TagModel = new Tagmodel(environment),
         queryDSL = topicMapEnvironment.getQueryDSL(),
         //some constants
         MAPTYPE = "1",
@@ -32,13 +32,13 @@ var ConversationModel = module.exports = function(environment) {
         EVIDENCE = "10", //uses literature-analysis icons
         NOTE = "11",
 
-        self = this;	
+        self = this;
 	/**
 	 * Update an existing node; no tags included
 	 */
-	self.update = function(json,user,credentials,callback) {
-		PortalNodeModel.update(json,user,function(err,result) {
-			callback(err,null);
+	self.update = function(json, user, credentials, callback) {
+		PortalNodeModel.update(json, user, function(err, result) {
+			return callback(err,null);
 		});
 	};
 
@@ -47,21 +47,21 @@ var ConversationModel = module.exports = function(environment) {
   //TODO
   // We need a create for each node type
   // The root class is CONVERSATION_MAP_TYPE
-  self.createHelpMap = function(blog,user,credentials,callback) {
-	  self.createRootMap(blog,user, credentials, function(err,data) {
+  self.createHelpMap = function(blog, user, credentials, callback) {
+	  self.createRootMap(blog,user, credentials, function(err, data) {
 		  var lox = data.getLocator();
 		  var name = data.getSubject(constants.ENGLISH).theText;
 		  myEnvironment.addConversationToHelp("/conversation/"+lox, name);
-		  callback(err,data);
+		  return callback(err,data);
 	  });
   };
   
-  self.createRootMap = function(blog,user, credentials, callback) {
+  self.createRootMap = function(blog, user, credentials, callback) {
 	  //NOTE: if parentNodeLocator exists, this is not a new map, so we use create
 	    var userLocator = user.handle; // It's supposed to be user.handle;
 	    //first, fetch this user's topic
 	    var userTopic;
-	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
 	      userTopic = result;
 	      console.log('ConversationModel.createRootMap1 '+userLocator+' | '+userTopic);
 	      // create the blog post
@@ -78,7 +78,7 @@ var ConversationModel = module.exports = function(environment) {
 	    	  var subj = blog.title;
 	    	  var body = blog.body;
 	    	  article.setSubject(subj,lang,userLocator);
-	    	  article.setBody(body,lang,userLocator);
+	    	  article.setBody(body.trim(),lang,userLocator);
 	    //	  console.log('BlogModel.create-2 '+article.toJSON());
 				myEnvironment.addRecentConversation(article.getLocator(),blog.title);
 	    	     // now deal with tags
@@ -96,10 +96,10 @@ var ConversationModel = module.exports = function(environment) {
 
 	                TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 	                    //modified to return entire node
-	                    callback(err,article);
+	                    return callback(err,article);
 	                 }); //r1
 	              }); //putnode 		  
 	        	}); // processtaglist
@@ -111,10 +111,10 @@ var ConversationModel = module.exports = function(environment) {
 
 		                TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 		                		userTopic.getLocator(),
-		                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+		                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 		                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 		                    //modified to return entire node
-		                    callback(err,article);
+		                    return callback(err,article);
 		                 }); //r1
 		              }); //putnode 		
 	          }   	
@@ -122,67 +122,69 @@ var ConversationModel = module.exports = function(environment) {
 	    });
   };
   
-  self.createOtherNode = function(blog,user, credentials, callback) {
+  self.createOtherNode = function(blog, user, credentials, callback) {
 	  console.log("ConversationModel.createOtherNode "+JSON.stringify(blog));
 	  myEnvironment.logDebug("ConversationModel.createOtherNode- "+JSON.stringify(blog));
 	  var typ = blog.nodefoo;
 	  var parentLocator = blog.locator;
 	  if (typ === MAPTYPE) {
 		  self.createMap(blog,user,parentLocator,credentials,function(err,result) {
-			  callback(err,result);
+			  return callback(err,result);
 		  });
 	  } else if (typ === QUESTIONTYPE) {
 		  self.createIssue(blog,user,parentLocator,credentials,function(err,result) {
-			  callback(err,result);
+			  return callback(err,result);
 		  });
 	  } else if (typ === ANSWERTYPE) {
 		  self.createPosition(blog,user,parentLocator,credentials,function(err,result) {
-			  callback(err,result);
+			  return callback(err,result);
 		  });		  
 	  } else if (typ === PROTYPE) {
 		  self.createPro(blog,user,parentLocator,credentials,function(err,result) {
-			  callback(err,result);
+			  return callback(err,result);
 		  });
 	  } else if (typ === CONTYPE) {
 		  self.createCon(blog,user,parentLocator,credentials,function(err,result) {
-			  callback(err,result);
+			  return callback(err,result);
 		  });
 	  } else {
 		  //MONSTER ERROR
 		  topicMapEnvironment.logError("ConversationModel.createOtherNode bad type "+typ);
-		  callback("ConversationModel.createOtherNode bad type: "+typ, null);
+		  return callback("ConversationModel.createOtherNode bad type: "+typ, null);
 	  }
 	  
   };
   
-  self.createMap = function(blog,user,parentNodeLocator, credentials, callback) {
+  self.createMap = function(blog, user, parentNodeLocator, credentials, callback) {
 	  self.create(blog,user,types.CONVERSATION_MAP_TYPE,parentNodeLocator,icons.MAP_SM, icons.MAP,credentials, function(err,result) {
-		  callback(err,result);
+		  return callback(err,result);
 	  } );
 	  
   };
 
-  self.createIssue = function(blog,user, parentNodeLocator, credentials, callback) {
+  self.createIssue = function(blog, user, parentNodeLocator, credentials, callback) {
+      myEnvironment.logDebug("ConversationModel.createIssue "+parentNodeLocator);
 	  self.create(blog,user,types.ISSUE_TYPE,parentNodeLocator,icons.ISSUE_SM, icons.ISSUE,credentials, function(err,result) {
-		  callback(err,result);
+          myEnvironment.logDebug("ConversationModel.createIssue-1 "+err+" | "+result);
+		  return callback(err,result);
 	  } );
   };
     
-  self.createPosition = function(blog,user, parentNodeLocator, credentials, callback) {
+  self.createPosition = function(blog, user, parentNodeLocator, credentials, callback) {
 	  self.create(blog,user,types.POSITION_TYPE,parentNodeLocator,icons.POSITION_SM, icons.POSITION,credentials, function(err,result) {
-		  callback(err,result);
+		  return callback(err,result);
 	  } );
   };
 
-  self.createPro = function(blog,user, parentNodeLocator, credentials, callback) {
+  self.createPro = function(blog, user, parentNodeLocator, credentials, callback) {
 	  self.create(blog,user,types.PRO_TYPE,parentNodeLocator,icons.PRO_SM, icons.PRO,credentials, function(err,result) {
-		  callback(err,result);
+		  return callback(err,result);
 	  } );
   };
 
-  self.createCon = function(blog,user, parentNodeLocator, credentials, callback) {
+  self.createCon = function(blog, user, parentNodeLocator, credentials, callback) {
 	  self.create(blog,user,types.CON_TYPE,parentNodeLocator,icons.CON_SM, icons.CON,credentials, function(err,result) {
-		  callback(err,result);
+		  return callback(err,result);
 	  } );
   };
 
@@ -200,19 +202,26 @@ var ConversationModel = module.exports = function(environment) {
 		  smallIcon, largeIcon, credentials, callback) {
 	  var credentials = user.credentials;
 	  var language = constants.ENGLISH; //TODO
-	  
+	  myEnvironment.logDebug("ConversationModel.create "+parentNodeLocator);
 	  var contextLocator = parentNodeLocator; // default
 	  //we're gonna punt here; if nobody sent in a contextLocator, then
 	  // parentNodeLocator will be context.
+      //TODO
+      // The following contextlocator test will not allow us to create GAME TREE nodes in quiests
+      //   that's because child nodes in a quest come in with context associated with the quest
+      // THIS
+      // WHY IS THIS HERE?
+      // FOR NOW: going to comment out the return; not sure why it is there
+      
 	  if(blog.contextLocator && blog.contextLocator.length > 1) {
-		  contextLocator = blog.contextLocator;
+		  /*return*/ contextLocator = blog.contextLocator;
 	  }
 	  
     var userLocator = user.handle;
 	myEnvironment.logDebug("ConversationModel.create- "+parentNodeLocator+" "+nodeType);
 	myEnvironment.logDebug("ConversationModel.create-- "+JSON.stringify(blog));
 
-    DataProvider.getNodeByLocator(parentNodeLocator, credentials, function(err,result) {
+    DataProvider.getNodeByLocator(parentNodeLocator, credentials, function(err, result) {
       var parent = result;
       //contextLocator, parentNode,
 	  //newLocator, nodeType, subject, body, language, smallIcon, largeIcon,
@@ -224,14 +233,14 @@ var ConversationModel = module.exports = function(environment) {
     	  myEnvironment.logDebug("ConversationModel.create "+parentNodeLocator+" "+data.toJSON());
     	  myEnvironment.addRecentConversation(data.getLocator(),blog.title);
     	  var article = data;
-	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
 	      var userTopic = result;
 			
    	     	// now deal with tags
 			var taglist = CommonModel.makeTagList(blog);
 			console.log("NEW_POST "+err+" "+userTopic+" "+taglist);
 	        if (taglist.length > 0) {
-           TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
+           TagModel.processTagList(taglist, userTopic, article, credentials, function(err, result) {
              console.log('NEW_POST-1 '+result);
              //result could be an empty list;
              //TagModel already added Tag_Doc and Doc_Tag relations
@@ -241,27 +250,27 @@ var ConversationModel = module.exports = function(environment) {
                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
                console.log('ARTICLES_CREATE-3b '+userTopic);	  
 
-               TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+               TopicModel.relateExistingNodes(userTopic, article, types.CREATOR_DOCUMENT_RELATION_TYPE,
                		userTopic.getLocator(),
-                     		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+                     		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err, data) {
                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
                    //modified to return entire node
-                   callback(err,article);
+                   return callback(err,article);
                 }); //r1
              }); //putnode 		  
        		}); // processtaglist
 	          }  else {
-	              DataProvider.putNode(article, function(err,data) {
+	              DataProvider.putNode(article, function(err, data) {
 		                console.log('ARTICLES_CREATE-3 '+err);	  
 		                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
 		                console.log('ARTICLES_CREATE-3b '+userTopic);	  
 
-		                TopicModel.relateExistingNodes(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+		                TopicModel.relateExistingNodes(userTopic,article, types.CREATOR_DOCUMENT_RELATION_TYPE,
 		                		userTopic.getLocator(),
-		                      		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+		                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err, data) {
 		                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 		                    //modified to return entire node
-		                    callback(err,article);
+		                   return  callback(err,article);
 		                 }); //r1
 		              }); //putnode 		
 	          }   	
@@ -305,7 +314,7 @@ var ConversationModel = module.exports = function(environment) {
                   }
                   //this adds transcluderLocator to the child representation
                   //we use it in the user interface
-                  targetNode.addChildNode(contextLocator,sourceNode.getSmallImage(),sourceNode.getLocator(),title);
+                  targetNode.addChildNode(contextLocator,sourceNode.getSmallImage(),sourceNode.getLocator(),title, userLocator);
                   if (isEvidence === "T") {
                       //perform surgery on that childnode
                       var l = targetNode.listChildNodes(contextLocator);
@@ -323,7 +332,7 @@ var ConversationModel = module.exports = function(environment) {
                   }
                   TopicModel.relateExistingNodesAsPivots(sourceNode,userTopic,types.DOCUMENT_TRANSCLUDER_RELATION_TYPE,
 	                  		userTopic.getLocator(),
-	                        		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	                        		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
                       myEnvironment.logDebug("ConversationModel.performTransclude-2 "+targetNode.toJSON());
                       //TODO save them both
                       DataProvider.putNode(sourceNode, function(err,data) {
@@ -332,7 +341,7 @@ var ConversationModel = module.exports = function(environment) {
                               if (err) {error+=err;}
                               DataProvider.putNode(userTopic, function(err,data) {
                                if (err) {error+=err;}
-                               callback(error,null);
+                               return callback(error,null);
                               });
                           });
                       });
@@ -349,7 +358,7 @@ var ConversationModel = module.exports = function(environment) {
     //var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.CONVERSATION_MAP_TYPE);
     //DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
       console.log("ConversationModel.listConversations "+err+" "+data);
-      callback(err,data,total);
+      return callback(err,data,total);
     });
   };
   
@@ -362,7 +371,7 @@ var ConversationModel = module.exports = function(environment) {
 	      console.log('ROUTES/conversation '+err+' '+result);
 	      CommonModel.fillSubjectAuthorDateTable(result,"/conversation/",totalx, function(html,len,total) {
 		      console.log("FILLING "+start+" "+count+" "+total);
-		      callback(html,len,total);
+		      return callback(html,len,total);
 	    	  
 	      });
 	  });

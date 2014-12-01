@@ -15,14 +15,14 @@ var types = require('../../node_modules/tqtopicmap/lib/types')
 	, constants = require('../../core/constants')
 ;
 
-var RPGInfoBoxModel = module.exports = function(environment) {
+var RPGInfoBoxModel = module.exports = function(environment, tmenv) {
 	var NODE_VALUE_MATRIX = "NodeValueMatrix",
 		USER_VALUE_MATRIX = "UserValueMatrix",
 		GUILD_VALUE_MATRIX = "GuildValueMatrix";
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var DataProvider = topicMapEnvironment.getDataProvider();
-	var self = this;
+	var myEnvironment = environment,
+        topicMapEnvironment =tmenv,
+        DataProvider = topicMapEnvironment.getDataProvider(),
+        self = this;
 	
 	//////////////////////////////////////
 	//General getters and setters on a given node

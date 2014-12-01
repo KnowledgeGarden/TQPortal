@@ -4,7 +4,8 @@
 var  types = require('../../node_modules/tqtopicmap/lib/types'),
     sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder'),
     constants = require('../../core/constants'),
-    colnavwidget = require('../widgets/jquerycolnav')
+    colnavwidget = require('../widgets/jquerycolnav'),
+    kwb = require('../kwb/kwbmodel')
 ;
 
 var CommonModel = module.exports = function(environment, tmenv) {
@@ -12,6 +13,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
         topicMapEnvironment = tmenv,
         DataProvider = topicMapEnvironment.getDataProvider(),
         ColNavWidget = new colnavwidget(environment, DataProvider),
+        KnowledgeWorkbenchModel = new kwb(environment, this, tmenv),
         self = this;
 	
 	////////////////////////////////
@@ -32,16 +34,16 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	 * holder of <code>credentials</code>
 	 */
 	self.canEdit = function(node, credentials) {
-		console.log("CommonModel.canEdit "+JSON.stringify(credentials));
+		console.log("CommonModel.canEdit " + JSON.stringify(credentials));
 		var result = false;
 		if (credentials) {
 			// node is deemed editable if the user created the node
 			// or if user is an admin
-			var cid = node.getCreatorId();
-			var where = credentials.indexOf(cid);
+			var cid = node.getCreatorId(),
+			    where = credentials.indexOf(cid);
 			if (where < 0) {
 				var where2 = credentials.indexOf(constants.ADMIN_CREDENTIALS);
-				if (where > -1) {result = true;}
+				if (where2 > -1) {result = true;}
 			} else {
 				result = true;
 			}
@@ -53,14 +55,18 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	//////////////////////
 	//Tend to the needs of the View Menu
 	//////////////////////
+    
 	self.getColNavViewSpec = function(app, locator) {
-		return "{\"href\":\"/conversation/"+locator+"\" , \"nav\":\"Conversation\"}";
+		return "{\"href\":\"/conversation/" + locator + "\" , \"nav\":\"Conversation\"}";
 	};
     
 	self.getDashboardViewSpec = function(app, locator) {
-		return "{\"href\":\""+app+locator+"\" , \"nav\":\"Dashboard\"}";
+		return "{\"href\":\"" + app + locator + "\" , \"nav\":\"Dashboard\"}";
 	};
 
+	//////////////////////
+	//Tend to tags
+	//////////////////////
 	
 	self.makeTagList = function(body) {
 		var taglist = [];
@@ -87,8 +93,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	 * @param callback signature (err,node)
 	 */
 	self.fillTree = function(rootLocator, credentials, callback) {
-		DataProvider.getTree(rootLocator, 0,0,0, credentials, function(err,node) {
-			console.log("CommonModel.fillTree "+rootLocator+" "+JSON.stringify(node));
+		DataProvider.getTree(rootLocator, 0,0,0, credentials, function(err, node) {
+			console.log("CommonModel.fillTree " + rootLocator + " " + JSON.stringify(node));
 			//myEnvironment.logDebug("CommonModel.fillTree "+)
 			callback(err, node);
 		});
@@ -120,14 +126,14 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	self.fillSubjectAuthorDateTable = function(proxyList, urx, total, callback) {
 		//NOW, build the table in html
 		var len = proxyList.length;
-		myEnvironment.logDebug("CommonModel.fillSubjectAuthorDateTable "+proxyList+" "+urx+" "+len+" "+total);
-		var url,p,label;
+		myEnvironment.logDebug("CommonModel.fillSubjectAuthorDateTable " + proxyList + " " + urx + " " + len + " " + total);
+		var url, p, label;
 		//here, we are actually building the table's HTML
 		//TODO: find a way to move this to main.js
 		//TODO: makes sense to use a StringBuilder here
 		var html = "<table  cellspacing=\"0\"><thead>";
-		html+="<tr><th width=\"60%\">Subject</th><th>Author</th><th>Date</th></tr>";
-		html+="</thead><tbody>";
+		html += "<tr><th width=\"60%\">Subject</th><th>Author</th><th>Date</th></tr>";
+		html += "</thead><tbody>";
 		//ripple through the proxyList and paint table rows
 		for (var i=0;i<len;i++) {
 			p = proxyList[i];
@@ -268,6 +274,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
         var tc = theNode.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
         if (tc && tc.length > 0) {
             //TODO
+            //I THINK THIS IS TO PREVENT REPEAT TRANSCLUSIONS ???
         }
 		//some nodes have URLs, such as bookmarks
 		if (theNode.getResourceUrl()) {
@@ -281,6 +288,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		if (!title) {
 			title = theNode.getLabel(language);
 		}
+        myEnvironment.logDebug("FOO "+theNode.getImage()+" "+theNode.toJSON());
+        topicMapEnvironment.logDebug("FOO "+theNode.getImage()+" "+theNode.toJSON());
 		//title is the "subject" line at the topic of a node view, not the page title
 		data.title = "<h2 class=\"blog-post-title\"><img src="+theNode.getImage()+">&nbsp;"+title+"</h2>";
 		var details = "";
@@ -310,7 +319,10 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		}
 		data.source = theNode.toJSON();
 		var transcludehtml="";
+        var newrelnhtml = "";
 		if (credentials.length > 0 && clipboard === "") {
+            //authenticated and nothing on the clipboard
+            //deal with remembering this node
 			transcludehtml =
 				"<form method=\"post\" action=\"/conversation/remember\"  role=\"form\" class=\"form-horizontal\">";
 			transcludehtml +=
@@ -322,10 +334,25 @@ var CommonModel = module.exports = function(environment, tmenv) {
 			transcludehtml +=
 				"<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
 			transcludehtml +=
-				"<button type=\"submit\" class=\"btn btn-primary\">Remember This Node For Transclusion</button>";
+				"<button type=\"submit\" class=\"btn btn-info  btn-xs\" title=\"Remember for transclusion or relation\">Remember This Node</button>";
 			transcludehtml += "</div></div></form>";
 		}
+        if (credentials.length > 0 && clipboard.length > 0) {
+            //authenticated and something on the clipboard; might be a relation
+ 			newrelnhtml =
+				"<form method=\"get\" action=\"/kwb/newrelation\"  role=\"form\" class=\"form-horizontal\">";
+			newrelnhtml +=
+				"<input type=\"hidden\" name=\"myLocator\" value=\""+q+"\">";
+			newrelnhtml +=
+				"<input type=\"hidden\" name=\"targetLocator\" value=\""+clipboard+"\">";
+			newrelnhtml +=
+				"<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
+			newrelnhtml +=
+				"<button type=\"submit\" class=\"btn btn-info  btn-xs\">Create a New Relation</button>";
+			newrelnhtml += "</div></div></form>";
+        }
 		data.transclude = transcludehtml;
+        data.newrelnhtml = newrelnhtml;
 		if (tagList.length > 0) {
 			data.tags = tagList;
 		}
@@ -371,7 +398,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	};
 	
 	/**
-	 * 
+	 * This is the big kahoona for handling an ajax fetch for ViewFirst views
 	 */
 	self.__doAjaxFetch = function(theNode, credentials, app, tags, docs, users, transcludes, data, req, callback) {
 		myEnvironment.logDebug("CommonModel.__doAjax- "+JSON.stringify(data));
@@ -422,35 +449,40 @@ var CommonModel = module.exports = function(environment, tmenv) {
 				contextLocator, app, clipboard, lang, transcludes,viewspec, function(json) {
 			json.myLocatorXP = q+"?contextLocator="+contextLocator;
 			json.myLocator = q;
-			myEnvironment.logDebug("CommonModel.__doAjax-1 "+JSON.stringify(json));
-			//get all parents
-			self.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
-				if (cresult) {
-					//the field which olds the C-Conversation nodes
-					json.ccontable = cresult;
-				}
-				//get just my parents in particular context
-				//TODO
-				//HUGE ISSUE: if viewspec === "Conversation" we don't need this
-				self.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
-					if (presult) {
-						//for displaying P-Conversations
-						json.pcontable = presult;
-					}
-					//viewspec came in either from the query, or defaulted to "Dashboard"
-					if (viewspec === "Conversation") {
-						//if this is a Conversation view, we are very concerned with rootLocator
-						if (!rootLocator) {rootLocator = q;}
-						//create the actual MillerColumn html
-						ColNavWidget.makeColNav(rootLocator,theNode,contextLocator,lang, credentials, function(err,html) {
-							json.colnav = html;
-							callback(json, contextLocator);
-						});
-					} else {
-						callback(json, contextLocator);
-					}
-				});
-			});
+            KnowledgeWorkbenchModel.showRelations(theNode, function(rresult) {
+                if (rresult) {
+                    json.relations = rresult;
+                }
+                myEnvironment.logDebug("CommonModel.__doAjax-1 "+JSON.stringify(json));
+                //get all parents
+                self.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
+                    if (cresult) {
+                        //the field which olds the C-Conversation nodes
+                        json.ccontable = cresult;
+                    }
+                    //get just my parents in particular context
+                    //TODO
+                    //HUGE ISSUE: if viewspec === "Conversation" we don't need this
+                    self.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+                        if (presult) {
+                            //for displaying P-Conversations
+                            json.pcontable = presult;
+                        }
+                        //viewspec came in either from the query, or defaulted to "Dashboard"
+                        if (viewspec === "Conversation") {
+                            //if this is a Conversation view, we are very concerned with rootLocator
+                            if (!rootLocator) {rootLocator = q;}
+                            //create the actual MillerColumn html
+                            ColNavWidget.makeColNav(rootLocator,theNode,contextLocator,lang, credentials, function(err,html) {
+                                json.colnav = html;
+                                callback(json, contextLocator);
+                            });
+                        } else {
+                            callback(json, contextLocator);
+                        }
+                    });
+                });
+            });
 		});
 	};
     
@@ -471,10 +503,13 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		data.rootLocator = rootLocator;
 		data.contextLocator = contextLocator;
 		data.locator = locator;
+        var vx;
 		if (viewspec === "Dashboard") {
-			data.viewmenu = JSON.parse(self.getColNavViewSpec(app,locator));
+            vx = self.getColNavViewSpec(app, locator);
+			data.viewmenu = JSON.parse(vx);
 		} else {
-			data.viewmenu = JSON.parse(self.getDashboardViewSpec(app,locator));
+            vx = self.getDashboardViewSpec(app, locator);
+			data.viewmenu = JSON.parse(vx);
 		}
 
 		var l = req.query.language;

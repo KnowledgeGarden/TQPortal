@@ -9,12 +9,11 @@ var navtoggle = false;
 var currentLocator;
 var locator;
 var query;
-var isDoubleClick = false;
 
 function fetchFromTree(lox, quex) {
 	locator = lox;
 	query = quex;
-	isDoubleClick = false;
+    doDoubleClick();
 }
 
 /**
@@ -34,6 +33,134 @@ function doPageSetup() {
 	$.get( query, function( data ) {
 		paintIndex(data);
 	});
+    
+}
+
+//custom handler for issuehome.handlebars which has several tabs with tables
+function handleIssueHome() {
+    //ISSUES
+	var q = $("#issuetabledata").attr("query");
+	//alert(q);
+    if (q) {
+	var cursor = $("#issuetabledata").attr("start");
+	var count = $("#issuetabledata").attr("count");
+	var query = q+"?start="+cursor+"&count="+count;
+    var avail, surplus, more, html;
+	//alert(query);
+	$.get( query, function( data ) {
+       // alert(JSON.stringify(data));
+	  $("#issuetableindex").html(data.table);
+	  $("#issuetabledata").attr("start","");
+	  //$("#tabledata").attr("count","");
+	  $("#issuetabledata").attr("total","");
+	  $("#issuetabledata").attr("start",parseInt(data.issuestart));
+	  //$("#tabledata").attr("count",parseInt(data.count));
+	  $("#issuetabledata").attr("total",parseInt(data.issuetotal));
+      cursor = parseInt(data.issuestart);
+	  count = parseInt(data.issuecount);
+	  //total available to show
+	  avail = parseInt(data.issuetotal);
+	  //what's to the left of the cursor
+	  surplus = cursor - count;
+	  //what's to the right of the cursor
+	  more = avail - cursor;
+        
+//	alert(cursor+" "+more+" "+surplus+" "+avail);
+	  //     5          5         0         10
+	  //    10          0         5         10  after previous
+	  html = "Available: "+avail; //doing simple javascript hrefs for now
+	  if (more > 0) {
+		html+="&nbsp;&nbsp;<a href=\"javascript:pageNext();\"><b>Next</a>";
+	  }
+	  if (surplus > 0) {
+		html+="&nbsp;&nbsp;<a href=\"javascript:pagePrevious();\"><b>Previous</a>";	
+	  }
+      //  alert(html);
+	  $("#issuepagination").html(html);
+	});
+    }
+    //QUESTS
+    q = $("#questtabledata").attr("query");
+    if (q) {
+	//alert(q);
+	cursor = $("#questtabledata").attr("start");
+	count = $("#questtabledata").attr("count");
+	query = q+"?start="+cursor+"&count="+count;
+    avail, surplus, more, html;
+	//alert(query);
+	$.get( query, function( data ) {
+ //       alert(JSON.stringify(data));
+	  $("#questtableindex").html(data.table);
+	  $("#questtabledata").attr("start","");
+	  //$("#tabledata").attr("count","");
+	  $("#questtabledata").attr("total","");
+	  $("#questtabledata").attr("start",parseInt(data.issuestart));
+	  //$("#tabledata").attr("count",parseInt(data.count));
+	  $("#questtabledata").attr("total",parseInt(data.issuetotal));
+      cursor = parseInt(data.queststart);
+	  count = parseInt(data.questcount);
+	  //total available to show
+	  avail = parseInt(data.questtotal);
+	  //what's to the left of the cursor
+	  surplus = cursor - count;
+	  //what's to the right of the cursor
+	  more = avail - cursor;
+        
+//	alert(cursor+" "+more+" "+surplus+" "+avail);
+	  //     5          5         0         10
+	  //    10          0         5         10  after previous
+	  html = "Available: "+avail; //doing simple javascript hrefs for now
+	  if (more > 0) {
+		html+="&nbsp;&nbsp;<a href=\"javascript:pageNext();\"><b>Next</a>";
+	  }
+	  if (surplus > 0) {
+		html+="&nbsp;&nbsp;<a href=\"javascript:pagePrevious();\"><b>Previous</a>";	
+	  }
+      //  alert(html);
+	  $("#questpagination").html(html);
+    });
+    }
+    //GUILDS
+    q = $("#guildtabledata").attr("query");
+    if (q) {
+	//alert(q);
+	cursor = $("#guildtabledata").attr("start");
+	count = $("#guildtabledata").attr("count");
+	query = q+"?start="+cursor+"&count="+count;
+    avail, surplus, more, html;
+	//alert(query);
+	$.get( query, function( data ) {
+ //       alert(JSON.stringify(data));
+	  $("#guildtableindex").html(data.table);
+	  $("#guildtabledata").attr("start","");
+	  //$("#tabledata").attr("count","");
+	  $("#guildtabledata").attr("total","");
+	  $("#guildtabledata").attr("start",parseInt(data.issuestart));
+	  //$("#tabledata").attr("count",parseInt(data.count));
+	  $("#guildtabledata").attr("total",parseInt(data.issuetotal));
+      cursor = parseInt(data.queststart);
+	  count = parseInt(data.questcount);
+	  //total available to show
+	  avail = parseInt(data.questtotal);
+	  //what's to the left of the cursor
+	  surplus = cursor - count;
+	  //what's to the right of the cursor
+	  more = avail - cursor;
+        
+//	alert(cursor+" "+more+" "+surplus+" "+avail);
+	  //     5          5         0         10
+	  //    10          0         5         10  after previous
+	  html = "Available: "+avail; //doing simple javascript hrefs for now
+	  if (more > 0) {
+		html+="&nbsp;&nbsp;<a href=\"javascript:pageNext();\"><b>Next</a>";
+	  }
+	  if (surplus > 0) {
+		html+="&nbsp;&nbsp;<a href=\"javascript:pagePrevious();\"><b>Previous</a>";	
+	  }
+      //  alert(html);
+	  $("#guildpagination").html(html);
+    });
+    }
 }
 
 function paintColNav(data) {
@@ -52,7 +179,7 @@ function paintColNav(data) {
  * @returns
  */
 function paintIndex(data) {
-	//alert(data.total);
+//	alert(data.total);
 	$("div.tableindex").html(data.table);
 	$("#tabledata").attr("start","");
 	//$("#tabledata").attr("count","");
@@ -100,6 +227,33 @@ function pageNext() {
 	});
 }
 
+function getNodeType(typ, icon) {
+    var urx;
+    	if (typ) {
+    		if (typ === "WikiNodeType") {
+    			urx = "/wiki/";
+    		} else if (typ === "BlogNodeType") {
+    			urx = "/blog/";
+    		} else if (typ === "BookmarkNodeType") {
+    			urx = "/bookmark/";
+    		}
+        }
+        if (!urx && icon) {
+    		//try to infer from image
+    		if (icon === "/images/bookmark_sm.png") {
+    			urx = "/bookmark/";
+    		} else if (icon === "/images/publication_sm.png") {
+    			//could be a wiki or a blog (until we get different icons
+    			urx = "/blog/";
+    		} else if (icon === "/images/cogwheels_sm.png") {
+                urx = "/kwb/"
+            }
+    	}
+    if (!urx) {
+       urx ="/conversation/"; //default
+    }
+    return urx;
+}
 /////////////////////////
 //GEO Location
 /////////////////////////
@@ -147,7 +301,50 @@ function pagePrevious() {
 
 }
 
+function paintRelationSelections(relations) {
+//    alert(relations);
+    var html = "";
+        for (var i=0;i<relations.length;i++) {
+            html += relations[i]+"<br/>";
+        }
+    
+    $("div.relationselections").html = html;
+}
 
+function paintRelations(relations) {
+    // each relnstruct has an 's' or a 't'
+    // to determine where in a triple col row
+    // the doc goes (source or target)
+    var html = "<table width='800px'>";
+    var reln, obj;
+    for (var i=0;i<relations.length;i++) {
+        reln = relations[i];
+        html+="<tr>";
+        html+="<td width='33%'>";
+        //TODO figure out the app to put here
+        if (reln.sort == 's') {
+            obj = "<a href='/kwb/"+reln.locator+"'><img src='"+reln.icon+"'> "+reln.label+"</a>";
+        } else {
+            obj = "              ";
+        }
+        html+=obj+"</td><td width='33%'>"
+        html+="<a href='/kwb/"+reln.relationLocator+"'>"+reln.relationLabel+"</a></td><td>"
+         //TODO figure out the app to put here
+        if (reln.sort == 't') {
+            obj = "<a href='/kwb/"+reln.locator+"'><img src='"+reln.icon+"'> "+reln.label+"</a>";
+        } else {
+            obj = "              ";
+        }
+        html+=obj+"</td></tr>";
+    }
+    html+= "</table>"
+    $("div.relationlist").html(html);
+}
+
+function paintNewRelationButton(html) {
+    $("div.newreln").html(html);
+}
+      
 function paintCConTable(data) {
 	var html = "<h4>Subject</h4>";
 	 html += "<ol class=\"list-unstyled\">";
@@ -193,65 +390,58 @@ function paintUsers(users) {
 }
 
 function paintTranscludes(docs) {
-    alert(JSON.stringify(docs));
+ //   alert(JSON.stringify(docs));
     var html = "<h4>Transcludes</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
     html += "<ol class=\"list-unstyled\">"
     var urx, typ;
     for (var i=0;i<docs.length;i++) {
-    	urx="/conversation/"; //default
-    	typ = docs[i].documentType;
-    	if (typ) {
-    		if (typ === "WikiNodeType") {
-    			urx = "/wiki/";
-    		} else if (typ === "BlogNodeType") {
-    			urx = "/blog/";
-    		} else if (typ === "BookmarkNodeType") {
-    			urx = "/bookmark/";
-    		}
-    	} else {
-    		//try to infer from image
-    		typ = docs[i].icon;
-    		if (typ === "/images/bookmark_sm.png") {
-    			urx = "/bookmark/";
-    		} else if (typ === "/images/publication_sm.png") {
-    			//could be a wiki or a blog (until we get different icons
-    			urx = "/blog/";
-    		}
-    	}
+    	urx=getNodeType(docs[i].documentType, docs[i].icon);
     	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].icon+"\">&nbsp;"+docs[i].label+"</a></li>"
     }
    html+="</ol></div>";
    $("div.transcludelist").html(html);
 }
+
 function paintDocs(docs) {
     var html = "<h4>Documents</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
     html += "<ol class=\"list-unstyled\">"
-    var urx, typ;
+    var urx;
     for (var i=0;i<docs.length;i++) {
-    	urx="/conversation/"; //default
-    	typ = docs[i].documentType;
-    	if (typ) {
-    		if (typ === "WikiNodeType") {
-    			urx = "/wiki/";
-    		} else if (typ === "BlogNodeType") {
-    			urx = "/blog/";
-    		} else if (typ === "BookmarkNodeType") {
-    			urx = "/bookmark/";
-    		}
-    	} else {
-    		//try to infer from image
-    		typ = docs[i].icon;
-    		if (typ === "/images/bookmark_sm.png") {
-    			urx = "/bookmark/";
-    		} else if (typ === "/images/publication_sm.png") {
-    			//could be a wiki or a blog (until we get different icons
-    			urx = "/blog/";
-    		}
-    	}
+    	urx=getNodeType(docs[i].documentType, docs[i].icon);
     	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].icon+"\">&nbsp;"+docs[i].label+"</a></li>"
     }
    html+="</ol></div>";
    $("div.doclist").html(html);
+}
+
+/**
+ * Guilds in a Quest
+ */
+function paintGuilds(docs) {
+    var html = "<h4>Guilds</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
+    html += "<ol class=\"list-unstyled\">"
+    var urx;
+    for (var i=0;i<docs.length;i++) {
+    	urx=getNodeType(docs[i].documentType, docs[i].icon);
+    	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].icon+"\">&nbsp;"+docs[i].label+"</a></li>"
+    }
+   html+="</ol></div>";
+   $("div.guildlist").html(html);
+}
+
+/**
+ * Quests on an Issue
+ */
+function paintQuests(docs) {
+    var html = "<h4>Quests</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
+    html += "<ol class=\"list-unstyled\">"
+    var urx;
+    for (var i=0;i<docs.length;i++) {
+    	urx=getNodeType(docs[i].documentType, docs[i].icon);
+    	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].icon+"\">&nbsp;"+docs[i].label+"</a></li>"
+    }
+   html+="</ol></div>";
+   $("div.questlist").html(html);
 }
 
 function clearEvidence() {
@@ -261,29 +451,9 @@ function clearEvidence() {
 function paintEvidence(docs) {
     var html = "<h4>Evidence</h4> <div class=\"sidebar-module pre-scrollable\" style=\"border: 1px solid #e1e1e8;\">";
     html += "<ol class=\"list-unstyled\">";
-    var urx, typ;
+    var urx;
     for (var i=0;i<docs.length;i++) {
- //   	alert(JSON.stringify(docs[i]));
-    	urx="/conversation/"; //default
-    	typ = docs[i].documentType;
-    	if (typ) {
-    		if (typ === "WikiNodeType") {
-    			urx = "/wiki/";
-    		} else if (typ === "BlogNodeType") {
-    			urx = "/blog/";
-    		} else if (typ === "BookmarkNodeType") {
-    			urx = "/bookmark/";
-    		}
-    	} else {
-    		//try to infer from image
-    		typ = docs[i].icon;
-    		if (typ === "/images/bookmark_sm.png") {
-    			urx = "/bookmark/";
-    		} else if (typ === "/images/publication_sm.png") {
-    			//could be a wiki or a blog (until we get different icons
-    			urx = "/blog/";
-    		}
-    	}
+    	urx=getNodeType(docs[i].documentType, docs[i].icon);
     	html+= "<li><a href=\""+urx+docs[i].locator+"\"><img src=\""+docs[i].smallImagePath+"\">&nbsp;"+docs[i].subject+"</a></li>"
     }
    html+="</ol></div>";
@@ -407,14 +577,33 @@ function getPage(type, query) {
 		if (data.jtree) {
 			paintTree(data.jtree);
 		}
+        
+        if (data.relations) {
+            paintRelations(data.relations);
+        }
+        if (data.newrelnhtml) {
+            paintNewRelationButton(data.newrelnhtml);
+        }
+        if (data.relationlist) {
+            paintRelationSelections(data.relationlist);
+        }
+        //specific to kwb.js
+        if (data.relnSubject) {
+            var x = '<a href="/blog/"+data.relnSubject+">Relation Source</a>';
+            $("div.relnsubj").html(x);
+        }
+   //     alert(data.relnObject);
+        if (data.relnObject) {
+             var x = '<a href="/blog/"+data.relnObject+">Relation Target</a>';
+            $("div.relnobj").html(x);
+       }
 	});
 }
 
 /**
- * Called from javascript in html nodes
+ *
  */
 function doDoubleClick() {
-	isDoubleClick = true;
 	if (locator !== currentLocator) {
 		currentLocator = locator;
 		getPage("Conversation", query);
@@ -438,6 +627,8 @@ function initPage() {
 //	} else {
 //		alert("NoWS");
 //	}
+    
+handleIssueHome();
 	//test for chatroom
 	if ($("#chatroom")) {
 		//TODO nickname could be picked up from handle in a div
@@ -483,6 +674,7 @@ function initPage() {
 	if (isTable) {
 		doPageSetup();
 	} else {
+
 		//paint  page
 		//types are either
 		//	viewspec
@@ -512,4 +704,31 @@ function initPage() {
 		  getPage(type, query);
 		}
 	}
+}
+
+/////////////////////////
+//Relations/Connections
+/////////////////////////
+
+/**
+ * Reverse source and target on relationform.handlebars
+ */
+function reverseSourceTarget() {
+    var src = $("#sourceLocator").attr("value");
+    var trg = $("#targetLocator").attr("value");
+    $("#sourceLocator").attr("value", trg);
+    $("#targetLocator").attr("value", src);
+    src = $("div.sourcelabel").html();
+    trg = $("div.targetlabel").html();
+    $("div.sourcelabel").html(trg);
+    $("div.targetlabel").html(src);
+}
+
+/**
+ * Answer a click to select a RelationType in relationform.handlebars
+ */
+function selectRelation(reln) {
+ //   alert(reln);
+    $("#relnselection").attr("value", reln);
+    $("div.selectedReln").html(reln);
 }

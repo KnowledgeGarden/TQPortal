@@ -40,7 +40,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   app.get('/', isPrivate, function(req, res) {
     //changing this value allows changing landing page
 	  var sess = req.session;
-	console.log("CLIPBOARD: "+sess.clipboard);
+	//console.log("CLIPBOARD: "+sess.clipboard);
     var idx = 'recenthome';
     var data = __get(req);
     data.pageref="/admin/dashboardview";
@@ -50,7 +50,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     data.wikis = HomeModel.listRecentWikis();
     data.conv = HomeModel.listRecentConversations();
     data.bkmks = HomeModel.listRecentBookmarks();
-    console.log("GETHOME "+JSON.stringify(data));
+    //console.log("GETHOME "+JSON.stringify(data));
     res.render(idx, data);
 	  
   });
