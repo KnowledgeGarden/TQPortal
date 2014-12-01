@@ -1,0 +1,61 @@
+<div class="container"><h1></h1>
+<ul id="myConTree">
+</ul>
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#meta">Planning</a></li>
+  <li><a data-toggle="tab" href="#chat">Backchannel</a></li>
+  <li><a data-toggle="tab" href="#game">GameTree</a></li>
+  <li><a data-toggle="tab" href="#perspective">Perspective</a></li>
+ </ul>
+ <!-- ViewFirst data -->
+<div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}}" contextLocator="{{contextLocator}}" locator="{{locator}} rootLocator="{{rootLocator}}"></div>
+
+<div class="tab-content">
+ <div id="meta" class="tab-pane fade in active">
+  <div class = "row">
+   <ul id="metaConTree"></ul>
+  </div>
+  <div class="row">
+   <div class="home col-xs-8 col-sm-8 ">
+    <div class="topictitle">foo</div>
+    <p class="blog-post-meta"> 
+     <div class="userref"></div>
+     <div class="urlref"></div>
+    </p>
+    <div class="body pre-scrollable span12" style="border: 1px solid #e1e1e8; resize:both;overflow: auto;"></div>
+    <p><div class="responsebuttons"></div></p>
+    <p><div class="transclude"></div></p>
+    <p><div class="transcludeevidence"></div></p>
+   </div> <!-- /col 8 -->
+  </div> <!-- /row -->
+ </div> <!-- /topic -->
+ <div id="chat" class="tab-pane fade">
+   <div class="blog-post col-xs-7">
+    <div class="row">
+      <h2>ChatRoom</h2>
+    </div>
+   </div>
+ </div> <!-- /chat -->
+ <div id="game" class="tab-pane fade">
+  <div class = "row">
+   <ul id="gameConTree"></ul>
+  </div> 
+  <div class="row">
+   <div class="home col-xs-8 col-sm-8 ">
+    <div class="gtopictitle">bar</div>
+    <div class="gbody pre-scrollable span12" style="border: 1px solid #e1e1e8; resize:both;overflow: auto;"></div>
+    <p><div class="gresponsebuttons"></div></p>
+    <p><div class="gtransclude"></div></p>
+    <p><div class="gtranscludeevidence"></div></p>
+   </div> <!-- /col 8 -->
+  </div> <!-- /row -->
+ </div> <!-- /game -->
+ 
+ <div id="perspective" class="tab-pane fade">
+  <div class="row">
+    <h2>Perspective</h2>
+  </div>
+ </div> <!-- /persepctive -->
+
+ </div> <!-- /content -->
+ </div> <!-- /container -->

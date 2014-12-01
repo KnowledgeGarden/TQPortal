@@ -1,0 +1,56 @@
+/**
+ * RelationList
+ */
+module.exports.RelationList = [
+    "AgreesWithRelationType",
+    "DisagreesWithRelationType",
+    "CausesRelationType",
+    "ExplainsWhatRelationType",
+    "ExplainsWhyRelationType",
+    "ExplainsHowRelationType",
+    "IsContainedInRelationType",
+    "IsSameAsRelationType",
+    "IsSimilarToRelationType",
+    "IsAnalogousRelationType",
+    "IsNotAnalogousRelationType",
+    "IsMetaphorRelationType",
+    "IsDifferentToRelationType",
+    "IsOppositeOfRelationType",
+    "IsRelatedToRelationType",
+    "IsPartOfRelationType",
+    "IsPrerequisiteForRelationType",
+     "IsEvidenceForRelationType",
+    "IsEvidenceAgainstRelationType",
+    "IsConsistentWithRelationType",
+    "InconsistentWithRelationType",
+    "IsExampleRelationType",
+    "ImpliesRelationType",
+    "EnablesRelationType",
+    "ImprovesOnRelationType",
+    "AddressesRelationType",
+    "SolvesRelationType",
+    "ImpairsRelationType",
+    "PreventsRelationType",
+    "ProvesRelationType",
+    "RefutesRelationType",
+    "PredictsRelationType",
+    "EnvisagesRelationRelationType",
+    "RespondsToRelationType",
+    "HasRoleRelationType",
+    "UsesRelationType"
+];
+
+/** What this lookslike in JSON.stringify
+{"RelationList":["AgreesWithRelationType","DisagreesW
+ithRelationType","CausesRelationType","ExplainsWhatRelationType","ExplainsWhyRel
+ationType","ExplainsHowRelationType","IsContainedInRelationType","IsSameAsRelati
+onType","IsSimilarToRelationType","IsAnalogousRelationType","IsNotAnalogousRelat
+ionType","IsMetaphorRelationType","IsDifferentToRelationType","IsOppositeOfRelat
+ionType","IsRelatedToRelationType","IsPartOfRelationType","IsPrerequisiteForRela
+tionType","IsEvidenceForRelationType","IsEvidenceAgainstRelationType","IsConsist
+entWithRelationType","InconsistentWithRelationType","IsExampleRelationType","Imp
+liesRelationType","EnablesRelationType","ImprovesOnRelationType","AddressesRelat
+ionType","SolvesRelationType","ImpairsRelationType","PreventsRelationType","Prov
+esRelationType","RefutesRelationType","PredictsRelationType","EnvisagesRelationR
+elationType","RespondsToRelationType","HasRoleRelationType","UsesRelationType"]}
+*/

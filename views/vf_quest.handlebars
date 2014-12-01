@@ -1,0 +1,68 @@
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#topic">Topic</a></li>
+  <li><a data-toggle="tab" href="#list">List View</a></li>
+  <li><a data-toggle="tab" title="Conversations in which I am the parent node" href="#pconv">P-Conversation</a></li>
+  <li><a data-toggle="tab" title="Conversations in which I am a child node" href="#cconv">C-Conversation</a></li>
+  <li><a data-toggle="tab" href="#relations">Connections</a></li>
+  <li><a data-toggle="tab" href="#tree">Tree</a></li>
+  <li><a data-toggle="tab" href="#source">Source</a></li>
+</ul>
+ <!-- ViewFirst data -->
+<div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}}" contextLocator="{{contextLocator}}" locator="{{locator}} rootLocator="{{rootLocator}}"></div>
+
+<div class="tab-content">
+  <div id="topic" class="tab-pane fade in active">
+  <div class="row">
+   <div class="home col-xs-8 col-sm-8 ">
+    <div class="topictitle">foo</div>
+    <p class="blog-post-meta"> 
+     <div class="userref"></div>
+     <div class="urlref"></div>
+    </p>
+    <div class="body pre-scrollable span12" style="border: 1px solid #e1e1e8; resize:both;overflow: auto;"></div>
+    <div class="transclude"></div> 
+   </div> <!-- /col 8 -->
+   <div class="col-xs-4 col-sm-4">
+    <div class="taglist"></div>
+    <div class="userlist"></div>
+    <div class="doclist"></div>
+    <div class="transcludelist"></div>
+    <div class="guildlist"></div>
+   </div> <!-- /col 4 -->
+  </div> <!-- /row -->
+ </div> <!-- /topic -->
+ <div id="list" class="tab-pane fade">
+   <div class="blog-post col-xs-7">
+    <div class="topictitle"></div>
+    <p class="blog-post-meta"> 
+     <div class="userref"></div>
+     <div class="urlref"></div>
+    </p>
+    <div class="body pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+    <div class="taglist"></div>
+    <div class="userlist"></div>
+    <div class="doclist"></div>
+    <div class="transcludelist"></div>
+    <div class="guildlist"></div>
+  </div>
+ </div> <!-- /list -->
+ <div id="cconv" class="tab-pane fade">
+    <div class="ccontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+ </div> <!-- /cconv -->
+ <div id="pconv" class="tab-pane fade">
+  <div class="pcontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+ </div> <!-- /pconv -->
+ 
+ <div id="source" class="tab-pane fade">
+  <div class="sourcecode"></div>
+ </div>
+ <div id="relations" class="tab-pane fade">
+  <h1>Connections</h1>
+  <div class="newreln"></div>
+  <div class="relationlist"></div>
+ </div> <!-- /relations -->
+  <div id="tree" class="tab-pane fade">
+  <div id="jstree_div"></div>
+ </div> <!-- /tree -->
+ 
+ </div>

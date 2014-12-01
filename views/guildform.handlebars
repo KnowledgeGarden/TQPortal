@@ -1,0 +1,50 @@
+<h1>{{formtitle}}</h1>
+<hr>
+<div class="blog-post col-xs-9">
+ <form method="post" action="/guild"  role="form" class="form-horizontal">
+  <input type="hidden" name="locator" value="{{locator}}">
+  <div class="form-group">
+   <label for="title" class="col-sm-2 control-label">Subject</label>
+   <div class="col-sm-10">
+    <input id="title" type="text" name="title" value="{{title}}" placeholder="Enter the title" class="form-control">
+   </div>
+   </div>
+   <div class="form-group">
+    <label for="desc" class="col-sm-2 control-label">Body</label>
+    <div class="col-sm-10">
+     <textarea id="summernote" rows="5" name="body" placeholder="Enter the article description" class="form-control">{{body}}</textarea>
+    </div>
+   </div>
+   {{#if isNotEdit}}
+    <div class="form-group">
+	 <label for="title" class="col-sm-2 control-label">Tag Label</label>
+	 <div class="col-sm-4">
+	  <input type="text" name="tag1" placeholder="Enter a tag label" class="form-control">
+	  </div>
+	 </div>
+	<div class="form-group">
+	 <label for="title" class="col-sm-2 control-label">Tag Label</label>
+	 <div class="col-sm-4">
+	  <input type="text" name="tag2" placeholder="Enter a tag label" class="form-control">
+	  </div>
+	</div>
+	<div class="form-group">
+	 <label for="title" class="col-sm-2 control-label">Tag Label</label>
+	 <div class="col-sm-4">
+	  <input type="text" name="tag3" placeholder="Enter a tag label" class="form-control">
+	  </div>
+	</div>
+	<div class="form-group">
+	 <label for="title" class="col-sm-2 control-label">Tag Label</label>
+	 <div class="col-sm-4">
+	  <input type="text" name="tag4" placeholder="Enter a tag label" class="form-control">
+	  </div>
+	</div>
+   {{/if}}
+   <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+     <button type="submit" class="btn btn-success">Save</button>&nbsp;<a href="/" title="cancel" class="btn">Cancel</a>
+    </div>
+   </div>
+ </form>
+</div>

@@ -1,0 +1,74 @@
+<container>
+<div class="row">
+ <table>
+   <tr>
+     <td width="800px" valign="top">
+       <div class="home col-xs-8 col-sm-8 ">
+        <h4>Create a Relation For the Given Nodes</h4>
+<!--        <div class="col-sm-offset-2 col-sm-10">
+	           <button class="btn btn-success" onclick="reverseSourceTarget()">Reverse Source and Target</button>
+        </div> -->
+       <form method="post" action="/kwb/add"  role="form" class="form-horizontal">
+         <input type="hidden" id="sourceLocator" name="sourceLocator" value="{{sourceLocator}}">
+         <input type="hidden" name="targetLocator" name="targetLocator" value="{{targetLocator}}">
+         <input type="hidden" id="relnselection" name="relnselection" value="">
+         <div class="form-group">
+	        <label for="title" class="col-sm-2 control-label">Source Node</label><br/>
+            <div class="sourcelabel col-sm-10">{{sourcelabel}}</div>
+         </div>
+         <div class="form-group">
+	        <label for="title" class="col-sm-2 control-label">Relation</label><br/>
+            <div class="selectedReln col-sm-10">SelectMe</div><br/>
+         </div>
+         <div class="form-group">
+	        <label for="title" class="col-sm-2 control-label">Target Node</label><br/>
+            <div class="targetlabel col-sm-10">{{targetlabel}}</div>
+         </div>
+                {{#if isNotEdit}}
+           <hr>
+	<div class="form-group">
+	 <label for="title" class="col-sm-2 control-label">Tag Label</label>
+	 <div class="col-sm-4">
+	  <input type="text" name="tag1" placeholder="Enter a tag label" class="form-control">
+	  </div>
+	</div>
+	<div class="form-group">
+	 <label for="title" class="col-sm-2 control-label">Tag Label</label>
+	 <div class="col-sm-4">
+	  <input type="text" name="tag2" placeholder="Enter a tag label" class="form-control">
+	  </div>
+	</div>
+	<div class="form-group">
+	 <label for="title" class="col-sm-2 control-label">Tag Label</label>
+	 <div class="col-sm-4">
+	  <input type="text" name="tag3" placeholder="Enter a tag label" class="form-control">
+	  </div>
+	</div>
+	<div class="form-group">
+	 <label for="title" class="col-sm-2 control-label">Tag Label</label>
+	 <div class="col-sm-4">
+	  <input type="text" name="tag4" placeholder="Enter a tag label" class="form-control">
+	  </div>
+	</div>
+                {{/if}}
+	     <div class="form-group">
+	     </div>
+	     <div class="form-group">
+	       <div class="col-sm-offset-2 col-sm-10">
+	       <button type="submit" class="btn btn-success">Save</button>&nbsp;<a href="/" title="cancel" class="btn">Cancel</a>
+           </div>
+	     </div>
+        </form>
+
+      </div>
+     </td>
+     <td>
+      <h4>Select a Relation</h4>
+            {{#each relationlist}}
+                <a href="javascript:selectRelation('{{val}}');">{{val}}</a><br/>
+            {{/each}} 
+     </td>
+   </tr>
+ </table>
+</div> <!-- /row -->
+</container>
