@@ -30,7 +30,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
 			res.redirect('/login');
 		} else {
-			{return next();}
+			return next();
 		}
 	}
 	function isLoggedIn(req, res, next) {
@@ -130,6 +130,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    });
 	  });
 	  
+    app.get('/guild/join', isPrivate, function(req, res) {
+            console.log("JOINING GUILD");
+            
+    });
+
 	  
 	  app.get("/guild/ajaxfetch/:id", isPrivate, function(req, res) {
 			//establish the node's identity
@@ -175,4 +180,5 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				}
 			});
 		  });
+    
 };

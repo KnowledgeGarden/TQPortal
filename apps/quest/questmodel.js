@@ -5,6 +5,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types'),
     icons = require('../../node_modules/tqtopicmap/lib/icons'),
     properties = require('../../node_modules/tqtopicmap/lib/properties'),
     Gameenv = require('../rpg/rpgenvironment'),
+    gameConstants = require('../rpg/gameconstants'),
     constants = require('../../core/constants'),
     uuid = require('../../core/util/uuidutil'),
     Tagmodel = require('../tag/tagmodel'),
@@ -151,6 +152,8 @@ var IssueModel =  module.exports = function(environment) {
                       //NoW create the quest's root node
                       ConversationModel.createIssue(bx, user, theQuest.getLocator(), credentials, function(err, qnode) {
                           if (err) {error += err}
+                          //Tell the quest it has a tree root locator
+                          theQuest.setProperty(gameConstants.QUEST_ROOT_NODE_PROPERTY, qnode.getLocator());
                           // now deal with tags
                           myEnvironment.logDebug("QuestModel.create-3 "+error+" "+theQuest.toJSON());
                           var taglist = CommonModel.makeTagList(blog);
@@ -173,7 +176,7 @@ var IssueModel =  module.exports = function(environment) {
                                       return callback(error,theQuest.getLocator());
                                   }); //r1
  //                             }); //putnode 		  
-                          }); // processtaglist
+                              }); // processtaglist
                           }  else {
 //                          DataProvider.putNode(theQuest, function(err,data) {
 //                              console.log('ARTICLES_CREATE-3 '+err);	  
@@ -220,4 +223,52 @@ var IssueModel =  module.exports = function(environment) {
 		  });
 	  }
 	  
+          /**
+           * Add <code>guildLocator</code> to <code>questNode</code> and save it
+           * @param questNode
+           * @param guildLocator
+           * @param callback signature ( err, data )
+           */
+      self.addGuild = function(questNode, guildLocator, callback) {
+          questNode.addSetValue(gameConstants.QUEST_GUILD_LIST_PROPERTY, guildLocator);
+          questNode.putNode(questNode, function(err, data) {
+              callback(err, data);
+          });
+      },
+      
+          /**
+           * Remove <code>guildLocator</code> from <code>guildNode</code> and save it
+           * @param questNode
+           * @param userLocator
+           * @param callback signature (err,data)
+           */
+      self.removeGuild = function(questNode, guildLocator, callback) {
+          questNode.removeCollectionValue(gameConstants.QUEST_GUILD_LIST_PROPERTY, guildLocator);
+          DataProvider.putNode(questNode, function(err, data) {
+              callback(err, data);
+          });
+      },
+          
+          /**
+           * Return a list of guild playing this quest
+           * @param questNode
+           * @return list or undefined
+           */
+      self.listLeaders = function(questNode) {
+          return questNode.getProperty(gameConstants.QUEST_GUILD_LIST_PROPERTY);
+      },
+
+      /**
+       * Return this quest's gametree root node
+       * @param questNode
+       * @param credentials
+       * @param callback signature (err,data)
+       */
+      self.getTreeRootNode = function(questNode, credentials, callback) {
+          var rootLocator =  questNode.getProperty(gameConstants.QUEST_ROOT_NODE_PROPERTY);
+          DataProvider.getNodeByLocator(rootLocator, credentials, function(err, data) {
+            return callback(err, data);
+          });
+      }
+
 }

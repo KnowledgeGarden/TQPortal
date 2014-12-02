@@ -19,10 +19,15 @@
     <div class="topictitle">foo</div>
    {{#if isAuthenticated}}
  	<div class="form-group">
-  	  <a href="/incubator/foo"><button type="submit" class="btn btn-btn-success btn-small">Enter Incubator</button></a><br />
+  	  <a href="/incubator/foo"><button type="submit" class="btn btn-btn-success btn-small">Enter Incubator</button></a>
 	</div>
    {{/if}}
-    <p class="blog-post-meta"> 
+    {{#if isAuthenticated}}
+ 	<div class="form-group">
+  	  <a href="/guild/join"><button type="submit" class="btn btn-btn-success btn-small">Join Guild</button></a><br />
+	</div>
+   {{/if}}
+   <p class="blog-post-meta"> 
      <div class="userref"></div>
      <div class="urlref"></div>
     </p>

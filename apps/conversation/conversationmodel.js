@@ -196,7 +196,7 @@ var ConversationModel = module.exports = function(environment) {
    * @param nodeType: maptype, protype, etc
    * @param parentNodeLocator: can be <code>null</code>
    * @param credentials
-   * @param callback: signature (err, result): result = _id of new object
+   * @param callback: signature (err, result): result = the entire new object
    */
   self.create = function (blog, user, nodeType, parentNodeLocator,
 		  smallIcon, largeIcon, credentials, callback) {

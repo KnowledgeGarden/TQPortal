@@ -6,6 +6,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types'),
     properties = require('../../node_modules/tqtopicmap/lib/properties'),
     Gameenv = require('../rpg/rpgenvironment'),
     constants = require('../../core/constants'),
+    gameConstants = require('../rpg/gameconstants'),
     uuid = require('../../core/util/uuidutil'),
     Tagmodel = require('../tag/tagmodel')
 ;
@@ -79,7 +80,7 @@ var GuildModel =  module.exports = function(environment) {
 	  },
 	  
 	  /**
-	   * Create a new blog post
+	   * Create a new Guild
 	   * @param blog: a JSON object with appropriate values set
 	   * @param user: a JSON object of the user from the session
 	   * @param credentials
@@ -91,7 +92,8 @@ var GuildModel =  module.exports = function(environment) {
 		// as user.handle, but passport seems to muck around and return user.username
 	    var userLocator = user.handle; // It's supposed to be user.handle;
 	    //first, fetch this user's topic
-	    var userTopic;
+	    var userTopic,
+            theGuild;
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
 	      userTopic = result;
 	      console.log('GuildModel.create-1 '+userLocator+' | '+userTopic);
@@ -105,8 +107,13 @@ var GuildModel =  module.exports = function(environment) {
 	    	  if (!lang) {lang = "en";}
 	    	  var subj = blog.title;
 	    	  var body = blog.body;
-	    	  article.setSubject(subj,lang,userLocator);
-	    	  article.setBody(body,lang,userLocator);
+              theGuild = article;
+	    	  theGuild.setSubject(subj,lang,userLocator);
+	    	  theGuild.setBody(body,lang,userLocator);
+              //Tell it about its new member/leader
+              theGuild.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
+              theGuild.addSetValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
+
               myEnvironment.logDebug("GuildModel.create-1 "+icons.COLLABORATION+" "+article.toJSON());
 	    //	  console.log('BlogModel.create-2 '+article.toJSON());
 	    	  RPGEnvironment.addRecentIssue(article.getLocator(),blog.title);
@@ -173,6 +180,147 @@ var GuildModel =  module.exports = function(environment) {
 		    	  
 		      });
 		  });
-	  }
+	  },
+          
+          /**
+           * Return <code>true</code> if <code>userLocator</code> is a member of this guild
+           * @param guildNode
+           * @param userLocator
+           * @return boolean
+           */
+      self.isMember = function(guildNode, userLocator) {
+          var memlist = guildNode.getProperty(gameConstants.GUILD_MEMBER_LIST_PROPERTY);
+          if (memlist) {
+              var where = memlist.indexOf(userLocator);
+              return (where > -1);
+          }
+          return false; // should never happen
+      },
+          
+           /**
+           * Return <code>true</code> if <code>userLocator</code> is a leader of this guild
+           * @param guildNode
+           * @param userLocator
+           * @return boolean
+           */
+     self.isLeader = function(guildNode, userLocator) {
+          var memlist = guildNode.getProperty(gameConstants.GUILD_LEADER_LIST_PROPERTY);
+          if (memlist) {
+              var where = memlist.indexOf(userLocator);
+              return (where > -1);
+          }
+          return false; //should never happen since owner is always leader
+      },
 	  
+          /**
+           * Add <code>userLocator</code> to <code>guildNode</code> and save it
+           * @param guildNode
+           * @param userLocator
+           * @param callback signature ( err, data )
+           */
+      self.addMember = function(guildNode, userLocator, callback) {
+          guildNode.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
+          DataProvider.putNode(guildNode, function(err, data) {
+              callback(err, data);
+          });
+      },
+      
+          /**
+           * Remove <code>userLocator</code> from <code>guildNode</code> and save it
+           * @param guildNode
+           * @param userLocator
+           * @param callback signature (err,data)
+           */
+      self.removeMember = function(guildNode, userLocator, callback) {
+          //TODO DO NOT REMOVE if length == 1
+          guildNode.removeCollectionValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
+          DataProvider.putNode(guildNode, function(err, data) {
+              callback(err, data);
+          });
+      },
+      
+          /**
+           * Add <code>userLocator</code> to <code>guildNode</code> and save it
+           * @param guildNode
+           * @param userLocator
+           * @param callback signature ( err, data )
+           */
+      self.addLeader = function(guildNode, userLocator, callback) {
+          guildNode.addSetValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
+          DataProvider.putNode(guildNode, function(err, data) {
+              callback(err, data);
+          });
+      },
+      
+          /**
+           * Remove <code>userLocator</code> from <code>guildNode</code> and save it
+           * @param guildNode
+           * @param userLocator
+           * @param callback signature (err,data)
+           */
+      self.removeLeader = function(guildNode, userLocator, callback) {
+          //TODO DO NOT REMOVE IF length == 1
+          guildNode.removeCollectionValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
+          DataProvider.putNode(guildNode, function(err, data) {
+              callback(err, data);
+          });
+      },
+          /**
+           * Set this quild's current quest to <code>questLocator</code> and save it
+           * @param guildNode
+           * @param questLocator
+           * @param callback signature (err,data)
+           */
+      self.setCurrentQuest = function(guildNode, questLocator, callback) {
+          guildNode.addSetValue(gameConstants.GUILD_CURRENT_QUEST_PROPERTY, questLocator);
+          DataProvider.putNode(guildNode, function(err, data) {
+              callback(err, data);
+          });          
+      }
+
+                /**
+           * Add <code>questLocator</code> to <code>guildNode</code> and save it
+           * @param questLocator
+           * @param userLocator
+           * @param callback signature ( err, data )
+           */
+      self.addQuest = function(guildNode, questLocator, callback) {
+          guildNode.addSetValue(gameConstants.GUILD_QUEST_LIST_PROPERTY, questLocator);
+          DataProvider.putNode(guildNode, function(err, data) {
+              callback(err, data);
+          });
+      },
+      
+          /**
+           * Remove <code>questLocator</code> from <code>guildNode</code> and save it
+           * @param guildNode
+           * @param userLocator
+           * @param callback signature (err,data)
+           */
+      self.removeQuest = function(guildNode, questLocator, callback) {
+          guildNode.removeCollectionValue(gameConstants.GUILD_QUEST_LIST_PROPERTY, questLocator);
+          DataProvider.putNode(guildNode, function(err, data) {
+              callback(err, data);
+          });
+      },
+          /**
+           * Return a list of guild members
+           * @param guildNode
+           * @return list or undefined
+           */
+      self.listMembers = function(guildNode) {
+          return guildNode.getProperty(gameConstants.GUILD_MEMBER_LIST_PROPERTY);
+      },
+          
+          /**
+           * Return a list of guild leaders
+           * @param guildNode
+           * @return list or undefined
+           */
+      self.listLeaders = function(guildNode) {
+          return guildNode.getProperty(gameConstants.GUILD_LEADER_LIST_PROPERTY);
+      }
+          
+          
+
 }

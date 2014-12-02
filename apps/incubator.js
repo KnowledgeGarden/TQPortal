@@ -35,7 +35,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /////////////////
   // Routes
   /////////////////
-
+    /**
+     * Leave the incubator room
+     */
+    app.get('/incubator/leave', function(req, res) {
+        //TODO anything we might want to do here
+        res.redirect('/issue');
+    });
+    
     /**
      * An Incubator view is a viewfirst view, but not in conversation mode.
      * Its conversations are performed inside the incubator in two spaces:
