@@ -14,13 +14,20 @@ var ColNavWidget = module.exports = function(environment, dp) {
 	
 
 	/**
-	 * Make a given node
-	 * 
+	 * Make a given node and add it to <code>buf</code>
+	 * @param node
+     * @param language
+     * @param javascript function
+     * @param app  e.g. "/conversation/ajaxfetch/"
+     * @param aux e.g. "" or "&foo=bar"
+     * @param buf
+     * @param contextLocator
+     * @param rootNodeLocator
 	 */
-	self.__makeNodeHTML = function(node, language, buf, contextLocator, rootNodeLocator) {
+	self.__makeNodeHTML = function(node, language, javascript, app, aux, buf, contextLocator, rootNodeLocator) {
 		console.log("ColNavWidget.__makeNodeHTML "+JSON.stringify(node)+" "+buf);
 		buf.append("<li id=\""+node.getLocator()+"\"><a class=\"nodehref\" href=\"");
-		var query = "javascript:fetchFromTree('"+node.getLocator()+"', '/conversation/ajaxfetch/"+node.getLocator()+"?viewspec=ColNav&contextLocator="+contextLocator+"&rootLocator="+rootNodeLocator+"&language="+language+"')\"";
+		var query = javascript+"('"+node.getLocator()+"', '"+app+node.getLocator()+"?viewspec=ColNav&contextLocator="+contextLocator+"&rootLocator="+rootNodeLocator+"&language="+language+aux+"')\"";
 		buf.append(query+" ondblclick =\"doDoubleClick();\">");
 		buf.append("<img src=\""+node.getSmallImage()+"\" class=\"nodeimg\"> ");
 		title = node.getLabel(constants.ENGLISH);
@@ -41,14 +48,16 @@ var ColNavWidget = module.exports = function(environment, dp) {
 	 * @param selectedNode
 	 * @param contextLocator
 	 * @param language
+     * @param javascript
+     * @param app
 	 * @param buf  a StringBuilder
 	 * @param credentials
 	 * @param callback signature (err,html)
 	 */
-	self.__buildColNav = function(rootNodeLocator, rootNode, selectedNode, contextLocator, language,  buf, stop, credentials, callback) {
+	self.__buildColNav = function(rootNodeLocator, rootNode, selectedNode, contextLocator, language, javascript, app, aux, buf, stop, credentials, callback) {
 		var error = "";
 		console.log("ColNavWidget.__buildColNav "+rootNodeLocator+" "+rootNode);
-		buf.append(self.__makeNodeHTML(rootNode, language, buf, contextLocator, rootNodeLocator));
+		buf.append(self.__makeNodeHTML(rootNode, language, javascript, app, aux, buf, contextLocator, rootNodeLocator));
 //		console.log("ColNavWidget.__buildColNav-1 "+buf.toString());
 		//complex: rootNode will change with recursion on children
 		//when rootNode === selectedNode, paint its kids, then stop
@@ -75,7 +84,7 @@ var ColNavWidget = module.exports = function(environment, dp) {
 					DataProvider.getNodeByLocator(nx.locator,credentials, function(err,node) {
 						if (err) {error+=err;}
 //						console.log("ColNavWidget.__buildColNav-5 "+stop+" | "+err+" | "+node);
-							self.__buildColNav(rootNodeLocator, node, selectedNode, contextLocator, language, buf, credentials, stop, function(err,html) {
+							self.__buildColNav(rootNodeLocator, node, selectedNode, contextLocator, language, javascript, app, aux, buf, credentials, stop, function(err,html) {
 								if (err) {error+=err;}
 								loop();
 							});
@@ -101,21 +110,26 @@ var ColNavWidget = module.exports = function(environment, dp) {
 	 * @param selectedNode
 	 * @contextLocator if "", then takes all child contexts
 	 * @param language
+     * @param javascript
+     * @param app  e.g. /conversation/ajaxfetch/
+     * @param aux e.g. "" or "&foo=bar"
 	 * @param credentials
 	 * @param callback signature (err,colnavhtml)
 	 */
-	self.makeColNav = function(rootNodeLocator, selectedNode, contextLocator, language, credentials,callback) {
+	self.makeColNav = function(rootNodeLocator, selectedNode, contextLocator, language, javascript, app, aux, credentials,callback) {
 		var buffer = new sb();
 //		console.log("ColNavWidget.makeColNav "+buffer);
 		if (selectedNode.getLocator() === rootNodeLocator) {
-			self.__buildColNav(rootNodeLocator, selectedNode, selectedNode, contextLocator,language,buffer, credentials, false, function(err, html) {
+            myEnvironment.logDebug("ColNavWidget.makeColNav-1 "+rootNodeLocator+" | "+selectedNode);
+			self.__buildColNav(rootNodeLocator, selectedNode, selectedNode, contextLocator, language, javascript, app, aux, buffer, credentials, false, function(err, html) {
 //				console.log("ColNavWidget.makeColNav-1 "+html);
 				buffer.append("</li>");
 				callback(err,buffer.toString());
 			});
 		} else {
 			DataProvider.getNodeByLocator(rootNodeLocator,credentials, function(err,node) {
-				self.__buildColNav(rootNodeLocator, node, selectedNode, contextLocator, language,buffer, credentials, false, function(err, html) {
+                 myEnvironment.logDebug("ColNavWidget.makeColNav-2 "+rootNodeLocator+" | "+node+" | "+selectedNode);
+				self.__buildColNav(rootNodeLocator, node, selectedNode, contextLocator, language, javascript, app, aux, buffer, credentials, false, function(err, html) {
 //					console.log("ColNavWidget.makeColNav-2 "+html);
 					buffer.append("</li>");
 					callback(err,buffer.toString());

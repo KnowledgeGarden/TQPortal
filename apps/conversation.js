@@ -4,6 +4,7 @@
 var Conmodel = require('./conversation/conversationmodel'),
     types = require('../node_modules/tqtopicmap/lib/types'),
     common = require('./common/commonmodel'),
+    conversationConstants = require('./conversation/conversationconstants'),
     constants = require('../core/constants');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
@@ -12,18 +13,6 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         topicMapEnvironment = environment.getTopicMapEnvironment(),
         Dataprovider = topicMapEnvironment.getDataProvider(),
         ConversationModel = new Conmodel(environment),
-       //some constants
-        MAPTYPE = "1",
-        QUESTIONTYPE = "2",
-        ANSWERTYPE = "3",
-        PROTYPE = "4",
-        CONTYPE = "5",
-        DECISIONTYPE = "6",
-        CLAIMTYPE = "7",
-        REFERENCETYPE = "8",
-        CHALLENGETYPE = "9",
-        EVIDENCE = "10", //uses literature-analysis icons
-        NOTE = "11",
         self = this;
   console.log("Conversation started");
 	
@@ -34,7 +23,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       if (req.isAuthenticated()) {return next();}
       res.redirect('/login');
 	} else {
-		{return next();}
+		return next();
 	}
   }
   
@@ -47,7 +36,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     if (isPrivatePortal) {
       return res.redirect('/login');
     }
-    res.redirect('/');
+    return res.redirect('/');
   }
 	/////////////////
 	// Menu
@@ -63,7 +52,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	data.total=0;
 	data.query="/conversation/index";
 	//rendering this will cause an ajax query to blog/index
-	res.render('conversationindex',data);
+	return res.render('conversationindex',data);
   });
 	
   app.get("/conversation/index", isPrivate,function(req,res) {
@@ -80,10 +69,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		json.count = constants.MAX_HIT_COUNT; //pagination size
 		json.total = totalavailable;
 		json.table = data;
-		try {
-			res.set('Content-type', 'text/json');
-		}  catch (e) { }
-		res.json(json);
+		return res.json(json);
 	});
   });
   
@@ -95,10 +81,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	data.formtitle = "New Conversation Root";
 	data.locator = "";
 	data.context = "";
-	data.nodetype = MAPTYPE;
+	data.nodetype = conversationConstants.MAPTYPE;
 	data.body = "";
 	data.isNotEdit = true;
-	res.render('conversationform', data);
+	return res.render('conversationform', data);
   });
   
   //TODO THIS WORKS
@@ -112,7 +98,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 //	data.formtitle = "New Conversation Root";
 	data.locator = q; // becomes parentNodeLocator
 	data.context = "";
-	data.nodetype = MAPTYPE;
+	data.nodetype = conversationConstants.MAPTYPE;
 	data.body = "";
     data.isNotEdit = true;
     console.log("FOO "+JSON.stringify(data));
@@ -131,11 +117,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	console.log("Conversation.newHelp");
 	var data = environment.getCoreUIData(req);
 	data.formtitle = "New Help Map";
-	data.nodetype = MAPTYPE;
+	data.nodetype = conversationConstants.MAPTYPE;
 	data.ishelpmenu = "T";
 	data.isNotEdit = true;
 	data.body = "";
-	res.render('conversationform', data);
+	return res.render('conversationform', data);
   });
 
   //////////////////////////////////
@@ -151,10 +137,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var contextLocator = req.query.contextLocator;
 	var data = environment.getCoreUIData(req);
 	var label = "New Map Node"; //default
-	if (type === QUESTIONTYPE) {label = "New Question/Issue Node";}
-	else if (type === ANSWERTYPE) {label = "New Answer/Position Node";}
-	else if (type === PROTYPE) {label = "New Pro Argument Node";}
-	else if (type === CONTYPE) {label = "New Con Argument Node";}
+	if (type === conversationConstants.QUESTIONTYPE) {label = "New Question/Issue Node";}
+	else if (type === conversationConstants.ANSWERTYPE) {label = "New Answer/Position Node";}
+	else if (type === conversationConstants.PROTYPE) {label = "New Pro Argument Node";}
+	else if (type === conversationConstants.CONTYPE) {label = "New Con Argument Node";}
 	//otherwise, default
 	data.formtitle = label;
 	data.locator = q;
@@ -162,24 +148,24 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	data.context = contextLocator;
 	data.isNotEdit = true;
 	data.body = "";
-	res.render('conversationform', data);
+	return res.render('conversationform', data);
   };
   
   app.get('/conversation/newMap/:id', isPrivate, function(req,res) {
-	__getNewSomething(MAPTYPE,req,res);
+	__getNewSomething(conversationConstants.MAPTYPE,req,res);
   });
   app.get('/conversation/newIssue/:id', isPrivate, function(req,res) {
 	console.log("Conversation.newIssue");
-	__getNewSomething(QUESTIONTYPE,req,res);
+	__getNewSomething(conversationConstants.QUESTIONTYPE,req,res);
   });
   app.get('/conversation/newPosition/:id', isPrivate, function(req,res) {
-	__getNewSomething(ANSWERTYPE,req,res);
+	__getNewSomething(conversationConstants.ANSWERTYPE,req,res);
   });
   app.get('/conversation/newPro/:id', isPrivate, function(req,res) {
-	__getNewSomething(PROTYPE,req,res);
+	__getNewSomething(conversationConstants.PROTYPE,req,res);
   });
   app.get('/conversation/newCon/:id', isPrivate, function(req,res) {
-	__getNewSomething(CONTYPE,req,res);
+	__getNewSomething(conversationConstants.CONTYPE,req,res);
   });
   
   app.get('/conversation/edit/:id', isLoggedIn, function(req,res) {
@@ -201,7 +187,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			data.isedit = "T";
 			data.isNotEdit = false;
 		}
-		res.render('conversationform', data); //,
+		return res.render('conversationform', data); //,
 	});
   });
   
@@ -242,9 +228,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
             }
 			//Tell the view that it will start a new conversation with a MAPTYPE node
 			//NOTE: this could change: we might actually install that map when the node is built
-			data.newnodetype = MAPTYPE;
+			data.newnodetype = conversationConstants.MAPTYPE;
 		//	myEnvironment.logDebug("Conversation.ajaxfetch "+JSON.stringify(data));
-			CommonModel.__doAjaxFetch(result, credentials,"/blog/",tags,docs,users,transcludes,data,req,function(json, contextLocator) {
+			CommonModel.__doAjaxFetch(result, credentials,"/conversation/",tags,docs,users,transcludes,data,req,function(json, contextLocator) {
 				myEnvironment.logDebug("Conversation.ajaxfetch-1 "+JSON.stringify(json));
 				//gather evidence
 				var kids = result.listChildNodes(contextLocator);
@@ -264,7 +250,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 						json.evidence = evid;
 					}
 				}
-				if (credentials.length > 0 && req.session.clipboard !== "") {
+                var clipboard = req.session.clipboard;
+				if (credentials.length > 0 && clipboard && clipboard !== "") {
 					var transcludeLocator = req.session.clipboard;
 					//conversationmodel must clear this when it's used.
 					//THIS Button is for plain transclude4
@@ -300,10 +287,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				}
 				
 				//send the response
-					try {
-						res.set('Content-type', 'text/json');
-					}  catch (e) { }
-					res.json(json);
+				return res.json(json);
 			} );
 		});
   });
@@ -330,19 +314,19 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     var credentials = usx.credentials;
     if (body.ishelpmenu === "T") {
     	ConversationModel.createHelpMap(body,usx,credentials, function(err,result) {
-    		callback(err,result);
+    		return callback(err,result);
     	});
     } else if (body.isedit === "T") {
     	ConversationModel.update(body,usx, function(err,result) {
-    		callback(err,result);
+    		return callback(err,result);
     	});
     } else if (body.locator === "") {
     	ConversationModel.createRootMap(body, usx, credentials, function(err,result) {
-    		callback(err,result);
+    		return callback(err,result);
     	});
     } else {
     	ConversationModel.createOtherNode(body,usx,credentials, function(err,result) {
-    		callback(err,result);
+    		return callback(err,result);
     	});
     }
   };

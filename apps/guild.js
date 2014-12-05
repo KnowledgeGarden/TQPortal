@@ -130,12 +130,21 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    });
 	  });
 	  
+    /**
+     * Join this guild
+     */
     app.get('/guild/join', isPrivate, function(req, res) {
-            console.log("JOINING GUILD");
-            
+	    var body = req.body,
+            usx = req.user,
+            credentials = usx.credentials,
+            userLocator = usx.handle;
+
     });
 
-	  
+    
+    /**
+     * ViewFirst fetch of a guild
+     */
 	  app.get("/guild/ajaxfetch/:id", isPrivate, function(req, res) {
 			//establish the node's identity
 			var q = req.params.id;
@@ -169,16 +178,48 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		   * Model Fill ViewFirst: get cycle starts here
 		   */
 		  app.get('/guild/:id', isPrivate, function(req, res) {
-			var q = req.params.id;
+			var q = req.params.id,
+                credentials = [],
+                usr = req.user;
+              if (usr) {
+                  credentials = usr.credentials;
+              }
 			var data = myEnvironment.getCoreUIData(req);
+              data.guildLocator = q;
 			myEnvironment.logDebug("GUILDY "+JSON.stringify(req.query));
 			CommonModel.__doGet(q,"/guild/",data, req, function(viewspec, data) {
-				if (viewspec === "Dashboard") {
-					return res.render('vf_guild', data);
-				} else {
-					return res.render('vfcn_guild',data);
-				}
+                ///////////////////////////////////////////////
+                // Messy hack:
+                // In a guild view, we need to know if this user is a guild member
+                // which means we have to fetch the damned guild node again (already fetched in CommonModel)
+                // An ideal solution is to further customize the CommonModel function, but that's for later
+                ///////////////////////////////////////////////
+                var usr = req.user;
+                if (usr) {
+                    Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+                        var ismem = GuildModel.isMember(result, usr.handle);
+                        if (ismem) {
+                            data.isMember = ismem;
+                        }
+                    if (viewspec === "Dashboard") {
+                        return res.render('vf_guild', data);
+                    } else {
+                        return res.render('vfcn_guild',data);
+                    }
+                    }); 
+                } else {
+                    //this is an unanthenticated browser
+                    if (viewspec === "Dashboard") {
+                        return res.render('vf_guild', data);
+                    } else {
+                        return res.render('vfcn_guild',data);
+                    }
+                }
 			});
 		  });
     
+          app.post('/guild/play', isPrivate, function(req, res) {
+              //TODO
+          });
+
 };

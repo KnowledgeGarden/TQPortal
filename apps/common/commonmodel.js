@@ -473,7 +473,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
                             //if this is a Conversation view, we are very concerned with rootLocator
                             if (!rootLocator) {rootLocator = q;}
                             //create the actual MillerColumn html
-                            ColNavWidget.makeColNav(rootLocator,theNode,contextLocator,lang, credentials, function(err,html) {
+                            var js = "javascript:fetchFromTree";
+                            ColNavWidget.makeColNav(rootLocator,theNode,contextLocator,lang, js, "/conversation/ajaxfetch/", "", credentials, function(err,html) {
                                 json.colnav = html;
                                 callback(json, contextLocator);
                             });

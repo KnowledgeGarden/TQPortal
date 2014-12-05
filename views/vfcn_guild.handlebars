@@ -17,9 +17,9 @@
   <div class="row">
    <div class="home col-xs-8 col-sm-8 ">
     <div class="topictitle">foo</div>
-   {{#if isAuthenticated}}
+   {{#if isMember}}
  	<div class="form-group">
-  	  <a href="/incubator/foo"><button type="submit" class="btn btn-btn-success btn-small">Enter Incubator</button></a>
+  	  <a href="/incubator/{{guildLocator}}"><button type="submit" class="btn btn-btn-success btn-small">Enter Incubator</button></a>
 	</div>
    {{/if}}
     {{#if isAuthenticated}}
@@ -45,9 +45,9 @@
  <div id="list" class="tab-pane fade">
    <div class="blog-post col-xs-7">
     <div class="topictitle"></div>
-   {{#if isAuthenticated}}
+   {{#if isMember}}
  	<div class="form-group">
-  	  <a href="/incubator/foo"><button type="submit" class="btn btn-btn-success btn-small">Enter Incubator</button></a><br />
+  	  <a href="/incubator/{{guildLocator}}"><button type="submit" class="btn btn-btn-success btn-small">Enter Incubator</button></a><br />
 	</div>
    {{/if}}
     <p class="blog-post-meta"> 

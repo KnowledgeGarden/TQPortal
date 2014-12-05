@@ -8,6 +8,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types'),
 	Gameenv = require('../rpg/rpgenvironment'),
 	constants = require('../../core/constants'),
 	uuid = require('../../core/util/uuidutil'),
+    Infobox = require('../rpg/guildquestinfobox'),
 	Tagmodel = require('../tag/tagmodel')
 ;
 
@@ -24,7 +25,7 @@ var IssueModel =  module.exports = function(environment) {
 	
 	self.getRPGEnvironment = function() {
 		return RPGEnvironment;
-	}
+	},
 	
 	
 	  /**

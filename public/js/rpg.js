@@ -3,12 +3,117 @@
  */
 
 function initGamePage() {
-//	alert("Gamestart");
     if ( $("ul#metaConTree")) {
 	   pageSetup();
     }
 }
+function paintMetaTree(data) {
+ //   alert("Meta "+data.metaConTree);
+    if (data.metaConTree) {
+	   var html = data.metaConTree;
+//	alert("HTML "+html);
+	   $("ul#metaConTree").html(html);
+    }
+}
 
+
+function paintGameTree(data) {
+//alert("game "+data.gameConTree);
+    if (data.gameConTree) {
+	   var html = data.gameConTree;
+//	alert("HTML "+html);
+	   $("ul#gameConTree").html(html);
+    }
+}
+
+function getGamePage(type, query) {
+//	alert("XX "+navtoggle);
+	$.get( query, function( data ) {
+        currentLocator = data.locator;
+        if (!navtoggle) {
+            paintMetaTree(data);
+            paintGameTree(data);
+            $("ul#metaConTree").columnNavigation({
+                containerPosition:"relative",
+                containerWidth:"900px",
+                containerHeight:"210px",
+                containerBackgroundColor:"rgb(255,255,255)",
+                containerFontColor:"rgb(50,50,50)",
+                columnWidth:300,
+                columnFontFamily:"'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif",
+                columnFontSize:"90%",
+                columnSeperatorStyle:"1px solid rgb(220,220,220)",
+                columnDeselectFontWeight:"normal",
+                columnDeselectColor:"rgb(50,50,50)",
+                columnSelectFontWeight:"normal",
+                columnSelectColor:"rgb(255,255,255)",
+                columnSelectBackgroundColor:"rgb(27,115,213)",
+                columnSelectBackgroundPosition:"top",
+                columnItemPadding:"3px 3px 5px 3px",
+                columnScrollVelocity:50,
+            });
+
+            $("ul#gameConTree").columnNavigation({
+                containerPosition:"relative",
+                containerWidth:"900px",
+                containerHeight:"210px",
+                containerBackgroundColor:"rgb(255,255,255)",
+                containerFontColor:"rgb(50,50,50)",
+                columnWidth:300,
+                columnFontFamily:"'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif",
+                columnFontSize:"90%",
+                columnSeperatorStyle:"1px solid rgb(220,220,220)",
+                columnDeselectFontWeight:"normal",
+                columnDeselectColor:"rgb(50,50,50)",
+                columnSelectFontWeight:"normal",
+                columnSelectColor:"rgb(255,255,255)",
+                columnSelectBackgroundColor:"rgb(27,115,213)",
+                columnSelectBackgroundPosition:"top",
+                columnItemPadding:"3px 3px 5px 3px",
+                columnScrollVelocity:50,
+            });
+            navtoggle = true;
+        }
+        //TODO lots more
+		//now, paint the page
+		$("div.topictitle").html(data.title);
+		$("div.userref").html(data.user);
+		if (data.url) {
+			$("div.urlref").html(data.url);
+		}
+		$("div.body").html(data.body);
+		if (data.responsebuttons) {
+			$("div.responsebuttons").html(data.responsebuttons);
+		}
+		if (data.transclude) {
+			$("div.transclude").html(data.transclude);
+		}
+		if (data.transcludeevidence) {
+			$("div.transcludeevidence").html(data.transcludeevidence);
+		}
+
+	});
+}
+
+/**
+ * Clicks on nodes in the Incubator game tree
+ */
+function fetchFromGameTreeTree(lox, quex) {
+    locator = lox;
+    if (locator !== currentLocator) {
+        getGamePage("foo", quex);
+    }
+}
+
+/**
+ * Clicks on nodes in the Incubator meta tree
+ */
+function fetchFromMetaTree(lox, quex) {
+    locator = lox;
+    if (locator !== currentLocator) {
+        getGamePage("foo", quex);
+    }
+}
 /**
  * ViewFirst tables:
  * Since different index tables will vary,
@@ -16,79 +121,20 @@ function initGamePage() {
  * query is based on <app>/index
  */
 function pageSetup() {
-    
- $("ul#metaConTree").columnNavigation({
-    containerPosition:"relative",
-    containerWidth:"900px",
-    containerHeight:"210px",
-    containerBackgroundColor:"rgb(255,255,255)",
-    containerFontColor:"rgb(50,50,50)",
-    columnWidth:300,
-    columnFontFamily:"'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif",
-    columnFontSize:"90%",
-    columnSeperatorStyle:"1px solid rgb(220,220,220)",
-    columnDeselectFontWeight:"normal",
-    columnDeselectColor:"rgb(50,50,50)",
-    columnSelectFontWeight:"normal",
-    columnSelectColor:"rgb(255,255,255)",
-    columnSelectBackgroundColor:"rgb(27,115,213)",
-    columnSelectBackgroundPosition:"top",
-    columnItemPadding:"3px 3px 5px 3px",
-    columnScrollVelocity:50,
- });
+    navtoggle = false;
+		var type = $(".vfpage").attr("type");
+		var q = $(".vfpage").attr("query");
+		if (q) {
+		  var language = $(".vfpage").attr("language");
+		  var cl = $(".vfpage").attr("contextLocator");
+		  var query = q+"?language="+language+"&viewspec="+type;
+		  getGamePage(type, query);
+		}
 
- $("ul#gameConTree").columnNavigation({
-    containerPosition:"relative",
-    containerWidth:"900px",
-    containerHeight:"210px",
-    containerBackgroundColor:"rgb(255,255,255)",
-    containerFontColor:"rgb(50,50,50)",
-    columnWidth:300,
-    columnFontFamily:"'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif",
-    columnFontSize:"90%",
-    columnSeperatorStyle:"1px solid rgb(220,220,220)",
-    columnDeselectFontWeight:"normal",
-    columnDeselectColor:"rgb(50,50,50)",
-    columnSelectFontWeight:"normal",
-    columnSelectColor:"rgb(255,255,255)",
-    columnSelectBackgroundColor:"rgb(27,115,213)",
-    columnSelectBackgroundPosition:"top",
-    columnItemPadding:"3px 3px 5px 3px",
-    columnScrollVelocity:50,
- });
 
-/**	var data = $("#issuetabledata");
-	var q = data.attr("query");
-	var cursor = data.attr("start");
-	var count = data.attr("count");
-	var query = q+"?start="+cursor+"&count="+count;
-//	alert(query);
-	$.get( query, function( data ) {
-	//	alert(data);
-		paintIssueIndex(data);
-	});
-	data = $("#questtabledata");
-	q = data.attr("query");
-	cursor = data.attr("start");
-	count = data.attr("count");
-	query = q+"?start="+cursor+"&count="+count;
-//	alert(query);
-	$.get( query, function( data ) {
-	//	alert(data);
-		pageQuestNext(data);
-	});
-	data = $("#guildtabledata");
-	q = data.attr("query");
-	cursor = data.attr("start");
-	count = data.attr("count");
-	query = q+"?start="+cursor+"&count="+count;
-//	alert(query);
-	$.get( query, function( data ) {
-	//	alert(data);
-		paintGuildIndex(data);
-	});
-*/
 }
+
+
 /**
  * Server must send back 
  *   the table's HTML <table>

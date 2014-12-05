@@ -320,7 +320,14 @@ var GuildModel =  module.exports = function(environment) {
       self.listLeaders = function(guildNode) {
           return guildNode.getProperty(gameConstants.GUILD_LEADER_LIST_PROPERTY);
       }
-          
-          
+      
+      /**
+       * Play the current quest
+       * @param callback signature (err)
+       */
+      self.play = function(callback) {
+         //TODO
+      }
+        
 
 }

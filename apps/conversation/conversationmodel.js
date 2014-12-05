@@ -8,7 +8,8 @@ var  types = require('../../node_modules/tqtopicmap/lib/types'),
     icons = require('../../node_modules/tqtopicmap/lib/icons'), 
     properties = require('../../node_modules/tqtopicmap/lib/properties'), 
     Tagmodel = require('../tag/tagmodel'), 
-    uuid = require('../../core/util/uuidutil'), 
+    uuid = require('../../core/util/uuidutil'),
+    conversationConstants = require('./conversationconstants'),
     constants = require('../../core/constants');
 
 var ConversationModel = module.exports = function(environment) {
@@ -19,18 +20,6 @@ var ConversationModel = module.exports = function(environment) {
         TopicModel = topicMapEnvironment.getTopicModel(),
         TagModel = new Tagmodel(environment),
         queryDSL = topicMapEnvironment.getQueryDSL(),
-        //some constants
-        MAPTYPE = "1",
-        QUESTIONTYPE = "2",
-        ANSWERTYPE = "3",
-        PROTYPE = "4",
-        CONTYPE = "5",
-        DECISIONTYPE = "6",
-        CLAIMTYPE = "7",
-        REFERENCETYPE = "8",
-        CHALLENGETYPE = "9",
-        EVIDENCE = "10", //uses literature-analysis icons
-        NOTE = "11",
 
         self = this;
 	/**
@@ -127,23 +116,23 @@ var ConversationModel = module.exports = function(environment) {
 	  myEnvironment.logDebug("ConversationModel.createOtherNode- "+JSON.stringify(blog));
 	  var typ = blog.nodefoo;
 	  var parentLocator = blog.locator;
-	  if (typ === MAPTYPE) {
+	  if (typ === conversationConstants.MAPTYPE) {
 		  self.createMap(blog,user,parentLocator,credentials,function(err,result) {
 			  return callback(err,result);
 		  });
-	  } else if (typ === QUESTIONTYPE) {
+	  } else if (typ === conversationConstants.QUESTIONTYPE) {
 		  self.createIssue(blog,user,parentLocator,credentials,function(err,result) {
 			  return callback(err,result);
 		  });
-	  } else if (typ === ANSWERTYPE) {
+	  } else if (typ === conversationConstants.ANSWERTYPE) {
 		  self.createPosition(blog,user,parentLocator,credentials,function(err,result) {
 			  return callback(err,result);
 		  });		  
-	  } else if (typ === PROTYPE) {
+	  } else if (typ === conversationConstants.PROTYPE) {
 		  self.createPro(blog,user,parentLocator,credentials,function(err,result) {
 			  return callback(err,result);
 		  });
-	  } else if (typ === CONTYPE) {
+	  } else if (typ === conversationConstants.CONTYPE) {
 		  self.createCon(blog,user,parentLocator,credentials,function(err,result) {
 			  return callback(err,result);
 		  });
@@ -217,16 +206,21 @@ var ConversationModel = module.exports = function(environment) {
 		  /*return*/ contextLocator = blog.contextLocator;
 	  }
 	  
-    var userLocator = user.handle;
+    var userLocator = user.handle,
+        parent = null,
+        lox = DataProvider.uuid();
 	myEnvironment.logDebug("ConversationModel.create- "+parentNodeLocator+" "+nodeType);
 	myEnvironment.logDebug("ConversationModel.create-- "+JSON.stringify(blog));
-
-    DataProvider.getNodeByLocator(parentNodeLocator, credentials, function(err, result) {
-      var parent = result;
+      if (parentNodeLocator && parentNodeLocator != null && parentNodeLocator.length > 0) {
+          DataProvider.getNodeByLocator(parentNodeLocator, credentials, function(err, result) {
+              parent = result;
+          });
+      }
+	myEnvironment.logDebug("ConversationModel.create--- "+parent+" "+lox);
       //contextLocator, parentNode,
 	  //newLocator, nodeType, subject, body, language, smallIcon, largeIcon,
 	  //credentials, userLocator, isPrivate,
-      TopicModel.createTreeNode(contextLocator,parent,"",nodeType,
+      TopicModel.createTreeNode(contextLocator, parent, lox, nodeType,
     		  blog.title, blog.body, language, smallIcon, largeIcon,
     		  credentials, userLocator, false, function(err,data) {
     	  //data is the created node
@@ -276,7 +270,6 @@ var ConversationModel = module.exports = function(environment) {
 	          }   	
 	    });
       });
-    });
   };
   
   /**

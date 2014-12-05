@@ -525,9 +525,7 @@ function getPage(type, query) {
 					columnItemPadding:"3px 3px 5px 3px",
 					columnScrollVelocity:50,
 				});
-			}
-			if (!navtoggle) {
-				navtoggle = true;
+                navtoggle = true;
 			}
 		} else {
 				//paint p-con
