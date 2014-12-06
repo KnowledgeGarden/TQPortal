@@ -134,7 +134,7 @@ var IncubatorModel =  module.exports = function(environment) {
          * Augment ConversationModel creating incubator nodes to add privacy and ACLs
          */
         self.createOtherNode = function(blog, user, credentials, callback) {
-            var guildLocator = blog.locator;
+            var guildLocator = blog.contextLocator;
                     myEnvironment.logDebug("GUILD LOCATOR -4 "+guildLocator); // debug establish the identity of this guild.
 
             // create the node

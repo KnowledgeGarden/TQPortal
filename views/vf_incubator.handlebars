@@ -1,26 +1,29 @@
 <div class="container"><h1></h1>
 <div class="row">
-    <!-- this constitutes a row of buttons across the top -->
+    <!-- this constitutes a row of buttons across the top It's a pretty crummy-looking table -->
     <table>
-  	  <tr><td><a href="/incubator/leave"><button type="submit" class="btn btn-btn-success btn-small">Leave Incubator</button></a></td>
+  	  <tr><td><a href="/incubator/leave"><button type="submit" class="btn btn-btn-primary  btn-small">Leave Incubator</button></a></td>
     <!-- Following buttons are visible only to guild leaders: locator is a given quest's locator
         as brougnt in from a 'Remember Node" -->
     {{#if locator}}
         <td><form method="post" action="/incubator/joinquest"  role="form" class="form-horizontal">
             <input type="hidden" name="locator" value="{{locator}}">
             <input type="hidden" name="guildlocator" value="{{guildlocator}}">
-            <button type="submit" class="btn btn-success">Join Quest</button>
+            <button type="submit" class="btn btn-warning">Join Quest</button>
         </form></td>
     {{/if}}
     {{#if nodelocator}}
         <td><form method="post" action="/incubator/selectrootnode"  role="form" class="form-horizontal">
             <input type="hidden" name="guildlocator" value="{{guildlocator}}">
             <input type="hidden" name="nodelocator" value="{{nodelocator}}">
-            <button type="submit" class="btn btn-success">Select Game Root Node</button>
+            <button type="submit" class="btn btn-warning">Select Game Root Node</button>
         </form></td>
     {{/if}}
     {{#if inQuest}}
-        <td><a href="/incubator/leavequest"><button type="submit" class="btn btn-btn-success btn-small">Leave Quest</button></a></td>
+        <td><a href="/incubator/leavequest"><button type="submit" class="btn btn-btn-primary btn-small">Leave Quest</button></a></td>
+    {{/if}}
+    {{#if leaderInQuest}}
+        <td><a href="/incubator/play/{{guildlocator}}"><button type="submit" class="btn btn-danger btn-small">Play</button></a></td>
     {{/if}}
     </tr>
         </table>

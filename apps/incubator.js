@@ -45,6 +45,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /////////////////
   // Routes
   /////////////////
+    
+    app.get("incubator/play/:Id", isPrivate, function(req, res) {
+        
+    });
     /**
      * Leave the incubator room
      */
@@ -149,6 +153,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                 var curquest = dx.getProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY);
                 if (curquest) {
                     data.nodelocator = questLocator;
+                    data.inQuest = inQuest = "true";
+                    if (IncubatorModel.isLeader(guildnode, usr.handle)) {
+                        data.leaderInQuest = "true";
+                    }
                 }
                 data.query = "/incubator/ajaxfetch/" + q;
                 data.type = "Dashboard";
