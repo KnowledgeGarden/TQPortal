@@ -154,7 +154,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                 if (curquest) {
                     data.nodelocator = questLocator;
                     data.inQuest = inQuest = "true";
-                    if (IncubatorModel.isLeader(guildnode, usr.handle)) {
+                    if (IncubatorModel.isLeader(dx, usr.handle)) {
                         data.leaderInQuest = "true";
                     }
                 }
