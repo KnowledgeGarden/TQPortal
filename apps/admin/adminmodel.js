@@ -76,6 +76,29 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
 			callback(err,data);
 		});
 	},
+        
+    self.addToCredentials = function(user, credential, callback) {
+        var creds = user.credentials;
+        creds.push(credential);
+        user.credentials = creds;
+        self.updateUser(user, function(err, data) {
+            callback(err, data);
+        });
+    },
+        
+    self.removeFromCredentials = function(user, credential, callback) {
+        var creds = user.credentials;
+        var where = creds.indexOf(credential);
+        if (where > -1) {
+            creds.splice(where,1);
+            user.credentials = creds;
+            self.updateUser(user, function(err, data) {
+                //fall through
+            });
+        }
+        callback(err, data);
+    },
+        
 	/**
 	 * @param email
 	 * @param callback: signature(err, truth)

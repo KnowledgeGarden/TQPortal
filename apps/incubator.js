@@ -61,8 +61,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Configure a conversation node form
    */
-  var __getNewSomething = function(type, req,res) {
-	var q = req.params.id;
+  var __getNewSomething = function(q, type, req,res) {
 	var contextLocator = req.query.contextLocator;
 	var data = environment.getCoreUIData(req);
 	var label = "New Map Node"; //default
@@ -73,6 +72,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	//otherwise, default
 	data.formtitle = label;
 	data.locator = q;
+            myEnvironment.logDebug("GUILD LOCATOR -3 "+q); // debug establish the identity of this guild.
+      //trying to prove that guild identity made it here from the button query strings
+
 	data.nodetype = type;
 	data.context = contextLocator;
 	data.isNotEdit = true;
@@ -81,20 +83,27 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   };
   
   app.get('/incubator/newMap/:id', isPrivate, function(req,res) {
-	__getNewSomething(conversationConstants.MAPTYPE,req,res);
+      var q = req.params.id;
+	__getNewSomething(q, conversationConstants.MAPTYPE, req, res);
   });
   app.get('/incubator/newIssue/:id', isPrivate, function(req,res) {
+      var q = req.params.id,
+          cx = req.query.contextLocator;
+      myEnvironment.logDebug("GUILD LOCATOR -2A "+q+" "+cx);
 	console.log("Conversation.newIssue");
-	__getNewSomething(conversationConstants.QUESTIONTYPE,req,res);
+	__getNewSomething(q, conversationConstants.QUESTIONTYPE, req, res);
   });
   app.get('/incubator/newPosition/:id', isPrivate, function(req,res) {
-	__getNewSomething(conversationConstants.ANSWERTYPE,req,res);
+      var q = req.params.id;
+	__getNewSomething(q, conversationConstants.ANSWERTYPE, req, res);
   });
   app.get('/incubator/newPro/:id', isPrivate, function(req,res) {
-	__getNewSomething(conversationConstants.PROTYPE,req,res);
+      var q = req.params.id;
+	__getNewSomething(q, conversationConstants.PROTYPE, req, res);
   });
   app.get('/incubator/newCon/:id', isPrivate, function(req,res) {
-	__getNewSomething(conversationConstants.CONTYPE,req,res);
+      var q = req.params.id;
+	__getNewSomething(q, conversationConstants.CONTYPE, req, res);
   });
 
     
@@ -127,6 +136,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                 //did user select a quest to join?
                 questLocator = req.session.clipboard;
             req.session.clipboard = ""; // clear the clipboard
+            myEnvironment.logDebug("GUILD LOCATOR -1 "+q); // debug establish the identity of this guild.
 			credentials = usr.credentials;
             Dataprovider.getNodeByLocator(q, credentials, function(err, dx) {
                 console.log("Get Incubator "+q);
@@ -163,6 +173,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  app.get("/incubator/ajaxfetch/:id", isPrivate, function(req, res) {
 			//establish the node's identity the guild itself
 			var q = req.params.id;
+            myEnvironment.logDebug("GUILD LOCATOR -2 "+q); // debug establish the identity of this guild after ajax fetch
 			//establish credentials
 			//defaults to an empty array if no user logged in
 			var credentials = [];
@@ -180,7 +191,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				CommonModel.__doAjaxFetch(guildnode, credentials, "/incubator/", tags, docs, users, transcludes, data, req, function(json, contextLocator) {
 					myEnvironment.logDebug("Incubator.ajaxfetch-1 "+JSON.stringify(json));
                     //repaint the response buttons
-                    if (req.isAuthenticated()) {
+    /**                if (req.isAuthenticated()) {
                         var htx = "<h2>Respond with these options...</h2>";
                         htx += "<table width=\"100%\"><tbody><tr>";
                         htx += "<td><center><a title=\"New Map: conversation branch\" href=\"/incubator/newMap/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/map.png\"></a></center</td>";
@@ -190,7 +201,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                         htx += "<td><center><a title=\"New Con Argument\" href=\"/incubator/newCon/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/minus.png\"></a></center</td>";
                         htx += "</tr></tbody></table>";
                         data.responsebuttons = htx;
-                    }
+                    } */
 
                 /////////////////
                 //TODO
@@ -222,6 +233,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//establish the node's identity
 		var q = req.params.id,
             guildLocator = req.query.guildLocator;
+           myEnvironment.logDebug("GUILD LOCATOR -2X "+q+" "+guildLocator); // debug establish the identity of this guild after ajax fetch
 		//establish credentials
 		//defaults to an empty array if no user logged in
 		var credentials = [];
@@ -310,7 +322,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					htx += "</tr></tbody></table>";
 					json.responsebuttons = htx;
 				}
-                Dataprovider.getNodeByLocator(guildLocator, credentials, function(err, guildnode) {
+                return res.json(json);
+     /*           Dataprovider.getNodeByLocator(guildLocator, credentials, function(err, guildnode) {
                     var gameTree;
                     var metaTree;
                     IncubatorModel.getMetaTree(guildnode, usr, function(err, mn) {
@@ -328,7 +341,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                        });
                         
                     });
-                });
+                }); */
 			});
 		});
   });
@@ -401,11 +414,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   var _consupport = function(body,usx, callback) {
     var credentials = usx.credentials;
       myEnvironment.logDebug("Incubator._consupport "+IncubatorModel.getConversationModel());
-    if (body.ishelpmenu === "T") {
-    	IncubatorModel.getConversationModel().createHelpMap(body,usx,credentials, function(err,result) {
-    		return callback(err,result);
-    	});
-    } else if (body.isedit === "T") {
+    if (body.isedit === "T") {
     	IncubatorModel.getConversationModel().update(body,usx, function(err,result) {
     		return callback(err,result);
     	});
@@ -414,7 +423,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     		return callback(err,result);
     	});
     } else {
-    	IncubatorModel.getConversationModel().createOtherNode(body,usx,credentials, function(err,result) {
+    	IncubatorModel.createOtherNode(body,usx,credentials, function(err,result) {
     		return callback(err,result);
     	});
     }

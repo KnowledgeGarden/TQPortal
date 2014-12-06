@@ -28,6 +28,9 @@ var IncubatorModel =  module.exports = function(environment) {
 	
         self = this;
     
+    /**
+     * Utility for incubator.js
+     */
     self.getConversationModel = function() {
         return ConversationModel;
     },
@@ -95,17 +98,24 @@ var IncubatorModel =  module.exports = function(environment) {
                   bx.language = "en"; //TODO
                   ConversationModel.createMap(bx, usr, null, credentials, function(err, qnode) {
                           if (err) {error += err}
+                      qnode.setIsPrivate(true); // make it private
+                      qnode.addACLValue(guildNode.getLocator()); // add to ACL
+                      qnode.setCreatorId(guildNode.getLocator()); // the guild is the creator
                       myEnvironment.logDebug("IncubatorModel.joinQuest-2 "+qnode);
                       myEnvironment.logDebug("IncubatorModel.joinQuest-3 "+JSON.stringify(qnode));
-                      infobox = new Infobox(questLocator,title);
-                      infobox[Infobox.META_TREE_ROOT_LOCATOR] = qnode.getLocator();
-                      guildNode.setProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY, questLocator);
-                      myEnvironment.logDebug("IncubatorModel.joinQuest-4 "+JSON.stringify(infobox));
-                      guildNode.putInfoBox(questLocator, JSON.stringify(infobox));
-                      guildNode.setLastEditDate(new Date());
-                      DataProvider.putNode(guildNode, function (err, data) {
-                          if (err) {error += err;}
-                          return callback(error);
+                      //persist the modified node
+                      DataProvider.putNode(qnode, function(err, dx) {
+                          //create the GuildQuestInfobox to represent this pair
+                          infobox = new Infobox(questLocator,title);
+                          infobox[Infobox.META_TREE_ROOT_LOCATOR] = qnode.getLocator();
+                          guildNode.setProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY, questLocator);
+                          myEnvironment.logDebug("IncubatorModel.joinQuest-4 "+JSON.stringify(infobox));
+                          guildNode.putInfoBox(questLocator, JSON.stringify(infobox));
+                          guildNode.setLastEditDate(new Date());
+                          DataProvider.putNode(guildNode, function (err, data) {
+                              if (err) {error += err;}
+                              return callback(error);
+                          });
                       });
                   });
               });
@@ -119,6 +129,27 @@ var IncubatorModel =  module.exports = function(environment) {
               });
           }
       },
+        
+        /**
+         * Augment ConversationModel creating incubator nodes to add privacy and ACLs
+         */
+        self.createOtherNode = function(blog, user, credentials, callback) {
+            var guildLocator = blog.locator;
+                    myEnvironment.logDebug("GUILD LOCATOR -4 "+guildLocator); // debug establish the identity of this guild.
+
+            // create the node
+            ConversationModel.createOtherNode(blog, user, credentials, function(err, qnode) {
+                //now make it private with ACL
+                qnode.setIsPrivate(true); // make it private
+                qnode.addACLValue(guildLocator); // add to ACL
+                qnode.setCreatorId(guildLocator); // the guild is the creator
+                myEnvironment.logDebug("IncubatorModel.createOtherNode "+qnode.toJSON());
+                DataProvider.putNode(qnode, function(err, data) {
+                    return callback(err, data);
+                });
+
+            });
+        },
 
           /**
            * The guild <code>guildNode</code> has chosen to leave the quest identified by <code>questLocator</code>
@@ -175,7 +206,8 @@ var IncubatorModel =  module.exports = function(environment) {
            myEnvironment.logDebug("IncubatorModel.getGameTree-1 "+rootLocator+" | "+infobox);
          if (rootLocator) {
              DataProvider.getNodeByLocator(rootLocator, credentials, function(err, rn) {
-                 var contextLocator = rootLocator; // we are getting this tree
+                 //var contextLocator = rootLocator; // we are getting this tree WRONG
+                 var contextLocator = guildNode.getLocator();
                  var js = "javascript:fetchFromGameTreeTree",
                      aux = "&guildLocator="+guildNode.getLocator();
                  ColNavWidget.makeColNav(rootLocator, rn, contextLocator, lang, js, "/incubator/ajaxtreefetch/", aux, credentials, function(err, html) {
@@ -199,7 +231,8 @@ var IncubatorModel =  module.exports = function(environment) {
           myEnvironment.logDebug("IncubatorModel.getMetaTree-1 "+rootLocator+" "+infobox);
           if (rootLocator) {
              DataProvider.getNodeByLocator(rootLocator, credentials, function(err, rn) {
-                 var contextLocator = rootLocator; // we are getting this tree
+                 // var contextLocator = rootLocator; // we are getting this tree WRONG
+                 var contextLocator = guildNode.getLocator();
                  var js = "javascript:fetchFromMetaTree",
                      aux = "&guildLocator="+guildNode.getLocator();
                  ColNavWidget.makeColNav(rootLocator, rn, contextLocator, lang, js, "/incubator/ajaxtreefetch/", aux, credentials, function(err, html) {

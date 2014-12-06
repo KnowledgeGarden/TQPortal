@@ -135,6 +135,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		html += "<tr><th width=\"60%\">Subject</th><th>Author</th><th>Date</th></tr>";
 		html += "</thead><tbody>";
 		//ripple through the proxyList and paint table rows
+        //OK: this is where private nodes will not be visible
+        console.log("BARF  "+len+" "+proxyList);
 		for (var i=0;i<len;i++) {
 			p = proxyList[i];
 			html+="<tr><td width=\"60%\">";

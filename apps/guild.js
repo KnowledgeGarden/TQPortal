@@ -133,11 +133,16 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     /**
      * Join this guild
      */
-    app.get('/guild/join', isPrivate, function(req, res) {
+    app.get('/guild/join/:id', isPrivate, function(req, res) {
 	    var body = req.body,
             usx = req.user,
             credentials = usx.credentials,
-            userLocator = usx.handle;
+            q = req.params.id;
+        Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+            GuildModel.addMember(result, usx, function(err, rx) {
+                return res.redirect('/guild/'+q);
+            });
+        });
 
     });
 

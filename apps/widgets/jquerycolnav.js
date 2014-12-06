@@ -54,7 +54,7 @@ var ColNavWidget = module.exports = function(environment, dp) {
 	 * @param credentials
 	 * @param callback signature (err,html)
 	 */
-	self.__buildColNav = function(rootNodeLocator, rootNode, selectedNode, contextLocator, language, javascript, app, aux, buf, stop, credentials, callback) {
+	self.__buildColNav = function(rootNodeLocator, rootNode, selectedNode, contextLocator, language, javascript, app, aux, buf, credentials, stop,  callback) {
 		var error = "";
 		console.log("ColNavWidget.__buildColNav "+rootNodeLocator+" "+rootNode);
 		buf.append(self.__makeNodeHTML(rootNode, language, javascript, app, aux, buf, contextLocator, rootNodeLocator));
@@ -81,7 +81,7 @@ var ColNavWidget = module.exports = function(environment, dp) {
 				} else {
 					nx = kids[cursor++];
 //					console.log("ColNavWidget.__buildColNav-4 "+JSON.stringify(nx));
-					DataProvider.getNodeByLocator(nx.locator,credentials, function(err,node) {
+					DataProvider.getNodeByLocator(nx.locator, credentials, function(err,node) {
 						if (err) {error+=err;}
 //						console.log("ColNavWidget.__buildColNav-5 "+stop+" | "+err+" | "+node);
 							self.__buildColNav(rootNodeLocator, node, selectedNode, contextLocator, language, javascript, app, aux, buf, credentials, stop, function(err,html) {

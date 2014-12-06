@@ -8,6 +8,7 @@ var types = require('../../node_modules/tqtopicmap/lib/types'),
     constants = require('../../core/constants'),
     gameConstants = require('../rpg/gameconstants'),
     uuid = require('../../core/util/uuidutil'),
+    Admin = require('../admin/adminmodel'),
     Tagmodel = require('../tag/tagmodel')
 ;
 
@@ -20,6 +21,7 @@ var GuildModel =  module.exports = function(environment) {
         CommonModel = environment.getCommonModel(),
         queryDSL = topicMapEnvironment.getQueryDSL(),
         RPGEnvironment = environment.getRPGEnvironment(),
+        AdminModel = new Admin(environment),
 	
         self = this;
 	
@@ -100,6 +102,7 @@ var GuildModel =  module.exports = function(environment) {
 	      // create the blog post
 	      console.log("FOO "+types.GUILD_TYPE);
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
+            //This creates the guild itself
 	      TopicModel.newInstanceNode(uuid.newUUID(), types.GUILD_TYPE,
                                      "", "", constants.ENGLISH, userLocator,
                                      icons.COLLABORATION_SM, icons.COLLABORATION, false, credentials, function(err, article) {
@@ -113,46 +116,48 @@ var GuildModel =  module.exports = function(environment) {
               //Tell it about its new member/leader
               theGuild.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
               theGuild.addSetValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
+              //grant guild credentials to user
+              AdminModel.addToCredentials(user, theGuild.getLocator(), function(err, dx) {
 
-              myEnvironment.logDebug("GuildModel.create-1 "+icons.COLLABORATION+" "+article.toJSON());
-	    //	  console.log('BlogModel.create-2 '+article.toJSON());
-	    	  RPGEnvironment.addRecentIssue(article.getLocator(),blog.title);
-	    	     // now deal with tags
-				var taglist = CommonModel.makeTagList(blog);
-	          if (taglist.length > 0) {
-	            TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
-	              console.log('NEW_POST-1 '+result);
-	              //result could be an empty list;
-	              //TagModel already added Tag_Doc and Doc_Tag relations
-	              console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-	              DataProvider.putNode(article, function(err,data) {
-	                console.log('ARTICLES_CREATE-3 '+err);	  
-	                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-	                console.log('ARTICLES_CREATE-3b '+userTopic);	  
+                  //"credentials":["jackpark","78dc2560-7cd1-11e4-bbe7-2f2b0397e9a1"] showing added guild credentials
+                  myEnvironment.logDebug("GuildModel.create-1 "+JSON.stringify(user));
+                  RPGEnvironment.addRecentIssue(article.getLocator(),blog.title);
+                  // now deal with tags
+                  var taglist = CommonModel.makeTagList(blog);
+                  if (taglist.length > 0) {
+                      TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
+                          console.log('NEW_POST-1 '+result);
+                          //result could be an empty list;
+                          //TagModel already added Tag_Doc and Doc_Tag relations
+                          console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
+                          DataProvider.putNode(article, function(err,data) {
+                              console.log('ARTICLES_CREATE-3 '+err);	  
+                              if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+                              console.log('ARTICLES_CREATE-3b '+userTopic);	  
 
-	                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
-	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                   return callback(err,article.getLocator());
-	                 }); //r1
-	              }); //putnode 		  
-	        	}); // processtaglist
-	          }  else {
-	              DataProvider.putNode(article, function(err,data) {
-	                  console.log('ARTICLES_CREATE-3 '+err);	  
-	                  if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-	                  console.log('ARTICLES_CREATE-3b '+userTopic);	  
+                              TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+                                                                     userTopic.getLocator(),
+                                                                     icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+                                  if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+                                  return callback(err,article.getLocator());
+                              }); //r1
+                          }); //putnode 		  
+                      }); // processtaglist
+                  }  else {
+                      DataProvider.putNode(article, function(err,data) {
+                          console.log('ARTICLES_CREATE-3 '+err);	  
+                          if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+                          console.log('ARTICLES_CREATE-3b '+userTopic);	  
 
-	                  TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	                  		userTopic.getLocator(),
-	                        		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
-	                      if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                       return callback(err,article.getLocator());
-	                   }); //r1
-	                }); //putnode 		  
-
-	          }    	
+                          TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+                                                                 userTopic.getLocator(),
+                                                                 icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+                              if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+                              return callback(err,article.getLocator());
+                          }); //r1
+                      }); //putnode
+                  }
+              }); // admin
 	      });
 	    });
 	  },
@@ -215,27 +220,31 @@ var GuildModel =  module.exports = function(environment) {
           /**
            * Add <code>userLocator</code> to <code>guildNode</code> and save it
            * @param guildNode
-           * @param userLocator
+           * @param user  the JSON object from Request
            * @param callback signature ( err, data )
            */
-      self.addMember = function(guildNode, userLocator, callback) {
-          guildNode.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
-          DataProvider.putNode(guildNode, function(err, data) {
-              callback(err, data);
+      self.addMember = function(guildNode, user, callback) {
+          guildNode.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, user.handle);
+          AdminModel.addToCredentials(user, guildNode.getLocator(), function(err, dx) {
+              DataProvider.putNode(guildNode, function(err, data) {
+                  callback(err, data);
+              });
           });
       },
       
           /**
            * Remove <code>userLocator</code> from <code>guildNode</code> and save it
            * @param guildNode
-           * @param userLocator
+           * @param user  the JSON object from Request
            * @param callback signature (err,data)
            */
-      self.removeMember = function(guildNode, userLocator, callback) {
+      self.removeMember = function(guildNode, user, callback) {
           //TODO DO NOT REMOVE if length == 1
           guildNode.removeCollectionValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
-          DataProvider.putNode(guildNode, function(err, data) {
-              callback(err, data);
+          AdminModel.removeFromCredentials(user, guildNode.getLocator(), function(err, dx) {
+              DataProvider.putNode(guildNode, function(err, data) {
+                  callback(err, data);
+              });
           });
       },
       
