@@ -2,7 +2,7 @@
  * langing page form
  * does not appear on menu
  */
-var lm = require('./landing/landingmodel'),
+var lm = require('../apps/landing/landingmodel'),
     constants = require('../core/constants')
 ;
 
@@ -33,7 +33,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	 * If available, returns json
 	 * Otherwise, opens an edit form
 	 */
-	app.get("/landing/:id", function(req,res) {
+	app.get("/landing/:id", function(req, res) {
 		var q = req.params.id;
 		var usx = req.user;
 		var credentials = [];
@@ -41,7 +41,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		console.log("LANDING "+q);
 	});
 	
-	app.post("/landing", function(req,res) {
+	app.post("/landing", function(req, res) {
 		
 	});
 	

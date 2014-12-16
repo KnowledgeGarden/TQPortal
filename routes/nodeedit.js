@@ -1,5 +1,5 @@
-var kwb = require('./kwb/kwbmodel'),
-    relationlist = require('./kwb/relationlist'),
+var kwb = require('../apps/kwb/kwbmodel'),
+    relationlist = require('../apps/kwb/relationlist'),
     constants = require('../core/constants'),
     types = require('../node_modules/tqtopicmap/lib/types')
 ;
@@ -9,7 +9,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         topicMapEnvironment = environment.getTopicMapEnvironment(),
         Dataprovider = topicMapEnvironment.getDataProvider();
     
-	function isAdmin(req,res,next) {
+	function isAdmin(req, res, next) {
 		console.log("FIX "+constants.ADMIN_CREDENTIALS);
 		console.log("FIXx "+constants.ENGLISH);
 		// must be authenticated
@@ -40,7 +40,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		res.redirect('/');
 	}
    
-  app.get('/nodeedit/:id', isAdmin,function(req,res) {
+  app.get('/nodeedit/:id', isAdmin,function(req, res) {
 	var q = req.params.id,
         credentials = req.user.credentials;
     

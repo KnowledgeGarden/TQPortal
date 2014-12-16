@@ -16,3 +16,7 @@ module.exports.DOCUMENT_TRANSCLUDER_RELATION_TYPE	= "DocumentTranscluderRelation
 module.exports.ISSUE_QUEST_RELATION_TYPE            = "IssueQuestRelationType";
 module.exports.QUEST_GUILD_RELATION_TYPE            = "QuestGuildRelationType";
 module.exports.USER_GUILD_RELATION_TYPE             = "UserGuildRelationType";
+///////////////////////////
+// New Node Type, extends NodeType
+///////////////////////////
+module.exports.MOCK_GAME_NODE_TYPE             = "MockGameNodeType";

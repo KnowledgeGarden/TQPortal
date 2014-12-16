@@ -1,5 +1,4 @@
 {"nodes": [
-  "comment":"these fillin stuff added to the topicmap",
   {"lox":"NoteNodeType","sbOf":"NodeType","label":"NoteNodeType","details":"Topic Map upper NoteNode type","sIco":"/images/cogwheel_sm.png","lIco":"/images/cogwheel.png","trCl":["TypeType","ClassType"]},
   {"lox":"BiographyNodeType","sbOf":"NodeType","label":"BiographyNodeType","details":"Topic Map upper BiographyNode type","sIco":"/images/cogwheel_sm.png","lIco":"/images/cogwheel.png","trCl":["TypeType","ClassType"]},
   {"lox":"DocumentTranscluderRelationType","sbOf":"RelationType","label":"DocumentTranscluderRelationType","details":"TQPortal extendion DocumentTranscluder relation type","sIco":"/images/snowflake_sm.png","lIco":"/images/snowflake.png","trCl":["TypeType"]}

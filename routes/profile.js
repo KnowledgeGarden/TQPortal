@@ -1,7 +1,7 @@
 /**
  * New node file
  */
-var mdl = require('./profile/profilemodel');
+var mdl = require('../apps/profile/profilemodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment,

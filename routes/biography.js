@@ -1,9 +1,9 @@
 /**
  * biography
  */
-var biog = require('./biography/biographymodel'),
+var biog = require('../apps/biography/biographymodel'),
     constants = require('../core/constants'),
-    common = require('./common/commonmodel'),
+    common = require('../apps/common/commonmodel'),
     types = require('../node_modules/tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {

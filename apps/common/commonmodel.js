@@ -70,6 +70,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	
 	self.makeTagList = function(body) {
 		var taglist = [];
+		//look for every tag in body
 		if (body.tag1 && body.tag1.length > 0) {
 			taglist.push(body.tag1);
 		}
@@ -302,6 +303,12 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		}
 		data.body = details;
 		var edithtml = "";
+		//////////////////////////////////////////////
+		//TODO
+		// We need to control editing on Quest Game Trees
+		//   NO EDITING allowed on any tree node in a Quest's Game Tree
+		// To Simplify that, we need to add use canEdit to tell that.
+		//////////////////////////////////////////////
 		if (canEdit) {
 			edithtml = "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\""+editLocator+"\"><b>Edit</b></a>";
 		}
@@ -403,7 +410,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	 * This is the big kahoona for handling an ajax fetch for ViewFirst views
 	 */
 	self.__doAjaxFetch = function(theNode, credentials, app, tags, docs, users, transcludes, data, req, callback) {
-		myEnvironment.logDebug("CommonModel.__doAjax- "+JSON.stringify(data));
+		myEnvironment.logDebug("CommonModel.__doAjaxFetch- "+JSON.stringify(data));
 		var q = theNode.getLocator();
 		var lang = req.query.language;
 		if (!lang) {
@@ -419,6 +426,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 			//Default to Dashboard
 			viewspec = "Dashboard";
 		}
+        // contextLocator is alwasy important to conversation nodes
 		var contextLocator;
 		if (req.query.contextLocator) {
 			//was passed in through the query
@@ -434,10 +442,23 @@ var CommonModel = module.exports = function(environment, tmenv) {
 				//TODO conversations might not do this
 			}
 		}
+		//////////////////////////////////////////
 		//Rules for this node's editablity:
 		//  the node's creator
 		//  an Admin
-		var canEdit = self.canEdit(theNode,credentials);
+		// EXCEPTIONS:
+		//	The node being viewed is a Quest GameTree Node being viewed in the Quest itself
+		// TODO
+		//   NEED to add a isQuestGameNode
+		///////////////////////////////////////////
+		var canEdit;
+		var isQuestGameNode = data.isQuestGameNode;
+		if (isQuestGameNode) {
+			canEdit = false;
+		} else {
+			canEdit = data.isNotEditable;
+		}
+		self.canEdit(theNode,credentials);
 		//must pass this to view
 		var editLocator = app+"edit/"+theNode.getLocator();
 		//we leave it to the caller to load pivots
@@ -448,7 +469,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		//generate the ViewFirst node data
 		//TODO must add transcludes
 		self.generateViewFirstData(theNode, tags, docs,users,credentials, canEdit, data,
-				contextLocator, app, clipboard, lang, transcludes,viewspec, function(json) {
+				contextLocator, app, clipboard, lang, transcludes, viewspec, function(json) {
 			json.myLocatorXP = q+"?contextLocator="+contextLocator;
 			json.myLocator = q;
             KnowledgeWorkbenchModel.showRelations(theNode, function(rresult) {
@@ -465,7 +486,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
                     //get just my parents in particular context
                     //TODO
                     //HUGE ISSUE: if viewspec === "Conversation" we don't need this
-                    self.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+                    self.fillConversationTable(true, false, q, contextLocator, credentials, function(err, presult) {
                         if (presult) {
                             //for displaying P-Conversations
                             json.pcontable = presult;
@@ -476,12 +497,13 @@ var CommonModel = module.exports = function(environment, tmenv) {
                             if (!rootLocator) {rootLocator = q;}
                             //create the actual MillerColumn html
                             var js = "javascript:fetchFromTree";
-                            ColNavWidget.makeColNav(rootLocator,theNode,contextLocator,lang, js, "/conversation/ajaxfetch/", "", credentials, function(err,html) {
+                           // ColNavWidget.makeColNav(rootLocator, theNode, contextLocator, lang, js, "/conversation/ajaxfetch/", "", credentials, function(err,html) {
+                            ColNavWidget.makeColNav(rootLocator, theNode, contextLocator, lang, js, app+ "/ajaxfetch/", "", credentials, function(err, html) {
                                 json.colnav = html;
-                                callback(json, contextLocator);
+                                return callback(json, contextLocator);
                             });
                         } else {
-                            callback(json, contextLocator);
+                            return callback(json, contextLocator);
                         }
                     });
                 });
@@ -523,7 +545,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		data.app=app;
 		data.query = app+"ajaxfetch/"+locator;
 		data.type = viewspec;
-		callback(viewspec, data);
+		return callback(viewspec, data);
 	};
   
 };

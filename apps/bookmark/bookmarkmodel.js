@@ -24,15 +24,16 @@ var BookmarkModel =  module.exports = function(environment) {
 		DataProvider.getNodeByURL(url,credentials, function(err,data) {
 			console.log('BookmarkModel.getNodeByURL '+url+" "+err+" "+data);
 		});
-	},
+	};
+
 	/**
 	 * Update an existing node; no tags included
 	 */
 	self.update = function(json,user,callback) {
 		PortalNodeModel.update(json,user,function(err,result) {
-			callback(err,null);
+			return callback(err,null);
 		});
-	},
+	};
 	
 
 	self.createAnnotationAndTags = function(bookmarkNode, blog, userTopic, credentials, callback) {
@@ -40,63 +41,57 @@ var BookmarkModel =  module.exports = function(environment) {
 		//TODO create the position node
 		//copy from conversationmodel (move to common model?)
 		//Deal with tags
-  	  var lang = blog.language;
-	    var url = blog.url;
+		var lang = blog.language,
+			url = blog.url,
+			error = "";
 
 	  if (!lang) {lang = "en";}
-		var error = '';
+
 		myEnvironment.logDebug("BookmarkModel.createAnnotationAndTags "+bookmarkNode.toJSON());
 		//contextLocator, parentNode,newLocator, 
 		//nodeType, subject, body, language, smallIcon, largeIcon,
 		//  credentials, userLocator, isPrivate, callback
-		TopicModel.createTreeNode(bookmarkNode.getLocator(),bookmarkNode,"",types.NOTE_TYPE,
-	    		  blog.subject, blog.body, lang, icons.NOTE_SM, icons.NOTE,
-	    		  credentials, userTopic.getLocator(), false, function(err,data) {
+		TopicModel.createTreeNode(bookmarkNode.getLocator(), bookmarkNode, "", types.NOTE_TYPE,
+						blog.subject, blog.body, lang, icons.NOTE_SM, icons.NOTE,
+						credentials, userTopic.getLocator(), false, function(err, data) {
 			var positionNode = data;
 			positionNode.setResourceUrl(url);
 			  myEnvironment.addRecentConversation(positionNode.getLocator(),blog.subject);
 			if (err) {error += err;}
 			var taglist = CommonModel.makeTagList(blog);
 	        if (taglist.length > 0) {
-	          TagModel.processTagList(taglist, userTopic, positionNode, credentials, function(err,result) {
-	            console.log('NEW_POST-1 '+result);
-	            //result could be an empty list;
-	            //TagModel already added Tag_Doc and Doc_Tag relations
-	            console.log("ARTICLES_CREATE_2 "+JSON.stringify(positionNode));
-	            DataProvider.putNode(positionNode, function(err,data) {
-	              console.log('ARTICLES_CREATE-3 '+err);	  
-	  			  if (err) {error += err;}
-	              if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-	              console.log('ARTICLES_CREATE-3b '+userTopic);	  
-	
-	              TopicModel.relateExistingNodesAsPivots(userTopic,positionNode,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	              		userTopic.getLocator(),
-	                    		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
-	      			if (err) {error += err;}
-	                  if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-		              callback(error,positionNode.getLocator());
-	               }); //r1
-	            }); //putnode 		  
-	      	  }); // processtaglist
+				TagModel.processTagList(taglist, userTopic, positionNode, credentials, function(err,result) {
+					console.log('NEW_POST-1 '+result);
+					//result could be an empty list;
+					//TagModel already added Tag_Doc and Doc_Tag relations
+					console.log("ARTICLES_CREATE_2 "+JSON.stringify(positionNode));
+					DataProvider.putNode(positionNode, function(err, data) {
+						console.log('ARTICLES_CREATE-3 '+err);	  
+						if (err) {error += err;}
+						console.log('ARTICLES_CREATE-3b '+userTopic);	  
+						TopicModel.relateExistingNodesAsPivots(userTopic ,positionNode, types.CREATOR_DOCUMENT_RELATION_TYPE,
+														userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
+														false, credentials, function(err, data) {
+							if (err) {error += err;}
+							return callback(error,positionNode.getLocator());
+						}); //r1
+					}); //putnode 		  
+				}); // processtaglist
 	        } else {
-	            DataProvider.putNode(positionNode, function(err,data) {
-		              console.log('ARTICLES_CREATE-3 '+err);	  
-		  			  if (err) {error += err;}
-		              if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-		              console.log('ARTICLES_CREATE-3b '+userTopic);	  
-		
-		              TopicModel.relateExistingNodesAsPivots(userTopic,positionNode,types.CREATOR_DOCUMENT_RELATION_TYPE,
-		              		userTopic.getLocator(),
-		                    		icons.RELATION_ICON, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+	            DataProvider.putNode(positionNode, function(err, data) {
+					console.log('ARTICLES_CREATE-3 '+err);	  
+					if (err) {error += err;}
+					console.log('ARTICLES_CREATE-3b '+userTopic);	  
+					TopicModel.relateExistingNodesAsPivots(userTopic, positionNode,types.CREATOR_DOCUMENT_RELATION_TYPE,
+		              			userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
+		              			false, credentials, function(err, data) {
 		      			if (err) {error += err;}
-		                  if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-			              callback(error,positionNode.getLocator());
-		               }); //r1
-		            }); //putnode 		  
-
+						return callback(error, positionNode.getLocator());
+					}); //r1
+				}); //putnode 		  
 	        }
 		});
-	},
+	};
 	/**
 	 * This is a bookmark. A bookmark for this URL might already exist.
 	 * If so, we simply add a new AIR to it. Bookmark form has URL, title, subject, body, tags.
@@ -131,9 +126,9 @@ var BookmarkModel =  module.exports = function(environment) {
 		    	  bookmarkTopic = dNode;
 		    	  //MAKE POSITION
 		    	  //TAGS to Bookmark and Position
-		    	  self.createAnnotationAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
+		    	  self.createAnnotationAndTags(bookmarkTopic, blog, userTopic, credentials, function(err, result) {
 				      if (err) {error+=err;}
-		    		  callback(error,result);
+		    		  return callback(error, result);
 		    	  });
 		      } else {
 		    	  //create the bookmark
@@ -153,14 +148,14 @@ var BookmarkModel =  module.exports = function(environment) {
 					  DataProvider.putNode(bookmarkTopic, function(err,data) {
 					      if (err) {error+=err;}
 					      TopicModel.relateExistingNodesAsPivots(userTopic,bookmarkTopic,types.CREATOR_DOCUMENT_RELATION_TYPE,
-				              		userTopic.getLocator(),
-				                  		icons.RELATION_ICON_SM, icons.RELATION_ICON, false, false, credentials, function(err,data) {
+				              						userTopic.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON,
+				              						false, credentials, function(err, data) {
 					  			  if (err) {error += err;}
 					  			  //MAKE POSITION
 					  			  //TAGS to Bookmark and Position
-					  			  self.createAnnotationAndTags(bookmarkTopic,blog,userTopic,credentials, function(err,result) {
+					  			  self.createAnnotationAndTags(bookmarkTopic,blog,userTopic,credentials, function(err, result) {
 					  				  if (err) {error+=err;}
-					  				  callback(error,result);
+					  				  return callback(error,result);
 					  			  });
 					      });
 					  });
@@ -168,15 +163,15 @@ var BookmarkModel =  module.exports = function(environment) {
 			  }
 		    }); //getNodeByURL  	  
 	      }); //getNodeByLocator
-	  },
+	  };
 	  
 	  self.listBlogPosts = function(start, count, credentials, callback) {
 	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BOOKMARK_TYPE,start,count);
 	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
 	      console.log("BookmarkModel.listBlogPosts "+err+" "+data);
-	      callback(err,data,total);
+	      return callback(err,data,total);
 	    });
-	  },
+	  };
 	  
 	  /**
 	   * @param credentials
@@ -187,9 +182,9 @@ var BookmarkModel =  module.exports = function(environment) {
 		      console.log('ROUTES/bookmark '+err+' '+result);
 		      CommonModel.fillSubjectAuthorDateTable(result,"/bookmark/",totalx, function(html,len,total) {
 			      console.log("FILLING "+start+" "+count+" "+total);
-			      callback(html,len,total);
+			      return callback(html,len,total);
 		    	  
 		      });
 		  });
-	  }
+	  };
 };

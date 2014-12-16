@@ -25,16 +25,16 @@ var IssueModel =  module.exports = function(environment) {
 	
 	self.getRPGEnvironment = function() {
 		return RPGEnvironment;
-	},
+	};
 	
 	
 	  /**
 	   * Update an existing blog entry; no tags included
 	   */
-	  self.update = function(blog,user,credentials,callback) {
+	  self.update = function(blog, user, credentials, callback) {
 		  myEnvironment.logDebug("Issue.UPDATE "+JSON.stringify(blog));
 		  var lox = blog.locator;
-		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
+		  DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
 			  var error = '';
 			  if (err) {error += err;}
 			  var title = blog.title;
@@ -62,7 +62,7 @@ var IssueModel =  module.exports = function(environment) {
 		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
 		    		  if (err) {error += err;}
 		    		  console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
-		    		  callback(error,data);
+		    		  return callback(error,data);
 		    	  });
 	    	  } else {
 	    		  if (!isNotUpdateToBody) {
@@ -70,14 +70,14 @@ var IssueModel =  module.exports = function(environment) {
 	    			  result.setLastEditDate(new Date());
 			    	  DataProvider.putNode(result, function(err,data) {
 			    		  if (err) {error += err;}
-			    		  callback(error,data);
+			    		  return callback(error, data);
 			    	  });
 	    		  } else {
-	    			  callback(error,null);
+	    			  return callback(error, null);
 	    		  }
 	    	  };
 		  });
-	  },
+	  };
 	  
 	  /**
 	   * Create a new blog post
@@ -127,7 +127,7 @@ var IssueModel =  module.exports = function(environment) {
 	                		userTopic.getLocator(),
 	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                      callback(err,article.getLocator());
+	                    return callback(err,article.getLocator());
 	                 }); //r1
 	              }); //putnode 		  
 	        	}); // processtaglist
@@ -141,21 +141,21 @@ var IssueModel =  module.exports = function(environment) {
 	                  		userTopic.getLocator(),
 	                       icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
 	                               if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                               callback(err,article.getLocator());
+	                               return callback(err, article.getLocator());
 	                       }); //r1
 	                }); //putnode 		  
 
 	          }    	
 	      });
 	    });
-	  },
+	  };
 	  
 	  self.listIssues = function(start, count, credentials, callback) {
         DataProvider.listInstanceNodes(types.CHALLENGE_TYPE, start,count,credentials, function(err,data,total){
                 console.log("IssueModel.listIssues "+err+" "+data);
-	      callback(err,data, total);
+	      return callback(err,data, total);
 	    });
-	  },
+	  };
 	  
 	  /**
 	   * @param start
@@ -168,10 +168,10 @@ var IssueModel =  module.exports = function(environment) {
 		      console.log('IssueModel.fillDatatable '+err+' '+totalx+" "+result);
 		      CommonModel.fillSubjectAuthorDateTable(result,"/issue/",totalx, function(html,len,total) {
 			      console.log("FILLING "+start+" "+count+" "+total);
-			      callback(html,len,total);
+			      return callback(html,len,total);
 		    	  
 		      });
 		  });
-	  }
+	  };
 	  
 }

@@ -8,7 +8,7 @@
  * <li>Avatars participate in guilds</li>
  * </ul>
  */
-var issue = require('./issue/issuemodel'),
+var issue = require('../apps/issue/issuemodel'),
     constants = require('../core/constants'),
     types = require('../node_modules/tqtopicmap/lib/types');
 
@@ -61,18 +61,18 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  var data = myEnvironment.getCoreUIData(req);
 		  //We can change the brand
 		  data.brand = "GetTheIssues";
-		  data.issuestart=0;
+		  data.issuestart="0";
 		  data.issuecount=constants.MAX_HIT_COUNT; //pagination size
-		  data.issuetotal=0;
+		  data.issuetotal="0";
 		  data.issuequery="/issue/index";
-          data.queststart = 0;
+          data.queststart = "0";
 		  data.questcount=constants.MAX_HIT_COUNT; //pagination size
-		  data.questtotal = 0;
+		  data.questtotal = "0";
 		  data.questquery = "/quest/index";
 		  data.brand = "GetTheIssues";
-		  data.guildstart=0;
+		  data.guildstart="0";
 		  data.guildcount=constants.MAX_HIT_COUNT; //pagination size
-		  data.guildtotal=0;
+		  data.guildtotal="0";
 		  data.guildquery="/guild/index";
 
 		  data.type = "landing";

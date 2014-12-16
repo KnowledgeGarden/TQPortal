@@ -122,14 +122,14 @@ function fetchFromMetaTree(lox, quex) {
  */
 function pageSetup() {
     navtoggle = false;
-		var type = $(".vfpage").attr("type");
-		var q = $(".vfpage").attr("query");
-		if (q) {
-		  var language = $(".vfpage").attr("language");
-		  var cl = $(".vfpage").attr("contextLocator");
-		  var query = q+"?language="+language+"&viewspec="+type;
-		  getGamePage(type, query);
-		}
+	var type = $(".vfpage").attr("type");
+	var q = $(".vfpage").attr("query");
+	if (q) {
+	  var language = $(".vfpage").attr("language");
+	  var cl = $(".vfpage").attr("contextLocator");
+	  var query = q+"?language="+language+"&viewspec="+type;
+	  getGamePage(type, query);
+	}
 
 
 }
@@ -221,7 +221,7 @@ function painQuestIndex(data) {
 	$("#questtabledata").attr("start",parseInt(data.start));
 	//$("#tabledata").attr("count",parseInt(data.count));
 	$("#questtabledata").attr("total",parseInt(data.total));
-	paintIssuePaginationButtons(data);
+	paintQuestPaginationButtons(data);
 }
 
 function paintQuestPaginationButtons(data) {
@@ -229,6 +229,7 @@ function paintQuestPaginationButtons(data) {
 	var count = parseInt(data.count);
 	//total available to show
 	var avail = parseInt(data.total);
+//	alert("Q "+avail);
 	//what's to the left of the cursor
 	var surplus = cursor - count;
 	//what's to the right of the cursor
@@ -254,6 +255,7 @@ function pageQuestNext() {
 	//
 	var count = parseInt(data.attr("count"));
 	var avail = parseInt(data.attr("total"));
+//	alert("G "+avail);
 //	alert(cursor+" "+count);
 	var query = q+"?start="+cursor+"&count="+count;
 	$.get( query, function( data ) {

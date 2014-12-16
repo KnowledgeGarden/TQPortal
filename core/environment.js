@@ -19,9 +19,10 @@ var lgr = require('log4js'),
  ;
 
 /**
- * @param callback: signature(err, result) //not actually used to carry information
+ * @param callback: signature(err, result) // result is the environment
  */
-var Environment = module.exports = function(callback) {
+var Environment = module.exports = function() {  //function(callback) {
+	console.log("Environment A");
 	//create a logging system
 	var logger,
         monitorLogger,
@@ -48,10 +49,9 @@ var Environment = module.exports = function(callback) {
         theMessage = "",
         //A list of Environment objects from apps which
         // need to save their recents and other things
-        saveRecentListeners = [],
-        self = this;
+        saveRecentListeners = [];
 
-self.init = function() {
+	this.init = function(callback) {
 	///////////////////////
 	//Populate the environment
 	///////////////////////
@@ -76,9 +76,10 @@ self.init = function() {
             //user databasea
             //userdatabase = dx;
             //now boot the topic map
-            
+            logger.debug("Environment A");
             var foo = new Indx(function(err, tmx) {
                 TopicMapEnvironment = tmx;
+                logger.debug("Environment B");
                 // boot the game environment
                 RPGEnvironment = new Genv(this, tmx);
                 //load recents
@@ -143,15 +144,25 @@ self.init = function() {
                     self.logMonitorDebug("Portal Environment started ");
                     self.logAPIDebug("Portal Environment started ");
                     TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
-                    callback("foo","bar");  	
+                    logger.debug("Environment C");
+                    return callback("foo","bar");  	
                 }); // read file
             });  // foo topicmap
           }); //udb
       }); 
     }); //config
 	}); //logging
-}; //init
-self.init();
+	}; //init
+
+	var   self = this;
+
+	self.start = function(callback) {
+		console.log("ENVIRONMENT STARTING")
+		this.init(function (err, data) {
+			return callback(err,data);
+		});
+	}
+//logger.debug("Environment E");
 
 ///////////////////////
 // API
@@ -162,17 +173,17 @@ self.init();
 	self.addRecentListener = function(listener) {
 		if (!saveRecentListeners) {saveRecentListeners = [];}
 		saveRecentListeners.push(listener);
-	},
+	};
 	/////////////////////////
 	// Application UI
 	/////////////////////////
 	self.setMessage = function(message) {
 		console.log("SETTING MESSAGE "+message)
 		theMessage = message;
-	},
+	};
 	self.clearMessage = function() {
 		theMessage = "";
-	},
+	};
 	self.persistRecents = function() {
 		var recentspath = __dirname+"/../config/recents.json";
 		var dx = {};
@@ -189,25 +200,25 @@ self.init();
 				saveRecentListeners[i].persistRecents();
 			}
 		}
-	},
+	};
     self.saveHelp = function() {
         var path = __dirname+"/../config/help.json";
 		fs.writeFileSync(path, JSON.stringify(helpMenuProperties));
-    },
+    };
 	self.saveProperties = function() {
 		var path = __dirname+"/../config/config.json";
 		fs.writeFileSync(path, JSON.stringify(configProperties));
-	},
+	};
 	self.addApplicationToMenu = function(url, name) {
 		if (!appMenu) {appMenu = [];}
 		var urx = {};
 		urx.url = url;
 		urx.name = name;
 		appMenu.push(urx);
-	},
+	};
 	self.getApplicationMenu = function() {
 		return appMenu;
-	},
+	};
 	
 	self.addConversationToHelp = function(url, name) {
 		if (!helpMenuProperties) {helpMenuProperties = {};}
@@ -220,7 +231,7 @@ self.init();
         helpMenuProperties.helpMenu = helpx;
 		
 		self.saveHelp();
-	},
+	};
 	self.getCoreUIData = function(request) {
 		console.log("FFF "+JSON.stringify(helpMenu));
 		var result = {};
@@ -254,14 +265,14 @@ self.init();
 		result.isAuthenticated = isAuth;
 		result.isNotAuthenticated = !isAuth;
 		return result;
-	},
+	};
 	
 	self.getCommonModel = function() {
 		return CommonModel;
-	},
+	};
 	self.getPortalNodeModel = function() {
 		return PortalNodeModel;
-	},
+	};
 	/////////////////////////
 	// Recent events recording
 	//TODO move these to applications, and let them install
@@ -273,7 +284,7 @@ self.init();
 		var d = new Date().getTime();
 		tagRing.add(locator,label,d);
 //		TopicMapEnvironment.logDebug("Environment.addRecentTag-1 "+tagRing.size());
-	},
+	};
 	self.addRecentBlog = function(locator,label) {
 		var d = new Date().getTime();
 		blogRing.add(locator,label,d);
@@ -283,93 +294,96 @@ self.init();
 		var d = new Date().getTime();
 		wikiRing.add(locator,label,d);
 //		TopicMapEnvironment.logDebug("Environment.addRecentWiki "+wikiRing.size());
-	},
+	};
 	self.addRecentBookmark = function(locator,label) {
 		var d = new Date().getTime();
 		bookmarkRing.add(locator,label,d);
 //		TopicMapEnvironment.logDebug("Environment.addRecentBookmark "+wikiRing.size());
-	},
+	};
 	self.addRecentConversation = function(locator,label) {
 		var d = new Date().getTime();
 		conversationRing.add(locator,label,d);
 	//	TopicMapEnvironment.logDebug("Environment.addRecentConversation "+wikiRing.size());
-	},
+	};
     self.addRecentConnection = function(locator,label) {
         var d = new Date().getTime();
         connectionRing.add(locator,label,d);
-    }
+    };
 	
 	self.listRecentTags = function() {
 		return tagRing.getReversedData();
-	},
+	};
 	self.listRecentBlogs = function() {
 		return blogRing.getReversedData();
-	},
+	};
 	self.listRecentWikis = function() {
 		return wikiRing.getReversedData();
-	},
+	};
 	self.listRecentBookmarks = function() {
 		return bookmarkRing.getReversedData();
 	},
 	self.listRecentConversations = function() {
 		return conversationRing.getReversedData();
-	},
+	};
 
     self.listRecentConnections = function() {
         return connectionRing.getReversedData();
-    }
+    };
 	self.getConfigProperties = function() {
 		return configProperties;
-	},
+	};
 	
 	self.getIsInvitationOnly = function() {
 	  return configProperties.invitationOnly;
-	},
+	};
 	self.getIsPrivatePortal = function() {
 	  return configProperties.portalIsPrivate;
-	},
+	};
         
 	self.getTopicMapEnvironment = function() {
 	  return TopicMapEnvironment;
-	},
+	};
 	
     self.getRPGEnvironment = function () {
         return RPGEnvironment;
-    },
+    };
         
 	self.getUserDatabase = function() {
 	  return userdatabase;
-	},
+	};
 	
 	self.getServer = function() {
 	  return configProperties.server;
-	},
+	};
 	self.getPort = function() {
 	  return configProperties.port;
-	},
+	};
 	//////////////////////////////////////
 	//logging utils
 	//////////////////////////////////////
 	self.logInfo = function(message) {
 		logger.info(message);
-	},
+	};
 	self.logDebug = function(message) {
 		logger.debug(message);
-	},
+	};
 	self.logError = function(message) {
 		logger.error(message);
-	},
+	};
 	self.logMonitorDebug = function(message) {
 		monitorLogger.debug(message);
-	},
+	};
 	self.logMonitorError = function(message) {
 		monitorLogger.error(message);
-	},
+	};
 	self.logAPIDebug = function(message) {
 		apiLogger.debug(message);
-	},
+	};
 	self.logAPIError = function(message) {
 		apiLogger.error(message);
 	};
+	console.log("ENVIRONMENT END");
+//logger.debug("Environment E");
+//	return callback("foo",this); 
 };
 

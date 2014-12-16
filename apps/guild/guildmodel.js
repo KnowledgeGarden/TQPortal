@@ -27,7 +27,7 @@ var GuildModel =  module.exports = function(environment) {
 	
 	self.getRPGEnvironment = function() {
 		return RPGEnvironment;
-	}
+	};
 	
 	
 	  /**
@@ -79,7 +79,7 @@ var GuildModel =  module.exports = function(environment) {
 	    		  }
 	    	  };
 		  });
-	  },
+	  };
 	  
 	  /**
 	   * Create a new Guild
@@ -160,15 +160,15 @@ var GuildModel =  module.exports = function(environment) {
               }); // admin
 	      });
 	    });
-	  },
+	  };
 	  
 	  self.listGuilds = function(start, count, credentials, callback) {
 	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.GUILD_TYPE,start,count);
-	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
+	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err, data, total) {
 	      console.log("GuildModel.listIssues "+err+" "+data);
-	      callback(err,data, total);
+	      return callback(err, data, total);
 	    });
-	  },
+	  };
 	  
 	  /**
 	   * @param start
@@ -179,13 +179,12 @@ var GuildModel =  module.exports = function(environment) {
 	  self.fillDatatable = function(start, count,credentials, callback) {
 		  self.listGuilds(start,count,credentials,function(err,result, totalx) {
 		      console.log('GuildModel.fillDatatable '+err+' '+totalx+" "+result);
-		      CommonModel.fillSubjectAuthorDateTable(result,"/guild/",totalx, function(html,len,total) {
+		      CommonModel.fillSubjectAuthorDateTable(result,"/guild/",totalx, function(html, len, total) {
 			      console.log("FILLING "+start+" "+count+" "+total);
-			      callback(html,len,total);
-		    	  
+			      return callback(html, len, total);
 		      });
 		  });
-	  },
+	  };
           
           /**
            * Return <code>true</code> if <code>userLocator</code> is a member of this guild
@@ -200,22 +199,23 @@ var GuildModel =  module.exports = function(environment) {
               return (where > -1);
           }
           return false; // should never happen
-      },
+      };
           
-           /**
-           * Return <code>true</code> if <code>userLocator</code> is a leader of this guild
-           * @param guildNode
-           * @param userLocator
-           * @return boolean
-           */
-     self.isLeader = function(guildNode, userLocator) {
+  /**
+   * Return <code>true</code> if <code>userLocator</code> is a leader of this guild
+   * @param guildNode
+   * @param userLocator
+   * @return boolean
+   */
+  self.isLeader = function(guildNode, userLocator) {
           var memlist = guildNode.getProperty(gameConstants.GUILD_LEADER_LIST_PROPERTY);
           if (memlist) {
               var where = memlist.indexOf(userLocator);
               return (where > -1);
-          }
+          } else {
           return false; //should never happen since owner is always leader
-      },
+        }
+  };
 	  
           /**
            * Add <code>userLocator</code> to <code>guildNode</code> and save it
@@ -227,10 +227,10 @@ var GuildModel =  module.exports = function(environment) {
           guildNode.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, user.handle);
           AdminModel.addToCredentials(user, guildNode.getLocator(), function(err, dx) {
               DataProvider.putNode(guildNode, function(err, data) {
-                  callback(err, data);
+                  return callback(err, data);
               });
           });
-      },
+      };
       
           /**
            * Remove <code>userLocator</code> from <code>guildNode</code> and save it
@@ -243,10 +243,10 @@ var GuildModel =  module.exports = function(environment) {
           guildNode.removeCollectionValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
           AdminModel.removeFromCredentials(user, guildNode.getLocator(), function(err, dx) {
               DataProvider.putNode(guildNode, function(err, data) {
-                  callback(err, data);
+                  return callback(err, data);
               });
           });
-      },
+      };
       
           /**
            * Add <code>userLocator</code> to <code>guildNode</code> and save it
@@ -257,9 +257,9 @@ var GuildModel =  module.exports = function(environment) {
       self.addLeader = function(guildNode, userLocator, callback) {
           guildNode.addSetValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
           DataProvider.putNode(guildNode, function(err, data) {
-              callback(err, data);
+              return callback(err, data);
           });
-      },
+      };
       
           /**
            * Remove <code>userLocator</code> from <code>guildNode</code> and save it
@@ -271,9 +271,9 @@ var GuildModel =  module.exports = function(environment) {
           //TODO DO NOT REMOVE IF length == 1
           guildNode.removeCollectionValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
           DataProvider.putNode(guildNode, function(err, data) {
-              callback(err, data);
+              return callback(err, data);
           });
-      },
+      };
           /**
            * Set this quild's current quest to <code>questLocator</code> and save it
            * @param guildNode
@@ -283,9 +283,9 @@ var GuildModel =  module.exports = function(environment) {
       self.setCurrentQuest = function(guildNode, questLocator, callback) {
           guildNode.addSetValue(gameConstants.GUILD_CURRENT_QUEST_PROPERTY, questLocator);
           DataProvider.putNode(guildNode, function(err, data) {
-              callback(err, data);
+              return callback(err, data);
           });          
-      }
+      };
 
                 /**
            * Add <code>questLocator</code> to <code>guildNode</code> and save it
@@ -296,9 +296,9 @@ var GuildModel =  module.exports = function(environment) {
       self.addQuest = function(guildNode, questLocator, callback) {
           guildNode.addSetValue(gameConstants.GUILD_QUEST_LIST_PROPERTY, questLocator);
           DataProvider.putNode(guildNode, function(err, data) {
-              callback(err, data);
+              return callback(err, data);
           });
-      },
+      };
       
           /**
            * Remove <code>questLocator</code> from <code>guildNode</code> and save it
@@ -309,9 +309,9 @@ var GuildModel =  module.exports = function(environment) {
       self.removeQuest = function(guildNode, questLocator, callback) {
           guildNode.removeCollectionValue(gameConstants.GUILD_QUEST_LIST_PROPERTY, questLocator);
           DataProvider.putNode(guildNode, function(err, data) {
-              callback(err, data);
+              return callback(err, data);
           });
-      },
+      };
           /**
            * Return a list of guild members
            * @param guildNode
@@ -319,7 +319,7 @@ var GuildModel =  module.exports = function(environment) {
            */
       self.listMembers = function(guildNode) {
           return guildNode.getProperty(gameConstants.GUILD_MEMBER_LIST_PROPERTY);
-      },
+      };
           
           /**
            * Return a list of guild leaders
@@ -328,15 +328,7 @@ var GuildModel =  module.exports = function(environment) {
            */
       self.listLeaders = function(guildNode) {
           return guildNode.getProperty(gameConstants.GUILD_LEADER_LIST_PROPERTY);
-      }
-      
-      /**
-       * Play the current quest
-       * @param callback signature (err)
-       */
-      self.play = function(callback) {
-         //TODO
-      }
-        
+      };
+              
 
 }

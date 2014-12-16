@@ -4,7 +4,7 @@
  *   encodeURIComponent(location.href)+'&title='+         
  *   encodeURIComponent(document.title)
  */
-var bkmrk = require('./bookmark/bookmarkmodel'),
+var bkmrk = require('../apps/bookmark/bookmarkmodel'),
     constants = require('../core/constants'),
     types = require('../node_modules/tqtopicmap/lib/types');
 

@@ -3,7 +3,7 @@
  * For now, not a menu app
  * But, it could get its own page for advanced search
  */
-var srch = require('./search/searchmodel'),
+var srch = require('../apps/search/searchmodel'),
     constants = require('../core/constants');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {

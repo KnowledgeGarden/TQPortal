@@ -22,7 +22,7 @@
   	  <a href="/incubator/{{guildLocator}}"><button type="submit" class="btn btn-btn-success btn-small">Enter Incubator</button></a>
 	</div>
    {{/if}}
-    {{#if isAuthenticated}}
+    {{#if canJoin}}
  	<div class="form-group">
   	  <a href="/guild/join/{{guildLocator}}"><button type="submit" class="btn btn-btn-success btn-small">Join Guild</button></a><br />
 	</div>

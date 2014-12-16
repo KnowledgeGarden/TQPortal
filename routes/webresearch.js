@@ -12,7 +12,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/////////////////
 	// Routes
 	/////////////////
-	app.get('/research',function(req,res) { 
+	app.get('/research',function(req, res) { 
 		
 		res.render('webresearch', myEnvironment.getCoreUIData(req));
 	});

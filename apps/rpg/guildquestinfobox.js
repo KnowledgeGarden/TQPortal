@@ -16,7 +16,13 @@ var GuildQuestInfoBox = function(questId, questTitle) {
 
 module.exports = GuildQuestInfoBox;
 //Some constants
+/** The Quest's Locator */
 module.exports.QUEST_LOCATOR = "locator";
+/** The Quest's Title */
 module.exports.QUEST_TITLE = "questTitle";
+/** The Actual GameTree Root node */
 module.exports.QUEST_CONTEXT_LOCATOR = "contextLocator";
+/** Meta Conversation root node */
 module.exports.META_TREE_ROOT_LOCATOR = "metaLocator";
+/** List of GameTree root nodes played */
+module.exports.GAME_CONTEXT_HISTORY_LIST = "contextHistory";

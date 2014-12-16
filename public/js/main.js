@@ -40,7 +40,7 @@ function doPageSetup() {
 function handleIssueHome() {
     //ISSUES
 	var q = $("#issuetabledata").attr("query");
-	//alert(q);
+//	alert(q);
     if (q) {
 	var cursor = $("#issuetabledata").attr("start");
 	var count = $("#issuetabledata").attr("count");
@@ -86,7 +86,7 @@ function handleIssueHome() {
 	cursor = $("#questtabledata").attr("start");
 	count = $("#questtabledata").attr("count");
 	query = q+"?start="+cursor+"&count="+count;
-    avail, surplus, more, html;
+    //avail, surplus, more, html;
 	//alert(query);
 	$.get( query, function( data ) {
  //       alert(JSON.stringify(data));
@@ -127,7 +127,7 @@ function handleIssueHome() {
 	cursor = $("#guildtabledata").attr("start");
 	count = $("#guildtabledata").attr("count");
 	query = q+"?start="+cursor+"&count="+count;
-    avail, surplus, more, html;
+    //avail, surplus, more, html;
 	//alert(query);
 	$.get( query, function( data ) {
  //       alert(JSON.stringify(data));
@@ -135,13 +135,13 @@ function handleIssueHome() {
 	  $("#guildtabledata").attr("start","");
 	  //$("#tabledata").attr("count","");
 	  $("#guildtabledata").attr("total","");
-	  $("#guildtabledata").attr("start",parseInt(data.issuestart));
+	  $("#guildtabledata").attr("start",parseInt(data.guildstart));
 	  //$("#tabledata").attr("count",parseInt(data.count));
-	  $("#guildtabledata").attr("total",parseInt(data.issuetotal));
-      cursor = parseInt(data.queststart);
-	  count = parseInt(data.questcount);
+	  $("#guildtabledata").attr("total",parseInt(data.guildtotal));
+      cursor = parseInt(data.guildstart);
+	  count = parseInt(data.guildcount);
 	  //total available to show
-	  avail = parseInt(data.questtotal);
+	  avail = parseInt(data.guildtotal);
 	  //what's to the left of the cursor
 	  surplus = cursor - count;
 	  //what's to the right of the cursor
@@ -499,8 +499,9 @@ function paintTree(root) {
 
 
 function getPage(type, query) {
-//	alert("XX "+query);
+	alert("XX "+query);
 	$.get( query, function( data ) {
+		alert(data);
 		currentLocator = data.locator;
 		if (type === "Conversation") {
 		//	alert("here "+navtoggle);
@@ -602,6 +603,7 @@ function getPage(type, query) {
  *
  */
 function doDoubleClick() {
+
 	if (locator !== currentLocator) {
 		currentLocator = locator;
 		getPage("Conversation", query);
@@ -625,6 +627,7 @@ function initPage() {
 //	} else {
 //		alert("NoWS");
 //	}
+//alert("foo");
     
 handleIssueHome();
 	//test for chatroom

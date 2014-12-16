@@ -40,11 +40,11 @@ var KnowledgeWorkbenchModel =  module.exports = function(environment, cm, tmenv)
     
     self.getNewRelationForm = function() {
         return relationForm;
-    },
+    };
         
     self.arrayContains = function(array, value) {
         return (array.indexOf(value) > -1);
-    }
+    };
     
     /**
      * Called from CommonModel.__doAjaxFetch
@@ -68,9 +68,11 @@ var KnowledgeWorkbenchModel =  module.exports = function(environment, cm, tmenv)
                     result.push(rx);
                 }
             }
+            return callback(result);
+        } else {
+            return callback(result);
         }
-        callback(result);
-    },
+    };
     
     /**
      * Create a connection between two nodes
@@ -128,7 +130,7 @@ var KnowledgeWorkbenchModel =  module.exports = function(environment, cm, tmenv)
                                             if (err) {console.log('ARTICLES_CREATE-3d '+err);}
                                             myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-3 "+userLocator+" | "+err+" | "+result);
                                             //modified to return entire node
-                                            callback(err,result);
+                                            return callback(err,result);
                                         }); //r1
                                     }); //putnode 		  
                                 }); // processtaglist
@@ -146,7 +148,7 @@ var KnowledgeWorkbenchModel =  module.exports = function(environment, cm, tmenv)
                                 }); //putnode 		
                             }             
                         } else {
-                            callback(error,result);
+                            return callback(error,result);
                         }
                     }); //relatenodes
                 }); //gettarget

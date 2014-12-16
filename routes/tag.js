@@ -1,9 +1,9 @@
 /**
  * tag app
  */
-var tagModel = require('./tag/tagmodel'),
+var tagModel = require('../apps/tag/tagmodel'),
     constants = require('../core/constants'),
-    common = require('./common/commonmodel'),
+    common = require('../apps/common/commonmodel'),
     types = require('../node_modules/tqtopicmap/lib/types')
 ;
 

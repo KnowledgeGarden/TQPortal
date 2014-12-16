@@ -5,8 +5,8 @@
  *   for wiring relations among topics
  */
 
-var kwb = require('./kwb/kwbmodel'),
-    relationlist = require('./kwb/relationlist'),
+var kwb = require('../apps/kwb/kwbmodel'),
+    relationlist = require('../apps/kwb/relationlist'),
     constants = require('../core/constants'),
     types = require('../node_modules/tqtopicmap/lib/types')
 ;

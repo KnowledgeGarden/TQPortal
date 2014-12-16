@@ -2,7 +2,7 @@
  * New Home app
  * This one shows recent events
  */
-var home = require('./home/homemodel');
+var home = require('../apps/home/homemodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment,

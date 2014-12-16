@@ -2,7 +2,7 @@
  * topicmap
  */
 
-var tm = require("./topicmap/topicmapmodel");
+var tm = require("../apps/topicmap/topicmapmodel");
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var TopicMapModel = new tm(environment);
@@ -12,8 +12,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/////////////////
 	environment.addApplicationToMenu("/topicmap","TopicMap");
 
-	app.get("/topicmap", function(req,res) {
+	app.get("/topicmap", function(req, res) {
 		var data = environment.getCoreUIData(req);
-		res.render("topicmaphome",data);
+		res.render("topicmaphome", data);
 	});
 };

@@ -1,9 +1,9 @@
 /**
  * User app
  */
-var userModel = require('./user/usermodel'),
+var userModel = require('../apps/user/usermodel'),
     constants = require('../core/constants'),
-    common = require('./common/commonmodel'),
+    common = require('../apps/common/commonmodel'),
     types = require('../node_modules/tqtopicmap/lib/types');
 
 

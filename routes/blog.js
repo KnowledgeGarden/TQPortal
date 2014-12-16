@@ -1,9 +1,9 @@
 /**
  * Blog app
  */
-var acls = require('./blog/blogmodel'),
+var acls = require('../apps/blog/blogmodel'),
     constants = require('../core/constants'),
-    common = require('./common/commonmodel'),
+    common = require('../apps/common/commonmodel'),
     types = require('../node_modules/tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {

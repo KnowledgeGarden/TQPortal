@@ -6,18 +6,18 @@
  *   Assign "pipes" to specific IP addresses
  *   This mimics the needs of condos talking to fed server
  */
-var apim = require('./api/apimodel');
+var apim = require('../apps/api/apimodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment,
         APIModel = new apim(environment);
 	
 
-	app.get('/api', function(req,res) {
+	app.get('/api', function(req, res) {
 		//TODO
 	});
 	
-	app.post('/api', function(req,res) {
+	app.post('/api', function(req, res) {
 		//TODO
 	});
 };
