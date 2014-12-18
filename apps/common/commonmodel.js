@@ -468,7 +468,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		//if there is a node to transclude, it's nice to know who the user is
 		//generate the ViewFirst node data
 		//TODO must add transcludes
-		self.generateViewFirstData(theNode, tags, docs,users,credentials, canEdit, data,
+		self.generateViewFirstData(theNode, tags, docs, users, credentials, canEdit, data,
 				contextLocator, app, clipboard, lang, transcludes, viewspec, function(json) {
 			json.myLocatorXP = q+"?contextLocator="+contextLocator;
 			json.myLocator = q;
@@ -498,7 +498,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
                             //create the actual MillerColumn html
                             var js = "javascript:fetchFromTree";
                            // ColNavWidget.makeColNav(rootLocator, theNode, contextLocator, lang, js, "/conversation/ajaxfetch/", "", credentials, function(err,html) {
-                            ColNavWidget.makeColNav(rootLocator, theNode, contextLocator, lang, js, app+ "/ajaxfetch/", "", credentials, function(err, html) {
+                            ColNavWidget.makeColNav(rootLocator, theNode, contextLocator, lang, js, app+ "ajaxfetch/", "", credentials, function(err, html) {
                                 json.colnav = html;
                                 return callback(json, contextLocator);
                             });
