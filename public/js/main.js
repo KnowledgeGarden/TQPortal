@@ -499,9 +499,9 @@ function paintTree(root) {
 
 
 function getPage(type, query) {
-	alert("XX "+query);
+//	alert("XX "+query);
 	$.get( query, function( data ) {
-		alert(data);
+//		alert(data);
 		currentLocator = data.locator;
 		if (type === "Conversation") {
 		//	alert("here "+navtoggle);

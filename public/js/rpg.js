@@ -27,8 +27,9 @@ function paintGameTree(data) {
 }
 
 function getGamePage(type, query) {
-//	alert("XX "+navtoggle);
+//	alert("XX "+query);
 	$.get( query, function( data ) {
+//		alert(data);
         currentLocator = data.locator;
         if (!navtoggle) {
             paintMetaTree(data);

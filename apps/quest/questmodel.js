@@ -66,23 +66,22 @@ var IssueModel =  module.exports = function(environment) {
 	    		  console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
 	    		  return callback(error,data);
 	    	  });
-    	  } else {
-    		  if (!isNotUpdateToBody) {
-    			  result.updateBody(body,lang,user.handle,comment);
-    			  result.setLastEditDate(new Date());
-		    	  DataProvider.putNode(result, function(err,data) {
-		    		  if (err) {error += err;}
-		    		  return callback(error,data);
-		    	  });
-    		  } else {
-    			  return callback(error,null);
-    		  }
-    	  };
+    	  } else if (!isNotUpdateToBody) {
+          result.updateBody(body,lang,user.handle,comment);
+          result.setLastEditDate(new Date());
+          DataProvider.putNode(result, function(err, data) {
+            if (err) {error += err;}
+            return callback(error, data);
+          });
+        } else {
+          var foo;
+          return callback(error, foo);
+        }
 	  });
   };
 	  
   /**
-   * Create a new blog post
+   * Create a new Quest (Issue)
    * @param blog: a JSON object with appropriate values set
    * @param user: a JSON object of the user from the session
    * @param credentials
@@ -90,107 +89,90 @@ var IssueModel =  module.exports = function(environment) {
    */
   self.create = function (blog, user, credentials, callback) {
 	  console.log('BMXXXX '+JSON.stringify(blog));
-	// some really wierd shit: the User object for the user database stores
-	// as user.handle, but passport seems to muck around and return user.username
-    var userLocator = user.handle; // It's supposed to be user.handle;
-    //first, fetch this user's topic
-    var userTopic,
-          theQuest,
-          error = "",
-          issueloc = blog.parent;
-        myEnvironment.logDebug("QuestModel.create-1 "+issueloc+" | "+JSON.stringify(blog));
-    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
-          if (err) {error += err}
+    var userLocator = user.handle,
+        userTopic,
+        error = "",
+        issueloc = blog.parent;
+    myEnvironment.logDebug("QuestModel.create-1 "+issueloc+" | "+JSON.stringify(blog));
+    //get the user
+    DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
+      if (err) {error += err}
       userTopic = result;
       console.log('QuestModel.create-1 '+userLocator+' | '+userTopic);
-      // create the blog post
-      console.log("FOO "+types.QUEST_TYPE);
-          //FIRST, CREATE the Landing Page
-      //NOTE: we are creating an AIR, which uses subject&body, not label&details 
-      TopicModel.newInstanceNode(uuid.newUUID(), types.QUEST_TYPE,
-                                   "", "", constants.ENGLISH, userLocator,
-                                   icons.QUEST_SM, icons.QUEST, false, credentials, function(err, article) {
-            if (err) {error += err}
-            theQuest = article;
-    	  var lang = blog.language;
-    	  if (!lang) {lang = "en";}
-    	  var subj = blog.title;
-    	  var body = blog.body;
-    	  theQuest.setSubject(subj,lang,userLocator);
-    	  theQuest.setBody(body.trim(),lang,userLocator);
-    //	  console.log('BlogModel.create-2 '+article.toJSON());
-    	  RPGEnvironment.addRecentQuest(article.getLocator(),blog.title);
-            myEnvironment.logDebug("QuestModel.create-2 "+error);
-            //Now, add issuepivot
-            //TODO add userpivot
-            DataProvider.getNodeByLocator(issueloc, credentials, function(err,issuenode) {
-                if (err) {error += err}
-                console.log("FIDDLE "+err+" | "+issuenode);
-                myEnvironment.logDebug("QuestModel.create-2A "+err+" "+issuenode);
-                TopicModel.relateExistingNodesAsPivots(issuenode,theQuest,extendedtypes.ISSUE_QUEST_RELATION_TYPE,
-                                                       userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-                                                       false, credentials, function(err,data) {
-                    if (err) {error += err}
-                    //NOW, create the Question
-                    var bx = {};
-                    bx.title = blog.question;
-                    bx.body = blog.questionbody;
-                    bx.language = blog.language;
-                    if (blog.tag1) {
-                        bx.tag1 = blog.tag1;
-                    }
-                    if (blog.tag2) {
-                        bx.tag2 = blog.tag2;
-                    }
-                    if (blog.tag3) {
-                        bx.tag3 = blog.tag3;
-                    }
-                    if (blog.tag4) {
-                        bx.tag4 = blog.tag4;
-                    }
-                    myEnvironment.logDebug("QuestModel.create-2B ");
-                    //NoW create the quest's root node
-                    ConversationModel.createIssue(bx, user, theQuest.getLocator(), credentials, function(err, qnode) {
-                      if (err) {error += err}
-                      //Tell the quest it has a tree root locator
-                      theQuest.setProperty(gameConstants.QUEST_ROOT_NODE_PROPERTY, qnode.getLocator());
-                      //Change the icons in qnode and save it
-                      qnode.setImage(icons.CHALLENGE);
-                      qnode.setSmallImage(icons.CHALLENGE_SM);
-                      DataProvider.putNode(qnode, function(err, dx) {
-                        if (err) {error += err}
-                       // now deal with tags
-                        myEnvironment.logDebug("QuestModel.create-3 "+error+" "+theQuest.toJSON());
-                        var taglist = CommonModel.makeTagList(blog);
-                        if (taglist.length > 0) {
-                          TagModel.processTagList(taglist, userTopic, theQuest, credentials, function(err,result) {
-                              console.log('NEW_POST-1 '+result);
-                              if (err) {error += err}
-                              //result could be an empty list;
-                              //TagModel already added Tag_Doc and Doc_Tag relations
-                              console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-                              TopicModel.relateExistingNodesAsPivots(userTopic,theQuest,types.CREATOR_DOCUMENT_RELATION_TYPE,
-                                                                     userTopic.getLocator(),
-                                                                     icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
-                                  if (err) {error += err}
-                                  return callback(error,theQuest.getLocator());
-                              }); //r1
-                          }); // processtaglist
-                        } else {
-                          TopicModel.relateExistingNodesAsPivots(userTopic,theQuest,types.CREATOR_DOCUMENT_RELATION_TYPE,
-                                                                 userTopic.getLocator(),
-                                                                 icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
-                            if (err) {error += err}
-                            return callback(error,theQuest.getLocator());
-                          }); //r1
-                        }
-                      });                          
-                    });
+      var lang = blog.language;
+      if (!lang) {lang = "en";}
+      //get the quest topic
+      DataProvider.getNodeByLocator(issueloc, credentials, function(err, issuenode) {
+        if (err) {error += err}
+        console.log("FIDDLE "+err+" | "+issuenode);
+        myEnvironment.logDebug("QuestModel.create-2A "+err+" "+issuenode);
+        //NOW, create the Question (Issue/Quest)
+        var bx = {};
+        bx.title = blog.question;
+        bx.body = blog.questionbody.trim();
+        //it's interesting that the JSON source of the resulting node will still have a long
+        // empty string, even though we trim it here
 
-                });
-            });
-      });
-    });
+        bx.language = lang;
+        if (blog.tag1) {
+          bx.tag1 = blog.tag1;
+        }
+        if (blog.tag2) {
+          bx.tag2 = blog.tag2;
+        }
+        if (blog.tag3) {
+          bx.tag3 = blog.tag3;
+        }
+        if (blog.tag4) {
+          bx.tag4 = blog.tag4;
+        }
+        myEnvironment.logDebug("QuestModel.create-2B ");
+        //NoW create the quest's Issue
+        var parent; // there is no parent
+        ConversationModel.createIssue(bx, user, parent, credentials, function(err, qnode) {
+          if (err) {error += err}
+          //Change the icons in qnode and save it
+          qnode.setImage(icons.CHALLENGE);
+          qnode.setSmallImage(icons.CHALLENGE_SM);
+          qnode.setNodeType(types.QUEST_TYPE);
+          RPGEnvironment.addRecentQuest(qnode.getLocator(), blog.title);
+          myEnvironment.logDebug("QuestModel.create-2 "+error);
+          TopicModel.relateExistingNodesAsPivots(issuenode, qnode, extendedtypes.ISSUE_QUEST_RELATION_TYPE,
+                                userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
+                                false, credentials, function(err, data) {
+            if (err) {error += err}
+            DataProvider.putNode(qnode, function(err, dx) {
+              if (err) {error += err}
+              // now deal with tags
+              myEnvironment.logDebug("QuestModel.create-3 "+error+" "+qnode.toJSON());
+              var taglist = CommonModel.makeTagList(blog);
+              if (taglist.length > 0) {
+                TagModel.processTagList(taglist, userTopic, qnode, credentials, function(err, result) {
+                  console.log('NEW_POST-1 '+result);
+                  if (err) {error += err}
+                  //result could be an empty list;
+                  //TagModel already added Tag_Doc and Doc_Tag relations
+                  console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
+                  TopicModel.relateExistingNodesAsPivots(userTopic, qnode, types.CREATOR_DOCUMENT_RELATION_TYPE,
+                                                      userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
+                                                      false, credentials, function(err, data) {
+                    if (err) {error += err}
+                    return callback(error, qnode.getLocator());
+                  }); //r1
+                }); // processtaglist
+              } else {
+                TopicModel.relateExistingNodesAsPivots(userTopic,qnode,types.CREATOR_DOCUMENT_RELATION_TYPE,
+                                                    userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
+                                                    false, credentials, function(err, data) {
+                  if (err) {error += err}
+                  return callback(error, qnode.getLocator());
+                }); //r1
+              }
+            }); //pur                         
+          }); // relate
+        }); // create
+      }); // get issue
+    }); // get user
   };
 	  
   self.listQuests = function(start, count, credentials, callback) {

@@ -28,59 +28,58 @@ var IssueModel =  module.exports = function(environment) {
 	};
 	
 	
-	  /**
-	   * Update an existing blog entry; no tags included
-	   */
-	  self.update = function(blog, user, credentials, callback) {
-		  myEnvironment.logDebug("Issue.UPDATE "+JSON.stringify(blog));
-		  var lox = blog.locator;
-		  DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
-			  var error = '';
-			  if (err) {error += err;}
-			  var title = blog.title;
-			  var body = blog.body;
-	    	  var lang = blog.language;
-	    	  var comment = "an edit by "+user.handle;
-	    	  if (!lang) {lang = "en";}
-			  var isNotUpdateToBody = true;
-	    	  var oldBody;
-	    	  if(result.getBody(lang)) {
-	    		  oldBody = result.getBody(lang).theText;
-	    	  }
-	    	  if (oldBody) {
-	    		  isNotUpdateToBody = (oldBody === body);
-	    	  }
-	    	  var oldLabel = result.getSubject(lang).theText;
-	    	  var isNotUpdateToLabel = (title === oldLabel);
-	    	  if (!isNotUpdateToLabel) {
-	    		  //crucial update to label
-	    		  result.updateSubject(title,lang,user.handle,comment);
-	    		  if (!isNotUpdateToBody) {
-	    			  result.updateBody(body,lang,user.handle,comment);
-	    		  }
-		    	  result.setLastEditDate(new Date());
-		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
-		    		  if (err) {error += err;}
-		    		  console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
-		    		  return callback(error,data);
-		    	  });
-	    	  } else {
-	    		  if (!isNotUpdateToBody) {
-	    			  result.updateBody(body,lang,user.handle,comment);
-	    			  result.setLastEditDate(new Date());
-			    	  DataProvider.putNode(result, function(err,data) {
-			    		  if (err) {error += err;}
-			    		  return callback(error, data);
-			    	  });
-	    		  } else {
-	    			  return callback(error, null);
-	    		  }
-	    	  };
-		  });
-	  };
+	/**
+	 * Update an existing issue (quest); no tags included
+	 */
+	self.update = function(blog, user, credentials, callback) {
+		myEnvironment.logDebug("Issue.UPDATE "+JSON.stringify(blog));
+		var lox = blog.locator;
+		DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+			var error = '';
+			if (err) {error += err;}
+			var title = blog.title,
+				body = blog.body,
+				lang = blog.language,
+				comment = "an edit by "+user.handle;
+			if (!lang) {lang = "en";}
+			var isNotUpdateToBody = true,
+				oldBody;
+			if(result.getBody(lang)) {
+				oldBody = result.getBody(lang).theText;
+			}
+			if (oldBody) {
+				isNotUpdateToBody = (oldBody === body);
+			}
+			var oldLabel = result.getSubject(lang).theText,
+				isNotUpdateToLabel = (title === oldLabel);
+			if (!isNotUpdateToLabel) {
+				//crucial update to label
+				result.updateSubject(title,lang,user.handle,comment);
+				if (!isNotUpdateToBody) {
+					result.updateBody(body,lang,user.handle,comment);
+				}
+				result.setLastEditDate(new Date());
+				DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
+					if (err) {error += err;}
+					console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
+					return callback(error, data);
+				});
+			} else if (!isNotUpdateToBody) {
+				result.updateBody(body, lang, user. handle, comment);
+				result.setLastEditDate(new Date());
+				DataProvider.putNode(result, function(err, data) {
+					if (err) {error += err;}
+					return callback(error, data);
+				});
+			} else {
+				var foo;
+				return callback(error, foo);
+			}
+		});
+	};
 	  
 	  /**
-	   * Create a new blog post
+	   * Create a new issue post
 	   * @param blog: a JSON object with appropriate values set
 	   * @param user: a JSON object of the user from the session
 	   * @param credentials

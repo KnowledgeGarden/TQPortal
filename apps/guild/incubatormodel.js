@@ -76,7 +76,7 @@ var IncubatorModel =  module.exports = function(environment) {
   /**
    * The guild <code>guildNode</code> is joining the quest identified by <code>questLocator</code>
    * @param guildNode
-   * @param questLocator
+   * @param questLocator note: this is not only the quest itself, but the root node for that quest
    * @ param usr  the user object from Request
    * @param callback siganture (err)
    */
@@ -101,6 +101,7 @@ var IncubatorModel =  module.exports = function(environment) {
         bx.title = "Meta Conversation";
         bx.body = "";
         bx.language = "en"; //TODO
+        //CREATE the Meta Conversation
         ConversationModel.createMap(bx, usr, null, credentials, function(err, qnode) {
           if (err) {error += err}
           qnode.setIsPrivate(true); // make it private
@@ -113,6 +114,8 @@ var IncubatorModel =  module.exports = function(environment) {
             //create the GuildQuestInfobox to represent this pair
             infobox = new Infobox(questLocator,title);
             infobox[Infobox.META_TREE_ROOT_LOCATOR] = qnode.getLocator();
+            //set the root node locator
+            infobox[Infobox.QUEST_CONTEXT_LOCATOR] = questLocator;
             guildNode.setProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY, questLocator);
             myEnvironment.logDebug("IncubatorModel.joinQuest-4 "+JSON.stringify(infobox));
             guildNode.putInfoBox(questLocator, JSON.stringify(infobox));

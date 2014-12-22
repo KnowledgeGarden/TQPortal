@@ -39,6 +39,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (isPrivatePortal) {
 			return res.redirect('/login');
 		} else {
+			myEnvironment.logDebug("YOU GOT HERE");
 			return res.redirect('/');
 		}
 	}
@@ -339,7 +340,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var credentials = [];
 		if (usx) {credentials = usx.credentials;}
 		ConversationModel.createMap(body, usx, credentials, function(err,result) {
-			callback(err,result);
+			callback(err, result);
 		});
 	};
 

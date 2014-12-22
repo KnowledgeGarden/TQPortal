@@ -115,9 +115,30 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    * Leave the incubator room
    */
   app.get('/incubator/leave', function(req, res) {
-    //TODO anything we might want to do here?
-    res.redirect('/issue');
-  });
+    var q = req.params.id;
+     myEnvironment.logDebug("GUILD LOCATOR -Play "+q); // debug establish the identity of this guild after ajax fetch
+    //establish credentials
+    //defaults to an empty array if no user logged in
+    var credentials = [],
+        usr = req.user;
+    if (usr) { 
+      credentials = usr.credentials;
+      //fetch the node itself
+      Dataprovider.getNodeByLocator(q, credentials, function(err, guildnode) {
+        //sanity check
+        if (IncubatorModel.isLeader(guildnode, usr.handle)) {
+          IncubatorModel.leaveQuest(guildnode,  function(err) {
+            return res.redirect("/incubator/"+q);
+          });
+        } else {
+          return res.redirect("/incubator/"+q);
+        }
+      });
+    } else {
+      // fall through to here
+      //not supposed to be here
+     return res.redirect("/");
+    }  });
     
   ///////////////////////////////////////////////////////
   // Conversation facade
