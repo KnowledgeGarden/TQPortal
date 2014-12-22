@@ -79,7 +79,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	app.get('/quest/new/:id', isLoggedIn, function(req, res) {
 		var q = req.params.id,
 			data =  myEnvironment.getCoreUIData(req);
-		data.formtitle = "New Quest";
+		data.formtitle = "New Issue";
 		data.isNotEdit = true;
 		data.parent = q;
 		return res.render('questform', data);

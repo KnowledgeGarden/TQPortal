@@ -152,7 +152,7 @@ var IssueModel =  module.exports = function(environment) {
                   if (err) {error += err}
                   //result could be an empty list;
                   //TagModel already added Tag_Doc and Doc_Tag relations
-                  console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
+                  console.log("ARTICLES_CREATE_2 "+JSON.stringify(qnode));
                   TopicModel.relateExistingNodesAsPivots(userTopic, qnode, types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                       userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
                                                       false, credentials, function(err, data) {
