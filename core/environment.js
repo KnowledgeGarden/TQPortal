@@ -4,7 +4,7 @@
 var lgr = require('log4js'),
     fs = require('fs'),
     //topicmap
-    Indx = require('../node_modules/tqtopicmap/index'),
+    Indx = require('tqtopicmap'),
     //database
     udb = require('./userdatabase'),
     //logging platform

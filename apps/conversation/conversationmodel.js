@@ -4,10 +4,10 @@
  * or actual IBIS trees
  */
 'use strict';
-var  types = require('../../node_modules/tqtopicmap/lib/types'), 
-    icons = require('../../node_modules/tqtopicmap/lib/icons'), 
-    properties = require('../../node_modules/tqtopicmap/lib/properties'), 
-    Tagmodel = require('../tag/tagmodel'), 
+var  types = require('tqtopicmap/lib/types'),
+    icons = require('tqtopicmap/lib/icons'),
+    properties = require('tqtopicmap/lib/properties'),
+    Tagmodel = require('../tag/tagmodel'),
     uuid = require('../../core/util/uuidutil'),
     conversationConstants = require('./conversationconstants'),
     Portalmodel = require('../common/portalnodemodel'),

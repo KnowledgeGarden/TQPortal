@@ -5,7 +5,7 @@
 var User = require('../core/user'),
     constants = require('../core/constants'),
     adminmodel = require('../apps/admin/adminmodel'),
-    proxy = require('../node_modules/tqtopicmap/lib/models/subjectproxy'),
+    proxy = require('tqtopicmap/lib/models/subjectproxy'),
     usermodel = require('../apps/user/usermodel');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {

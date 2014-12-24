@@ -1,10 +1,10 @@
 /**
  * TagModel
  */
-var types = require('../../node_modules/tqtopicmap/lib/types')
-	, icons = require('../../node_modules/tqtopicmap/lib/icons')
-	, sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder')
-	, properties = require('../../node_modules/tqtopicmap/lib/properties')
+var types = require('tqtopicmap/lib/types')
+	, icons = require('tqtopicmap/lib/icons')
+	, sb = require('tqtopicmap/lib/util/stringbuilder')
+	, properties = require('tqtopicmap/lib/properties')
 	, extendedtypes = require("../../core/extendedtypology")
 	, constants = require('../../core/constants')
 	, rpa = require('../../core/util/stringutil')

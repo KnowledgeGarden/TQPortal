@@ -10,7 +10,7 @@ var Incmodel = require('../apps/guild/incubatormodel'),
     gameConstants = require('../apps/rpg/gameconstants'),
     conversationConstants = require('../apps/conversation/conversationconstants'),
 //    common = require('./common/commonmodel'),
-    types = require('../node_modules/tqtopicmap/lib/types');
+    types = require('tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment,

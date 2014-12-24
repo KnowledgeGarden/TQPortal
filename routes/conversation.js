@@ -2,7 +2,7 @@
  * conversation app
  */
 var Conmodel = require('../apps/conversation/conversationmodel'),
-    types = require('../node_modules/tqtopicmap/lib/types'),
+    types = require('tqtopicmap/lib/types'),
     common = require('../apps/common/commonmodel'),
     conversationConstants = require('../apps/conversation/conversationconstants'),
     constants = require('../core/constants');
