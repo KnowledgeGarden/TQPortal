@@ -3,7 +3,7 @@
  */
 var express = require("express"),
 	Env = require('./core/environment'),
-	Bs = require('./node_modules/tqtopicmap/lib/models/bootstrap'),
+	Bs = require('tqtopicmap/lib/models/bootstrap'),
 	//stuff
 	http  = require("http"),
 	path  = require("path"),

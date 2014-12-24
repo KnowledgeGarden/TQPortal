@@ -2,9 +2,9 @@
  * Wiki model
  */
 var constants = require('../../core/constants'),
-	types = require('../../node_modules/tqtopicmap/lib/types'),
-	icons = require('../../node_modules/tqtopicmap/lib/icons'),
-	properties = require('../../node_modules/tqtopicmap/lib/properties'),
+	types = require('tqtopicmap/lib/types'),
+	icons = require('tqtopicmap/lib/icons'),
+	properties = require('tqtopicmap/lib/properties'),
 	uuid = require('../../core/util/uuidutil'),
 	tagmodel = require('../tag/tagmodel');
 

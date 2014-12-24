@@ -1,9 +1,9 @@
 /**
  * TopicMap Model
  */
-var types = require('../../node_modules/tqtopicmap/lib/types')
-, icons = require('../../node_modules/tqtopicmap/lib/icons')
-, properties = require('../../node_modules/tqtopicmap/lib/properties')
+var types = require('tqtopicmap/lib/types')
+, icons = require('tqtopicmap/lib/icons')
+, properties = require('tqtopicmap/lib/properties')
 
   , constants = require('../../core/constants')
   , uuid = require('../../core/util/uuidutil')

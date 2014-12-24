@@ -4,7 +4,7 @@
 var tagModel = require('../apps/tag/tagmodel'),
     constants = require('../core/constants'),
     common = require('../apps/common/commonmodel'),
-    types = require('../node_modules/tqtopicmap/lib/types')
+    types = require('tqtopicmap/lib/types')
 ;
 
 

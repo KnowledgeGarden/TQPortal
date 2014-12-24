@@ -1,8 +1,8 @@
 /**
  * commonmodel
  */
-var  types = require('../../node_modules/tqtopicmap/lib/types'),
-    sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder'),
+var  types = require('tqtopicmap/lib/types'),
+    sb = require('tqtopicmap/lib/util/stringbuilder'),
     constants = require('../../core/constants'),
     colnavwidget = require('../widgets/jquerycolnav'),
     kwb = require('../kwb/kwbmodel')

@@ -4,7 +4,7 @@
 var acls = require('../apps/blog/blogmodel'),
     constants = require('../core/constants'),
     common = require('../apps/common/commonmodel'),
-    types = require('../node_modules/tqtopicmap/lib/types');
+    types = require('tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment,

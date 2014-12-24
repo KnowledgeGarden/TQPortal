@@ -2,8 +2,8 @@
  * apimodel
  * For REST interface with portal
  */
-var types = require('../../node_modules/tqtopicmap/lib/types')
-	, properties = require('../../node_modules/tqtopicmap/lib/properties')
+var types = require('tqtopicmap/lib/types')
+	, properties = require('tqtopicmap/lib/properties')
 	, constants = require('../../core/constants')
 ;
 
