@@ -1,0 +1,82 @@
+<div class="container"><h1></h1>
+    <h2>{{questTitle}}</h2>
+<div class="row">
+    <!-- this constitutes a row of buttons across the top It's a pretty crummy-looking table -->
+    <table>
+  	  <tr><td><a href="/incubator/leave"><button type="submit" class="btn btn-btn-primary  btn-small">Leave Incubator</button></a></td>
+    <!-- Following buttons are visible only to guild leaders: locator is a given quest's locator
+        as brougnt in from a 'Remember Node" -->
+    {{#if locator}}
+        <td><form method="post" action="/incubator/joinquest"  role="form" class="form-horizontal">
+            <input type="hidden" name="locator" value="{{locator}}">
+            <input type="hidden" name="guildlocator" value="{{guildlocator}}">
+            <button type="submit" class="btn btn-warning btn-small">Join Quest</button>
+        </form></td>
+    {{/if}}
+    {{#if nodelocator}}
+        <td><form method="post" action="/incubator/selectrootnode"  role="form" class="form-horizontal">
+            <input type="hidden" name="guildlocator" value="{{guildlocator}}">
+            <input type="hidden" name="nodelocator" value="{{nodelocator}}">
+            <button type="submit" class="btn btn-warning btn-small">Select Game Root Node</button>
+        </form></td>
+    {{/if}}
+    {{#if inQuest}}
+        <td><a href="/incubator/leavequest/{{guildlocator}}"><button type="submit" class="btn btn-warning btn-small">Leave Quest</button></a></td>
+    {{/if}}
+    {{#if leaderInQuest}}
+        <td><a href="/incubator/play/{{guildlocator}}"><button type="submit" class="btn btn-danger btn-small">Play</button></a></td>
+    {{/if}}
+    </tr>
+    </table><br/>
+</div>
+
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#meta">Planning</a></li>
+  <li><a data-toggle="tab" href="#chat">Backchannel</a></li>
+  <li><a data-toggle="tab" href="#game">GameTree</a></li>
+  <li><a data-toggle="tab" href="#perspective">Perspective</a></li>
+ </ul>
+ <!-- ViewFirst data -->
+<div class="vfpage" query="{{query}}" language="{{language}}" type="{{type}}" contextLocator="{{contextLocator}}" locator="{{locator}} rootLocator="{{rootLocator}}"></div>
+
+<div class="tab-content">
+ <div id="meta" class="tab-pane fade in active">
+  <div class = "row">
+   <ul id="metaConTree"></ul>
+  </div>
+ </div> <!-- /meta -->
+ <div id="chat" class="tab-pane fade">
+   <div class="blog-post col-xs-7">
+    <div class="row">
+      <h2>ChatRoom</h2>
+    </div>
+   </div>
+ </div> <!-- /chat -->
+ <div id="game" class="tab-pane fade">
+  <div class = "row">
+   <ul id="gameConTree"></ul>
+  </div> 
+ </div> <!-- /game -->
+ 
+ <div id="perspective" class="tab-pane fade">
+  <div class="row">
+    <h2>Perspective</h2>
+  </div>
+ </div> <!-- /persepctive -->
+
+ </div> <!-- /tabcontent -->
+             <div class="row">
+   <div class="home col-xs-8 col-sm-8 ">
+    <div class="topictitle">foo</div>
+    <p class="blog-post-meta"> 
+     <div class="userref"></div>
+     <div class="urlref"></div>
+    </p>
+    <div class="body pre-scrollable span12" style="border: 1px solid #e1e1e8; resize:both;overflow: auto;"></div>
+    <p><div class="responsebuttons"></div></p>
+    <p><div class="transclude"></div></p>
+    <p><div class="transcludeevidence"></div></p>
+   </div> <!-- /col 8 -->
+  </div> <!-- /row -->
+       
+ </div> <!-- /container -->
