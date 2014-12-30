@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node --use_strict server.js",
+    "start": "node server.js",
     "test": "./node_modules/.bin/eslint apps config lib routes server.js"
   },
   "name": "TQPortal",
@@ -43,6 +43,7 @@
     "nodemailer": "~1.2.1",
     "ws": "~0.4.32",
     "nodejs-websocket": "~1.0.0",
+    "tqtopicmap": "KnowledgeGarden/TQTopicMap#develop",
     "morgan": "~1.5.0"
   },
   "devDependencies": {

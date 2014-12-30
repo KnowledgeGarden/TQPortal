@@ -1,10 +1,10 @@
 /**
  * GuildModel
  */
-var types = require('../../node_modules/tqtopicmap/lib/types'),
+var types = require('tqtopicmap/lib/types'),
     extendedTypes = require('../../core/extendedtypology'),
-    icons = require('../../node_modules/tqtopicmap/lib/icons'),
-    properties = require('../../node_modules/tqtopicmap/lib/properties'),
+    icons = require('tqtopicmap/lib/icons'),
+    properties = require('tqtopicmap/lib/properties'),
     Gameenv = require('../rpg/rpgenvironment'),
     Infobox = require('../rpg/guildquestinfobox'),
     gameConstants = require('../rpg/gameconstants'),

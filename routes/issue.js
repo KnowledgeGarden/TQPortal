@@ -10,7 +10,7 @@
  */
 var issue = require('../apps/issue/issuemodel'),
     constants = require('../core/constants'),
-    types = require('../node_modules/tqtopicmap/lib/types');
+    types = require('tqtopicmap/lib/types');
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment,

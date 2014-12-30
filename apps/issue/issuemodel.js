@@ -2,9 +2,9 @@
  * IssueModel
  * Issues, not to be confused with IBIS ISSUE_TYPE (question) is a CHALLENGE_TYPE
  */
-var types = require('../../node_modules/tqtopicmap/lib/types'),
-	icons = require('../../node_modules/tqtopicmap/lib/icons'),
-	properties = require('../../node_modules/tqtopicmap/lib/properties'),
+var types = require('tqtopicmap/lib/types'),
+	icons = require('tqtopicmap/lib/icons'),
+	properties = require('tqtopicmap/lib/properties'),
 	Gameenv = require('../rpg/rpgenvironment'),
 	constants = require('../../core/constants'),
 	uuid = require('../../core/util/uuidutil'),

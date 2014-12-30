@@ -1,8 +1,8 @@
 /**
  * RolePlayingGameEnvironment
  */
-var types = require('../../node_modules/tqtopicmap/lib/types'),
-    sb = require('../../node_modules/tqtopicmap/lib/util/stringbuilder'),
+var types = require('tqtopicmap/lib/types'),
+    sb = require('tqtopicmap/lib/util/stringbuilder'),
     constants = require('../../core/constants'),
     Rbuf = require('../../core/util/ringbuffer'),
     RGBib = require('./rpginfoboxmodel')
