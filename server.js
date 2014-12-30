@@ -24,7 +24,7 @@ Environment.start(function(err, env) {
 	var bootstrap = new Bs(Environment.getTopicMapEnvironment()),
 
 		//models/lib/tqtopicmap/node_modules
-		bdir = path.resolve(__dirname, './bootstrap');
+		bdir = "/../../../../bootstrap"; //path.resolve(__dirname, './bootstrap');
 	console.log("SERVER B");
 	//now that environment is up, run bootstrap to see
 	// if there is new information to add to the index
