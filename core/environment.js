@@ -1,21 +1,21 @@
 /**
  * Environment
  */
-var lgr = require('log4js'),
+var //lgr = require('log4js'),
     fs = require('fs'),
     //topicmap
     Indx = require('tqtopicmap'),
     //database
-    udb = require('./userdatabase'),
+    Udb = require('./userdatabase'),
     //logging platform
-    lp = require('./logplatform'),
+    Lp = require('./logplatform'),
     //game environment
     Genv = require('../apps/rpg/rpgenvironment'),
     //misc
     rbuf = require('./util/ringbuffer'),
     constants = require('./constants'),
-    cm = require('../apps/common/commonmodel'),
-    pnm = require('../apps/common/portalnodemodel')
+    Cm = require('../apps/common/commonmodel'),
+    Pnm = require('../apps/common/portalnodemodel')
  ;
 
 /**
@@ -51,107 +51,110 @@ var Environment = module.exports = function() {  //function(callback) {
         // need to save their recents and other things
         saveRecentListeners = [];
 
+    /**
+     * Primary bootup
+     */
 	this.init = function(callback) {
-	///////////////////////
-	//Populate the environment
-	///////////////////////
-	var path = __dirname+"/../config/config.json";
-	var recentspath = __dirname+"/../config/recents.json";
-    var helppath = __dirname+"/../config/help.json";
-	//get the logs
-	var lgr = new lp(function(logp) {
-		logger = logp.getLogger();
-		monitorLogger = logp.getMonitorLogger();
-		apiLogger = logp.getAPILogger();
-  //read the config file
-  fs.readFile(path, function(err, configfile) {
-    configProperties = JSON.parse(configfile);
-      fs.readFile(helppath, function(err, helpfile) {  
-        helpMenuProperties = JSON.parse(helpfile);
-        helpMenu = helpMenuProperties.helpMenu;
-        if (!helpMenu) {helpMenu = [];}
-        //bring up mongo
-        //TODO improve the connect string with credentials, etc
-        userdatabase = new udb(configProperties, function(err,dx) {
-            //user databasea
-            //userdatabase = dx;
-            //now boot the topic map
-            logger.debug("Environment A");
-            var foo = new Indx(function(err, tmx) {
-                TopicMapEnvironment = tmx;
-                logger.debug("Environment B");
-                // boot the game environment
-                RPGEnvironment = new Genv(this, tmx);
-                //load recents
-                fs.readFile(recentspath, function(err, recents) {
-                    var rx = JSON.parse(recents);
-                    console.log("RECENTS "+err+" "+JSON.stringify(rx));
-                    blogRing = new rbuf(20, "blog", TopicMapEnvironment);
-                    wikiRing= new rbuf(20, "wiki", TopicMapEnvironment);
-                    tagRing= new rbuf(20,"tag", TopicMapEnvironment);
-                    bookmarkRing = new rbuf(20,"bookmark",TopicMapEnvironment);
-                    conversationRing = new rbuf(20,"conversation",TopicMapEnvironment);
-                    connectionRing = new rbuf(20, "Connections", TopicMapEnvironment);
-                    transcludeRing = new rbuf(20, "Transcludes",TopicMapEnvironment);
-                    var len, ix, i, x = rx.blog;
-                    if (x) {
-                        len = x.length;
-                        for (i=0;i<len;i++) {
-                            ix=x[i];
-                            self.addRecentBlog(ix.locator, ix.label);
-                        }
-                    }
-                    x = rx.wiki;
-                    if (x) {
-                        len = x.length;
-                        for (i=0;i<len;i++) {
-                            ix=x[i];
-                            self.addRecentWiki(ix.locator, ix.label);
-                        }
-                    }
-                    x = rx.tag;
-                    if (x) {
-                        len = x.length;
-                        for (i=0;i<len;i++) {
-                            ix=x[i];
-                            self.addRecentTag(ix.locator, ix.label);
-                        }
-                    }
-                    x = rx.bkmrk;
-                    if (x) {
-                        len = x.length;
-                        for (i=0;i<len;i++) {
-                            ix=x[i];
-                            self.addRecentBookmark(ix.locator, ix.label);
-                        }
-                    }
-                    x = rx.convers;
-                    if (x) {
-                        len = x.length;
-                        for (i=0;i<len;i++) {
-                            ix=x[i];
-                            self.addRecentConversation(ix.locator, ix.label);
-                        }
-                    }
-                    //It is a fact that anything constructed below cannot call this Environment
-                    // since it is not yet finished building
-                    theMessage = "";
-                    CommonModel = new cm(this, TopicMapEnvironment);
-                    PortalNodeModel = new pnm(this,TopicMapEnvironment, CommonModel);
-                    //fire up the program
-                    console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
-                    self.logDebug("Portal Environment started ");
-                    self.logMonitorDebug("Portal Environment started ");
-                    self.logAPIDebug("Portal Environment started ");
-                    TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
-                    logger.debug("Environment C");
-                    return callback("foo","bar");  	
-                }); // read file
-            });  // foo topicmap
-          }); //udb
-      }); 
-    }); //config
-	}); //logging
+		///////////////////////
+		//Populate the environment
+		///////////////////////
+		var path = __dirname+"/../config/config.json";
+		var recentspath = __dirname+"/../config/recents.json";
+	    var helppath = __dirname+"/../config/help.json";
+		//get the logs
+		var lgr = new Lp(function(logp) {
+			logger = logp.getLogger();
+			monitorLogger = logp.getMonitorLogger();
+			apiLogger = logp.getAPILogger();
+			//read the config file
+			fs.readFile(path, function(err, configfile) {
+				configProperties = JSON.parse(configfile);
+				fs.readFile(helppath, function(err, helpfile) {  
+					helpMenuProperties = JSON.parse(helpfile);
+					helpMenu = helpMenuProperties.helpMenu;
+					if (!helpMenu) {helpMenu = [];}
+					//bring up mongo
+					//TODO improve the connect string with credentials, etc
+					userdatabase = new Udb(configProperties, function(err, dx) {
+			            //user databasea
+			            //userdatabase = dx;
+			            //now boot the topic map
+			            logger.debug("Environment AA");
+			            var foo = new Indx(function(err, tmx) {
+			                TopicMapEnvironment = tmx;
+			                logger.debug("Environment B");
+			                // boot the game environment
+			                RPGEnvironment = new Genv(this, tmx);
+			                //load recents
+			                fs.readFile(recentspath, function(err, recents) {
+			                    var rx = JSON.parse(recents);
+			                    console.log("RECENTS "+err+" "+JSON.stringify(rx));
+			                    blogRing = new rbuf(20, "blog", TopicMapEnvironment);
+			                    wikiRing= new rbuf(20, "wiki", TopicMapEnvironment);
+			                    tagRing= new rbuf(20,"tag", TopicMapEnvironment);
+			                    bookmarkRing = new rbuf(20,"bookmark",TopicMapEnvironment);
+			                    conversationRing = new rbuf(20,"conversation",TopicMapEnvironment);
+			                    connectionRing = new rbuf(20, "Connections", TopicMapEnvironment);
+			                    transcludeRing = new rbuf(20, "Transcludes",TopicMapEnvironment);
+			                    var len, ix, i, x = rx.blog;
+			                    if (x) {
+			                        len = x.length;
+			                        for (i=0;i<len;i++) {
+			                            ix=x[i];
+			                            self.addRecentBlog(ix.locator, ix.label);
+			                        }
+			                    }
+			                    x = rx.wiki;
+			                    if (x) {
+			                        len = x.length;
+			                        for (i=0;i<len;i++) {
+			                            ix=x[i];
+			                            self.addRecentWiki(ix.locator, ix.label);
+			                        }
+			                    }
+			                    x = rx.tag;
+			                    if (x) {
+			                        len = x.length;
+			                        for (i=0;i<len;i++) {
+			                            ix=x[i];
+			                            self.addRecentTag(ix.locator, ix.label);
+			                        }
+			                    }
+			                    x = rx.bkmrk;
+			                    if (x) {
+			                        len = x.length;
+			                        for (i=0;i<len;i++) {
+			                            ix=x[i];
+			                            self.addRecentBookmark(ix.locator, ix.label);
+			                        }
+			                    }
+			                    x = rx.convers;
+			                    if (x) {
+			                        len = x.length;
+			                        for (i=0;i<len;i++) {
+			                            ix=x[i];
+			                            self.addRecentConversation(ix.locator, ix.label);
+			                        }
+			                    }
+			                    //It is a fact that anything constructed below cannot call this Environment
+			                    // since it is not yet finished building
+			                    theMessage = "";
+			                    CommonModel = new Cm(this, TopicMapEnvironment);
+			                    PortalNodeModel = new Pnm(this,TopicMapEnvironment, CommonModel);
+			                    //fire up the program
+			                    console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
+			                    self.logDebug("Portal Environment started ");
+			                    self.logMonitorDebug("Portal Environment started ");
+			                    self.logAPIDebug("Portal Environment started ");
+			                    TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
+			                    logger.debug("Environment C");
+			                    return callback("foo","bar");  	
+			                }); // read file
+			            });  // foo topicmap
+					}); //udb
+				}); 
+		    }); //config
+		}); //logging
 	}; //init
 
 	var   self = this;
@@ -159,14 +162,13 @@ var Environment = module.exports = function() {  //function(callback) {
 	self.start = function(callback) {
 		console.log("ENVIRONMENT STARTING")
 		this.init(function (err, data) {
-			return callback(err,data);
+			return callback(err, data);
 		});
-	}
-//logger.debug("Environment E");
+	};
 
-///////////////////////
-// API
-///////////////////////
+	///////////////////////
+	// API
+	///////////////////////
 	/**
 	 * Register an environment which must save recents
 	 */
@@ -184,6 +186,7 @@ var Environment = module.exports = function() {  //function(callback) {
 	self.clearMessage = function() {
 		theMessage = "";
 	};
+
 	self.persistRecents = function() {
 		var recentspath = __dirname+"/../config/recents.json";
 		var dx = {};
@@ -201,6 +204,7 @@ var Environment = module.exports = function() {  //function(callback) {
 			}
 		}
 	};
+
     self.saveHelp = function() {
         var path = __dirname+"/../config/help.json";
 		fs.writeFileSync(path, JSON.stringify(helpMenuProperties));
@@ -232,6 +236,7 @@ var Environment = module.exports = function() {  //function(callback) {
 		
 		self.saveHelp();
 	};
+
 	self.getCoreUIData = function(request) {
 		console.log("FFF "+JSON.stringify(helpMenu));
 		var result = {};
@@ -273,6 +278,7 @@ var Environment = module.exports = function() {  //function(callback) {
 	self.getPortalNodeModel = function() {
 		return PortalNodeModel;
 	};
+
 	/////////////////////////
 	// Recent events recording
 	//TODO move these to applications, and let them install
@@ -280,30 +286,24 @@ var Environment = module.exports = function() {  //function(callback) {
 	/////////////////////////
 	self.addRecentTag = function(locator,label) {
 		var d = new Date().getTime();
-//		TopicMapEnvironment.logDebug("Environment.addRecentTag "+locator+" "+label);
 		var d = new Date().getTime();
 		tagRing.add(locator,label,d);
-//		TopicMapEnvironment.logDebug("Environment.addRecentTag-1 "+tagRing.size());
 	};
 	self.addRecentBlog = function(locator,label) {
 		var d = new Date().getTime();
 		blogRing.add(locator,label,d);
-//		TopicMapEnvironment.logDebug("Environment.addRecentBlog "+blogRing.size());
 	},
 	self.addRecentWiki = function(locator,label) {
 		var d = new Date().getTime();
 		wikiRing.add(locator,label,d);
-//		TopicMapEnvironment.logDebug("Environment.addRecentWiki "+wikiRing.size());
 	};
 	self.addRecentBookmark = function(locator,label) {
 		var d = new Date().getTime();
 		bookmarkRing.add(locator,label,d);
-//		TopicMapEnvironment.logDebug("Environment.addRecentBookmark "+wikiRing.size());
 	};
 	self.addRecentConversation = function(locator,label) {
 		var d = new Date().getTime();
 		conversationRing.add(locator,label,d);
-	//	TopicMapEnvironment.logDebug("Environment.addRecentConversation "+wikiRing.size());
 	};
     self.addRecentConnection = function(locator,label) {
         var d = new Date().getTime();
@@ -383,7 +383,5 @@ var Environment = module.exports = function() {  //function(callback) {
 		apiLogger.error(message);
 	};
 	console.log("ENVIRONMENT END");
-//logger.debug("Environment E");
-//	return callback("foo",this); 
 };
 

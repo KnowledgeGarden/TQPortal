@@ -2,17 +2,17 @@
  * logplatform
  * Setup all the system logs
  */
-var log4js = require('log4js')
-	,fs = require('fs')
+var log4js = require('log4js'),
+    fs = require('fs')
 ;
 /**
  * @param callback signature (logplatform)
  */
 function LogPlatform(callback) {
-	var logger;
-	var monitor;
-	var api;
-	var path1 = __dirname+"/../config/logger.json";
+	var logger,
+        monitor,
+        api,
+        path1 = __dirname+"/../config/logger.json";
 	log4js.configure(path1);
     logger = log4js.getLogger("Portal");
     logger.setLevel('ERROR');
