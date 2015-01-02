@@ -21,7 +21,6 @@
         "backups": 20,
         "category": ["relative-logger","API"]
       }
-  ],
-       "replaceConsole":true
+  ]
 
 }
