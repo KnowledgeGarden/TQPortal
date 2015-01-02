@@ -17,20 +17,19 @@ function UserDatabase(configProperties, callback) {
     MongoClient.connect(configProperties.mongoString, function(err, db) {
         console.log("BOOTING DB "+err+" "+db);
         database = db;
-        var myCollection;
         if(err) {error+=err;}
         console.log("We are connected "+err+" "+database);
         //now create the user collection
         database.createCollection(constants.USER_COLLECTION, {strict:true}, function(err, collection) {
-          console.log('---'+err+" "+collection);
-          if(err) {error+=err;}
-          //create invitation collection
-          database.createCollection(constants.INVITATION_COLLECTION, {strict:true}, function(err, collection) {
-              console.log('----'+err+" "+collection);
-              if(err) {error+=err;}
-              self.database = database;
-              return callback(err, this);
-          });
+			console.log('---'+err+" "+collection);
+			if(err) {error+=err;}
+			//create invitation collection
+			database.createCollection(constants.INVITATION_COLLECTION, {strict:true}, function(err, collection) {
+				console.log('----'+err+" "+collection);
+				if(err) {error+=err;}
+				self.database = database;
+				return callback(err, this);
+			});
         });
     });
 };
@@ -71,7 +70,7 @@ UserDatabase.prototype.__getUserByHandle = function(handle, callback) {
 this.database.collection(constants.USER_COLLECTION, function(err, collection) {
 		var q = {};
 		q.handle = handle;
-		collection.findOne(q,function(err, result) {
+		collection.findOne(q, function(err, result) {
 			return callback(err, result);
 		});
 	});
@@ -88,7 +87,7 @@ UserDatabase.prototype.findOne = function(email, callback) {
 	this.database.collection(constants.USER_COLLECTION, function(err, collection) {
 		var q = {};
 		q.email = email;
-		collection.findOne(q,function(err, result) {
+		collection.findOne(q, function(err, result) {
 			return callback(err, result);
 		});
 	});
@@ -114,7 +113,7 @@ UserDatabase.prototype.handleExists = function(handle, callback) {
 this.database.collection(constants.USER_COLLECTION, function(err, collection) {
 		var q = {};
 		q.handle = handle;
-		collection.findOne(q,function(err, result) {
+		collection.findOne(q, function(err, result) {
 			console.log("UserDatabase.handleExists "+err+" "+result);
 			var truth = (result != null);
 			return callback(err, truth);
