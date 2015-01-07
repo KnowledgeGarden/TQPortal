@@ -1,10 +1,10 @@
 /**
  * Passport configuration
  */
-var LocalStrategy = require('passport-local').Strategy
-  , constants = require('../constants')
-  , user = require('../user');
-
+var LocalStrategy = require('passport-local').Strategy,
+    constants = require('../constants'),
+    User = require('../user')
+;
 
 module.exports = function (passport, userdb) {
 	console.log('PASSPORT-PRE '+passport);
@@ -18,7 +18,7 @@ module.exports = function (passport, userdb) {
   passport.serializeUser(function(user, done) {
 //	  console.log('passport.serializeUser '+JSON.stringify(user));
 //	  console.log('passport.serializeUser-1 '+user.email);
-    done(null, user.email);
+    return done(null, user.email);
   });
 
   /**
@@ -28,40 +28,39 @@ module.exports = function (passport, userdb) {
   passport.deserializeUser(function(email, done) {
 	  userdb.findOne(email, function(err, user) {
 //    	console.log('passport.deserializer '+email+' '+user);
-      done(err, user);
+      return done(err, user);
     });
   });
 
   passport.use(new LocalStrategy({
-	    usernameField: 'email',
-	    passwordField: 'password'
-	  }, function(email,password,done) {
+                    usernameField: 'email', passwordField: 'password'},
+                    function(email, password, done) {
     console.log('LOGINSTART '+email+" is trying to login as local.");
-    userdb.findOne(email, function(err,puser) {
+    userdb.findOne(email, function(err, puser) {
       //NOTE: puser is a JSON object
       console.log('LOGINSTART-1 '+err+' | '+puser);
       if(!puser){
         console.log("user not found.");
-        return done(null, false, { message: 'Unknown user ' + email });
+        return done(err, false, { message: 'Unknown user ' + email });
       }
       console.log(puser);
       console.log(puser.email+' '+puser.password);
-      var User = new user(puser);
+      var User = new User(puser);
       console.log('LOGINNEXT '+JSON.stringify(User.getData()));
       User.comparePassword(password, function(err, isMatch) {
         console.log('LOGINNEXT-1 '+err+' '+isMatch);
         if (err) return done(err);
         if(isMatch) {
-          return done(null, User);
+          return done(err, User);
         } else {
-          return done(null, false, { message: 'Invalid password' });
+          return done(err, false, { message: 'Invalid password' });
         }
       });
 	            //if (password!==puser.password) {
 	            //	console.log("password invalid. "+puser.password);
 	            //    return done(null, false, { message: 'Invalid password' });
 	            //}
-      return done(null, puser);
+      return done(err, puser);
     });
   })); 
 
