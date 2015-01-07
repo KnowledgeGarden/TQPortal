@@ -2,76 +2,92 @@
  * user.js
  * This is the authentication user, not the topic user
  */
-var bcrypt   = require('bcryptjs')
-  , SALT_WORK_FACTOR = 10;
+var bcrypt   = require('bcryptjs'),
+    SALT_WORK_FACTOR = 10
+:
 
 var User = module.exports = function(json) {
 	console.log("NEWUSER "+json);
-  var data;
-  if (!json)
+  var data = json;
+  if (!data) {
     data  = {};
-  else {
-    data = json;
-    if (data.email)
+  } else {
+    if (data.email) {
       data._id = data.email;
+    }
   }
   console.log('NEWUSER-1 '+JSON.stringify(data));
   var self = this;
   
   self.getData = function() {
 	  return data;
-  },
+  };
+
   self.setEmail = function(email) {
     data['email'] = email;
     data._id = email;
-  },
+  };
+
   self.getEmail = function() {
     return data['email'];
-  },
+  };
+
   /**
    * Must setHandle since it creates a credential
    */
   self.setHandle = function(handle) {
     data['handle'] = handle;
     self.addCredential(handle);
-  },
+  };
+
   self.getHandle = function() {
     return data['handle'];
-  },
+  };
+
   self.setFullName = function(fullName) {
     data['fullname'] = fullName;
-  },
+  };
+
   self.getFullName = function() {
     return data['fullname'];
-  },
+  };
+
   self.setHomepage = function(homePage) {
     this.data['homepage'] = homePage;
-  },
+  };
+
   self.getHomepage = function() {
     return data['homepage'];
-  },
+  };
+
   self.setAvatar = function(avatar) {
     data['avatar'] = avatar;
-  },
+  };
+
   self.getAvatar = function() {
     return data['avatar'];
-  },
+  };
+
   self.setLatitude = function(latitude) {
 	  this.data['latitude'] = latitude;
-  }
+  };
+
   self.getLatitude = function() {
 	  var result = this.data['latitude'];
 	  if (result) {return result;}
 	  return "";
-  }
+  };
+
   self.setLongitude = function(longitude) {
 	  this.data['longitude'] = longitude;
-  }
+  };
+
   self.getLongitude = function() {
 	  var result = this.data['longitude'];
 	  if (result) {return result;}
 	  return "";
-  }
+  };
+
   /**
    * @param password text
    * @param callback: signature (err)
@@ -85,19 +101,23 @@ var User = module.exports = function(json) {
         callback();
       });
     });
-  },
+  };
+
   self.getPassword = function() {
     return data['password'];
-  },
+  };
+
   self.addCredential = function(credential) {
     var lx =  data['credentials'];
     if (!lx) {lx = [];}
     lx.push(credential);
     data['credentials'] = lx;
-  },
+  };
+
   self.listCredentials = function() {
     return data['credentials'];
-  },
+  };
+
   self.hasCredential = function(credential) {
     var lx =  data['credentials'];
     if (!lx)
@@ -105,7 +125,8 @@ var User = module.exports = function(json) {
     if (lx.indexOf(credential) > -1)
       return true;
     return false;
-  },
+  };
+
   self.removeCredential = function(credential) {
     var lx =  data['credentials'];
     if (lx) {
@@ -115,7 +136,8 @@ var User = module.exports = function(json) {
         data['credentials'] = lx;
       }
     }
-  },
+  };
+
   /**
    * @param candidatePassword
    * @param callback signature (err, isMatch)
@@ -124,7 +146,7 @@ var User = module.exports = function(json) {
     bcrypt.compare(candidatePassword, data['password'], function(err, isMatch) {
       if(err) return callback(err, false);
       console.log('USER_COMPAREPWD '+isMatch);
-      callback(null, isMatch);
+      return callback(err, isMatch);
     });
   }
 };
