@@ -2,9 +2,8 @@
  * user.js
  * This is the authentication user, not the topic user
  */
-var bcrypt   = require('bcryptjs'),
-    SALT_WORK_FACTOR = 10
-:
+var bcrypt = require('bcryptjs');
+var SALT_WORK_FACTOR = 10;
 
 var User = module.exports = function(json) {
 	console.log("NEWUSER "+json);
