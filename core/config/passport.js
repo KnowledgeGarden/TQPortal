@@ -3,7 +3,7 @@
  */
 var LocalStrategy = require('passport-local').Strategy,
     constants = require('../constants'),
-    User = require('../user')
+    Ux = require('../user')
 ;
 
 module.exports = function (passport, userdb) {
@@ -45,7 +45,7 @@ module.exports = function (passport, userdb) {
       }
       console.log(puser);
       console.log(puser.email+' '+puser.password);
-      var User = new User(puser);
+      var User = new Ux(puser);
       console.log('LOGINNEXT '+JSON.stringify(User.getData()));
       User.comparePassword(password, function(err, isMatch) {
         console.log('LOGINNEXT-1 '+err+' '+isMatch);
