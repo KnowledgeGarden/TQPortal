@@ -8,3 +8,5 @@ node_modules*
 
 # don't commit log files
 logs
+development.log
+
