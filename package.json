@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node server.js",
+    "start": "nf start 2>&1 | tee -a logs/development.log | cat",
     "test": "eslint ."
   },
   "name": "TQPortal",
@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "eslint": "^0.11.0",
+    "foreman": "^1.2.0",
     "jsonlint": "^1.6.2"
   },
   "non-npmDependencies": {
