@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "node server.js",
-    "test": "./node_modules/.bin/eslint apps config lib routes server.js"
+    "test": "jshint ."
   },
   "name": "TQPortal",
   "version": "0.19.0",
@@ -47,7 +47,7 @@
     "morgan": "~1.5.0"
   },
   "devDependencies": {
-    "eslint": "^0.6.2"
+    "jshint": "^2.5.11"
   },
   "non-npmDependencies": {
     "tqtopicmap": "0.12.1"
