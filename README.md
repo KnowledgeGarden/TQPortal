@@ -16,6 +16,18 @@ https://github.com/KnowledgeGarden/TQPortal/wiki/Installation))
 Internally, it's being developed using javascript files in a directory /devtest which is not included in the repo. 
 
 
+## Debugging
+Launch [node-inspector](https://github.com/node-inspector/node-inspector) with
+```
+npm run debug
+```
+then set your breakpoints and press F8 (or the resume script button) to continue starting the app.
+
+Changes made in the debugger will be persisted to disk using the [live-edit](https://github.com/node-inspector/node-inspector/wiki/LiveEdit) mechanism.
+
+The latest version of Chrome or Opera must be installed for node-inspector to work correctly.
+If a browser window is not opened automatically, you can visit
+[http://localhost:8080/debug?port=5858](http://localhost:8080/debug?port=5858)
 
 ### Tools
 
