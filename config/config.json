@@ -5,6 +5,6 @@
     "defaultadminemail": "changeme@changeme.org",
     "defaultadminpwd": "changeme!",
     "portalIsPrivate": false,
-    "invitationOnly": false,
-    "mongoString": "mongodb://localhost:27017/portaldb2"
+    "invitationOnly": true,
+    "clusters": [ {"host":"localhost","port":"9200"}]
 }

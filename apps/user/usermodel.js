@@ -11,60 +11,60 @@ var types = require('tqtopicmap/lib/types')
   , constants = require('../../core/constants');
 
 var UserModel = module.exports = function(environment) {
-	var CommonModel = environment.getCommonModel();
-  var topicMapEnvironment = environment.getTopicMapEnvironment();
-  var DataProvider = topicMapEnvironment.getDataProvider();
-  var topicModel = topicMapEnvironment.getTopicModel();
-
-  var self = this;
+  var myEnvironment = environment,
+      CommonModel = environment.getCommonModel(),
+      topicMapEnvironment = environment.getTopicMapEnvironment(),
+      DataProvider = topicMapEnvironment.getDataProvider(),
+      topicModel = topicMapEnvironment.getTopicModel(),
+      self = this;
 	
   /**
    * Update an existing user entry
    */
-  self.update = function(userbody,user,credentials,callback) {
+  self.update = function(userbody, user, credentials, callback) {
 	  topicMapEnvironment.logDebug("USER.UPDATE "+JSON.stringify(userbody));
 	  var lox = userbody.locator;
 	  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
 		  var error = '';
 		  if (err) {error += err;}
-		  var body = userbody.body;
-    	  var lang = userbody.language;
-    	  var comment = "an edit by "+user.handle;
-    	  var oldBody;
-    	  if(result.getBody(lang)) {
-    		  oldBody = result.getBody(lang).theText;
-    	  }
-    	  if (oldBody) {
-    		  isNotUpdateToBody = (oldBody === body);
-    	  }
-    	  var oldLabel = result.getSubject(lang).theText;
-    	  var isNotUpdateToLabel = (title === oldLabel);
-    	  if (!isNotUpdateToLabel) {
-    		  //crucial update to label
-    		  result.updateSubject(title,lang,user.handle,comment);
-    		  if (!isNotUpdateToBody) {
-    			  result.updateBody(body,lang,user.handle,comment);
-    		  }
-	    	  result.setLastEditDate(new Date());
-	    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
-	    		  if (err) {error += err;}
-	    		  console.log("UserModel.update "+error+" "+oldLabel+" "+title);
-	    		  callback(error,data);
-	    	  });
-    	  } else {
-    		  if (!isNotUpdateToBody) {
-    			  result.updateBody(body,lang,user.handle,comment);
-    			  result.setLastEditDate(new Date());
-		    	  DataProvider.putNode(result, function(err,data) {
-		    		  if (err) {error += err;}
-		    		  callback(error,data);
-		    	  });
-    		  } else {
-    			  callback(error,null);
-    		  }
-    	  };
+		  var body = userbody.body,
+          lang = userbody.language,
+          comment = "an edit by "+user.handle,
+          oldBody;
+      if(result.getBody(lang)) {
+        oldBody = result.getBody(lang).theText;
+      }
+      if (oldBody) {
+        isNotUpdateToBody = (oldBody === body);
+      }
+      var oldLabel = result.getSubject(lang).theText,
+          isNotUpdateToLabel = (title === oldLabel);
+      if (!isNotUpdateToLabel) {
+        //crucial update to label
+        result.updateSubject(title,lang,user.handle,comment);
+        if (!isNotUpdateToBody) {
+          result.updateBody(body,lang,user.handle,comment);
+        }
+        result.setLastEditDate(new Date());
+        DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
+          if (err) {error += err;}
+          console.log("UserModel.update "+error+" "+oldLabel+" "+title);
+          return callback(error, data);
+        });
+      } else {
+        if (!isNotUpdateToBody) {
+          result.updateBody(body, lang, user.handle, comment);
+          result.setLastEditDate(new Date());
+          DataProvider.putNode(result, function(err, data) {
+            if (err) {error += err;}
+            return callback(error, data);
+          });
+        } else {
+          return callback(error, data);
+        }
+      };
     });
-  },
+  };
 
   /**
    * Create a new user Topic from an authenticated User object
@@ -75,8 +75,8 @@ var UserModel = module.exports = function(environment) {
     //NOTE: user.handle is also the topic's locator
     //must be unique
     console.log('USER.newUserTopic- '+JSON.stringify(user.getData()));
-    var language = "en"; //TODO
-    var credentials = []; 
+    var language = "en", //TODO
+        credentials = []; 
     credentials.push(user.getHandle());
     // In fact, we already check for valid and unique handle in routes.js
     console.log('USER.newUserTopic-1 '+user.getHandle());
@@ -84,29 +84,30 @@ var UserModel = module.exports = function(environment) {
       console.log('USER.newUserTopic-2 '+err+' '+result);
       //if (result !== null) {
       if (result != null /*&& result.length > 0*/) {
-        callback(user.getHandle()+" already exists", null);
+        return callback(user.getHandle()+" already exists", null);
       } else {
         //create a new user
-    	var usr;
+        var usr;
         topicModel.newInstanceNode(user.getHandle(), types.USER_TYPE,
-        		"","","en",user.getHandle(),
-        		icons.PERSON_ICON_SM,icons.PERSON_ICON, false, credentials, function(err,result) {
-            console.log('USER.newUserTopic-3 '+err+' '+result.toJSON());
-        	usr = result;
-        	// model users as AIR objects
-        	usr.setSubject(user.getFullName(),language, user.getHandle());
-        	//model user's home page in this topic
-        	if (user.getHomepage()) {
-        		usr.setResourceUrl(user.getHomepage());
-        	}
-          DataProvider.putNode(usr, function(err,data) {
+                      "","","en",user.getHandle(), icons.PERSON_ICON_SM,icons.PERSON_ICON,
+                      false, credentials, function(err, result) {
+          console.log('USER.newUserTopic-3 '+err+' '+result.toJSON());
+          myEnvironment.logDebug('USER.newUserTopic-3 '+err+' '+result.toJSON());
+          usr = result;
+          // model users as AIR objects
+          usr.setSubject(user.getFullName(),language, user.getHandle());
+          //model user's home page in this topic
+          if (user.getHomepage()) {
+            usr.setResourceUrl(user.getHomepage());
+          }
+          DataProvider.putNode(usr, function(err, data) {
             console.log('UserModel.newUserTopic+ '+usr.getLocator()+" "+err);
-            callback(err,null);
+            return callback(err, data);
           });
         });
       }
- 	});
-  },
+   	});
+  };
 	
   /**
    * Find user topic given <code>userLocator</code>
@@ -119,14 +120,14 @@ var UserModel = module.exports = function(environment) {
     DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
       callback(err,result);
     });
-  },
+  };
   
   self.listUsers = function(start, count, credentials, callback) {
     DataProvider.listInstanceNodes(types.USER_TYPE, start,count,credentials, function(err,data,total) {
       console.log("UserModel.listInstanceNodes "+err+" "+data);
       callback(err,data,total);
     });
-  },
+  };
 	  
 	  /**
 	   * @param credentials
@@ -154,5 +155,5 @@ var UserModel = module.exports = function(environment) {
       console.log("FILLING "+total);
       callback(html,len,total);	
     });
-  }
+  };
 };

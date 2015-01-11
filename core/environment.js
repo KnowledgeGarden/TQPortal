@@ -6,7 +6,8 @@ var //lgr = require('log4js'),
     //topicmap
     Indx = require('tqtopicmap'),
     //database
-    Udb = require('./userdatabase'),
+//    Udb = require('./userdatabase'),
+    Udes = require('./userdatabaseES'),
     //logging platform
     Lp = require('./logplatform'),
     //game environment
@@ -58,12 +59,17 @@ var Environment = module.exports = function() {  //function(callback) {
 		///////////////////////
 		//Populate the environment
 		///////////////////////
-		var path = __dirname+"/../config/config.json";
-		var recentspath = __dirname+"/../config/recents.json";
-	    var helppath = __dirname+"/../config/help.json";
+		var path = __dirname+"/../config/config.json",
+			recentspath = __dirname+"/../config/recents.json",
+			helppath = __dirname+"/../config/help.json";
+			
+
 		//get the logs
 		var lgr = new Lp(function(logp) {
 			logger = logp.getLogger();
+			    console.log("AAAA "+logger.category);
+
+			logger.debug("TQPortalEnvironment just getting started");
 			monitorLogger = logp.getMonitorLogger();
 			apiLogger = logp.getAPILogger();
 			//read the config file
@@ -75,16 +81,21 @@ var Environment = module.exports = function() {  //function(callback) {
 					if (!helpMenu) {helpMenu = [];}
 					//bring up mongo
 					//TODO improve the connect string with credentials, etc
-					userdatabase = new Udb(configProperties, function(err, dx) {
-			            //user databasea
-			            //userdatabase = dx;
-			            //now boot the topic map
-			            logger.debug("Environment AA");
-			            var foo = new Indx(function(err, tmx) {
-			                TopicMapEnvironment = tmx;
+//					userdatabase = new Udb(configProperties, function(err, dx) {
+					//Bring up the topicmap
+		            var foo = new Indx(function(err, tmx) {
+		                TopicMapEnvironment = tmx;
+		                //grab ESClient from the topic map
+		                var esclient = TopicMapEnvironment.getDatabase();
+		                //now bring up the userdatabase using elasticsearch
+						userdatabase = new Udes(this, esclient, configProperties, function(err, dx) {
+				            //user databasea
+				            //userdatabase = dx;
+				            //now boot the topic map
+				            logger.debug("Environment AA "+err+" | ");
 			                logger.debug("Environment B");
 			                // boot the game environment
-			                RPGEnvironment = new Genv(this, tmx);
+			                RPGEnvironment = new Genv(this, TopicMapEnvironment);
 			                //load recents
 			                fs.readFile(recentspath, function(err, recents) {
 			                    var rx = JSON.parse(recents);
@@ -365,6 +376,7 @@ var Environment = module.exports = function() {  //function(callback) {
 		logger.info(message);
 	};
 	self.logDebug = function(message) {
+		console.log("LOGDEBUG "+logger+" "+message);
 		logger.debug(message);
 	};
 	self.logError = function(message) {

@@ -150,10 +150,13 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			var data = environment.getCoreUIData(req);
 			data.invitationOnly = isInvitationOnly;
 			if (!truth) {data.hndl = handle;}
-			res.render('signup', data);
+			return res.render('signup', data);
 		});
 	});
 	
+	/**
+	 * Utility for post
+	 */
 	var __doPostSignup = function(req, res) {
 		var handle = req.body.handle;
 		var email = req.body.email;
@@ -188,68 +191,70 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			if (truth) {
 				console.log('SIGNUP-B');
 				return res.redirect('/error/HandleExists');
-			}
-		});
-		//build a user
-		var credentials = [];
-		credentials.push(handle);
-		console.log('SIGNUP-C');
-		var xuser = new User({
-			fullname : fullname,
-			email   : email,
-			avatar : req.body.avatar,
-			homepage : req.body.homepage,
-			latitude : req.body.Latitude,
-			longitude : req.body.Longitude
-			//leave password out; it requires a callback
-			//leave handle out: set next
-		});
-		xuser.setHandle(handle);
-		console.log('SIGNUP-XXX '+xuser.getEmail());
-		xuser.setPassword(password, function (err) {
-			console.log('Saving '+ JSON.stringify(xuser.getData()));
-			userDatabase.save(xuser.getData(), function(err,data) {
-				if(err) {
-					console.log(err);
-				} else {
-					console.log('User: ' + xuser.getEmail() + " saved.");
-					//now create a topic for this user
-					UserModel.newUserTopic(xuser,function(err,result) {
-						if (err) {
-							console.log('ROUTES.signup/post error '+err);
+			} else {
+				//build a user
+				var credentials = [];
+				credentials.push(handle);
+				console.log('SIGNUP-C');
+				var xuser = new User({
+					fullname : fullname,
+					email   : email,
+					avatar : req.body.avatar,
+					homepage : req.body.homepage,
+					latitude : req.body.Latitude,
+					longitude : req.body.Longitude
+					//leave password out; it requires a callback
+					//leave handle out: set next
+				});
+				xuser.setHandle(handle);
+				console.log('SIGNUP-XXX '+xuser.getEmail());
+				xuser.setPassword(password, function (err) {
+					console.log('Saving '+ JSON.stringify(xuser.getData()));
+					userDatabase.save(xuser.getData(), function(err,data) {
+						if(err) {
+							console.log('Usererror '+err);
 							return res.redirect('/error/SignupError');
-						}
+						} else {
+							console.log('User: ' + xuser.getEmail() + " saved.");
+							//now create a topic for this user
+							UserModel.newUserTopic(xuser,function(err, result) {
+								console.log('ROUTES.signup '+err+" "+result);
+								if (err) {
+									console.log('ROUTES.signup/post error '+err);
+									return res.redirect('/error/SignupError');
+								} else {
+									return res.redirect('/');
+								}
+							});
+						}	
 					});
-				}
-				return res.redirect('/');
-			});
+				});				
+			}
 		});
 	};
   
-  app.post('/signup', function(req,res) {
-    var email = req.body.email;
-    console.log("Admin.signup "+isInvitationOnly+" "+email);
-	if (isInvitationOnly) {
-		AdminModel.hasInvitation(email, function(err,truth) {
-			console.log("Admin.signup-1 "+truth);
-			if (truth) {
-				__doPostSignup(req,res);
-				console.log("Admin.signup-2 ");
-			} else {
-				console.log("Admin.signup-3 ");
-				res.redirect('/');
-			}
-			AdminModel.removeInvitation(email, function(err,truth) {
-				console.log("Admin.signup-4 ");
+	app.post('/signup', function(req,res) {
+		var email = req.body.email;
+		console.log("Admin.signup "+isInvitationOnly+" "+email);
+		if (isInvitationOnly) {
+			AdminModel.hasInvitation(email, function(err, truth) {
+				console.log("Admin.signup-1 "+truth);
+				if (truth) {
+					AdminModel.removeInvitation(email, function(err, truth) {
+						console.log("Admin.signup-4 ");
+						return __doPostSignup(req,res);
+					});
+				} else {
+					console.log("Admin.signup-3 ");
+					return res.redirect('/error/InvitationRequired');
+				}
 			});
-		});
-	} else {
-		console.log("Admin.signup-5 ");
-		__doPostSignup(req,res);
-    }
-    console.log("Admin.signup-6 ");
+		} else {
+			console.log("Admin.signup-5 ");
+			return __doPostSignup(req, res);
+    	}
+	});
 
-  });
   ///////////////////////////////
   // Admin functions
   ///////////////////////////////

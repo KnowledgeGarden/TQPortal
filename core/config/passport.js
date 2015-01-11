@@ -16,8 +16,9 @@ module.exports = function (passport, userdb) {
    * @param user
    */
   passport.serializeUser(function(user, done) {
-//	  console.log('passport.serializeUser '+JSON.stringify(user));
-//	  console.log('passport.serializeUser-1 '+user.email);
+    //This takes a user passed in from the database; we crash if it is empty or corrupted
+	  console.log('passport.serializeUser '+JSON.stringify(user));
+	  console.log('passport.serializeUser-1 '+user.email);
     return done(null, user.email);
   });
 

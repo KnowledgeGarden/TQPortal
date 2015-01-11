@@ -17,7 +17,6 @@ function LogPlatform(callback) {
     logger = log4js.getLogger("Portal");
     logger.setLevel('ERROR');
     var x = logger.setLevel('debug');
-
     monitor = log4js.getLogger("Monitor");
     monitor.setLevel('ERROR');
     x = monitor.setLevel('debug');
@@ -30,7 +29,7 @@ function LogPlatform(callback) {
     this.monitor = monitor;
     this.api = api;
     console.log("LogPlatform "+this);
-    callback(this);
+    return callback(this);
 }
 
 LogPlatform.prototype.getLogger = function() {

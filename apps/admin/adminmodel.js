@@ -38,7 +38,7 @@ var AdminModel =  module.exports = function(environment) {
 						console.log("AdminModel.validateDefaultUser-2 "+err);
 					}
 					xuser.addCredential(constants.ADMIN_CREDENTIALS);
-					userDatabase.save(xuser.getData(), function(err,data) {
+					userDatabase.save(xuser.getData(), function(err, data) {
 						if (err) {
 							console.log("AdminModel.validateDefaultUser-3 "+err);
 						}	
@@ -54,28 +54,31 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
 			}
 			
 		});
-	},
+	};
 	
 	//Go ahead and validate the default user when first booting
+	//TODO This occurs asynchronously, and might even fire after the entire website is booted
 	self.validateDefaultUser();
 	
-	self.handleExists = function(email,callback) {
+	self.handleExists = function(email, callback) {
+
 		userDatabase.handleExists(email, function(err,truth) {
-			callback(err,truth);
+			//TODO this should also call the topic map to make sure
+			callback(err, truth);
 		});		
-	},
+	};
 	
 	self.getUser = function(email,callback) {
-		userDatabase.findOne(email, function(err,data) {
-			callback(err,data);
+		userDatabase.findOne(email, function(err, data) {
+			callback(err, data);
 		});
-	},
+	};
 	
 	self.updateUser = function(user,callback) {
-		userDatabase.save(user,function(err,data) {
-			callback(err,data);
+		userDatabase.save(user,function(err, data) {
+			callback(err, data);
 		});
-	},
+	};
         
     self.addToCredentials = function(user, credential, callback) {
         var creds = user.credentials;
@@ -84,7 +87,7 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
         self.updateUser(user, function(err, data) {
             callback(err, data);
         });
-    },
+    };
         
     self.removeFromCredentials = function(user, credential, callback) {
         var creds = user.credentials;
@@ -97,48 +100,48 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
             });
         }
         callback(err, data);
-    },
+    };
         
 	/**
 	 * @param email
 	 * @param callback: signature(err, truth)
 	 */
 	self.hasInvitation = function(email, callback) {
-		userDatabase.hasInvitation(email, function(err,truth) {
-			callback(err,truth);
+		userDatabase.hasInvitation(email, function(err, truth) {
+			callback(err, truth);
 		});
-	},
+	};
 	
 	self.addInvitation = function(email,callback) {
-		userDatabase.addInvitation(email, function(err,truth) {
-			callback(err,truth);
+		userDatabase.addInvitation(email, function(err, truth) {
+			callback(err, truth);
 		});
-	},
+	};
 	
 	self.removeUser = function(email, callback) {
 		userDatabase.removeUser(email, function(err,truth) {
 			callback(err,truth);
 		});	
-	},
+	};
 	
-	self.removeInvitation = function(email,callback) {
-		userDatabase.removeInvitation(email, function(err,truth) {
-			callback(err,truth);
+	self.removeInvitation = function(email, callback) {
+		userDatabase.removeInvitation(email, function(err, truth) {
+			callback(err, truth);
 		});
-	},
+	};
 	
 	self.listUsers = function(callback) {
-		userDatabase.listUsers(function(err,data) {
-			callback(err,data);
+		userDatabase.listUsers(function(err, data) {
+			callback(err, data);
 		});
-	},
+	};
 	
 	/**
 	 * @param callback signatur (data)
 	 */
 	self.fillDatatable = function(callback) {
 		var theResult = {};
-		self.listUsers(function(err,result) {
+		self.listUsers(function(err, result) {
 			//list of user objects
 			/*
 { "_id" : "jackpark@gmail.com", "handle" : "jackpark", "fullname" : "Jack Park",
