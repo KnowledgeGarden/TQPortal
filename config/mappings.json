@@ -1,0 +1,65 @@
+{
+    "core": {
+        "properties": {
+            "email": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "handle": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "fullname": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "avatar": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "homepage": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "latitude": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "longitude": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "password": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "invitation": {
+                "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "_id": {
+                 "index": "not_analyzed",
+                "type": "string",
+                "store": true
+            },
+            "lists": {
+                "properties": {
+                    "credentials": {
+                        "index": "not_analyzed",
+                        "type": "string",
+                        "store": true
+                    }
+                }
+            }
+        }
+    }
+}
