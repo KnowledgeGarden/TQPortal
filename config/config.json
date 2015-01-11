@@ -5,6 +5,6 @@
     "defaultadminemail": "changeme@changeme.org",
     "defaultadminpwd": "changeme!",
     "portalIsPrivate": false,
-    "invitationOnly": true,
+    "invitationOnly": false,
     "clusters": [ {"host":"localhost","port":"9200"}]
 }
