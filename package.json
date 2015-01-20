@@ -155,7 +155,7 @@
       "comma-style": 0,
       "consistent-this": 0,
       "eol-last": 0,
-      "func-names": 0,
+      "func-names": 2,
       "func-style": 0,
       "key-spacing": 0,
       "max-nested-callbacks": 0,
