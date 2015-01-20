@@ -141,7 +141,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 
   });
   
-  app.get("/user/ajaxfetch/:id", isPrivate, function(req,res) {
+	app.get("/user/ajaxfetch/:id", isPrivate, function(req,res) {
 	    var q = req.params.id;
 		var lang = req.query.language;
 		var viewspec = "Dashboard";
@@ -149,53 +149,51 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    var credentials = [];
 	    var usr = req.user;
 	    if (usr) { credentials = usr.credentials;}
-	    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-	      console.log('USERrout-1 '+err+" "+result);
-	      var data = myEnvironment.getCoreUIData(req);
-			    var contextLocator;
-			    if (req.query.contextLocator) {
-			    	contextLocator = req.query.contextLocator;
-			    } else {
-			    	//if it's a map node, use that
-			    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
-			    		contextLocator = result.getLocator();
-			    	} else {
-			    		contextLocator = q;
-			    	}
-			    	//TODO
-			    	//Otherwise, grab some context from the node
-			    }
-		    	  var canEdit = self.canEdit(result,credentials);
-		    	  var clipboard = req.session.clipboard;
-		    	  
-		    	  var editLocator = "/user/edit/"+result.getLocator();
-		    	  
-
-		  		var tags = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE); //types.TAG_DOCUMENT_RELATION_TYPE);
-			      if (!tags) {
-			    	  tags = [];
-			      }
+	    Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+			console.log('USERrout-1 '+err+" "+result);
+			if (result) {
+				var data = myEnvironment.getCoreUIData(req),
+					contextLocator;
+				if (req.query.contextLocator) {
+				    	contextLocator = req.query.contextLocator;
+				} else {
+				    	//if it's a map node, use that
+					if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+				    		contextLocator = result.getLocator();
+					} else {
+				    		contextLocator = q;
+					}
+				    	//TODO
+				    	//Otherwise, grab some context from the node
+				}
+				var canEdit = self.canEdit(result,credentials),
+					clipboard = req.session.clipboard,	    	  
+					editLocator = "/user/edit/"+result.getLocator(),
+					tags = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE); //types.TAG_DOCUMENT_RELATION_TYPE);
+				if (!tags) {
+					tags = [];
+				}
 				var docs = result.listPivotsByRelationType(types.CREATOR_DOCUMENT_RELATION_TYPE);
-			      if (!docs) {
-			    	  docs = [];
-			      }
-			    var transcludeList =result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
-            if (!transcludeList) {
-                transcludeList = [];
-            }
-	      CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, transcludeList, viewspec,function(json) {
-	    	  json.myLocatorXP = q+"?contextLocator="+contextLocator;
-	    	  json.myLocator = q;
-		      console.log("XXXX "+JSON.stringify(json));
-		        try {
-		            res.set('Content-type', 'text/json');
-		          }  catch (e) { }
-		          res.json(json);
-	    	  
-	      });
+				if (!docs) {
+					docs = [];
+				}
+				var transcludeList =result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+	            if (!transcludeList) {
+	                transcludeList = [];
+	            }
+				CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, transcludeList, viewspec,function(json) {
+					json.myLocatorXP = q+"?contextLocator="+contextLocator;
+					json.myLocator = q;
+					console.log("XXXX "+JSON.stringify(json));
+					return res.json(json);
+				});
+			} else {
+				res.redirect('/error/UnableToDisplay');
+			}
 	    });
 	      
-  });
+	});
+
   app.get('/user/:id', isPrivate,function(req,res) {
 	    var q = req.params.id;
 	    console.log('USERrout '+q);

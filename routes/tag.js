@@ -126,64 +126,63 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		    var credentials = [];
 		    var usr = req.user;
 		    if (usr) { credentials = usr.credentials;}
-		    Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
-		      console.log('TAGrout-1 '+err+" "+result);
-		      var data = myEnvironment.getCoreUIData(req);
-				    var contextLocator;
-				    if (req.query.contextLocator) {
-				    	contextLocator = req.query.contextLocator;
-				    } else {
-				    	//if it's a map node, use that
-				    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
-				    		contextLocator = result.getLocator();
-				    	} else {
-				    		contextLocator = q;
-				    	}
-				    	//TODO
-				    	//Otherwise, grab some context from the node
-				    }
-			    	  var clipboard = req.session.clipboard;
-			/**	    //Allow Admins to edit tag
-			    	  var canEdit = false;
-			    	  if (credentials.indexOf(constants.ADMIN_CREDENTIALS) > -1) {
-			    		  canEdit = true;
-			    	  }
-			    	  
-			    	  var editLocator = "/tag/edit/"+result.getLocator();
-			    	  */
+		    Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+				console.log('TAGrout-1 '+err+" "+result);
+				if (result) {
+					var data = myEnvironment.getCoreUIData(req);
+					    var contextLocator;
+					    if (req.query.contextLocator) {
+					    	contextLocator = req.query.contextLocator;
+					    } else {
+					    	//if it's a map node, use that
+					    	if (result.getNodeType() == types.CONVERSATION_MAP_TYPE) {
+					    		contextLocator = result.getLocator();
+					    	} else {
+					    		contextLocator = q;
+					    	}
+					    	//TODO
+					    	//Otherwise, grab some context from the node
+					    }
+				    	  var clipboard = req.session.clipboard;
+				/**	    //Allow Admins to edit tag
+				    	  var canEdit = false;
+				    	  if (credentials.indexOf(constants.ADMIN_CREDENTIALS) > -1) {
+				    		  canEdit = true;
+				    	  }
+				    	  
+				    	  var editLocator = "/tag/edit/"+result.getLocator();
+				    	  */
 
-				      var docs = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-				      if (!docs) {
-				    	  docs = [];
-				      }
-				      var users = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE);
-				      if (!users) {
-				    	  users = [];
-				      }
-				      var transcludeUser = "";  //TODO
-		      CommonModel.generateViewFirstData(result, [], docs,users,credentials, canEdit, data, contextLocator, "/tag/", clipboard, lang, transcludeUser, viewspec, function(json) {
-		  			json.canEdit = false; // prevent editing
-				  //get all parents
-				  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
-					  if (cresult) {
-						  json.ccontable = cresult;
-					  }
-					  //get just my parents in particular context
-					  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
-						  if (presult) {
-							  json.pcontable = presult;
+					      var docs = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+					      if (!docs) {
+					    	  docs = [];
+					      }
+					      var users = result.listPivotsByRelationType(types.TAG_CREATOR_RELATION_TYPE);
+					      if (!users) {
+					    	  users = [];
+					      }
+					      var transcludeUser = "";  //TODO
+					CommonModel.generateViewFirstData(result, [], docs,users,credentials, canEdit, data, contextLocator, "/tag/", clipboard, lang, transcludeUser, viewspec, function(json) {
+			  			json.canEdit = false; // prevent editing
+					  //get all parents
+					  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
+						  if (cresult) {
+							  json.ccontable = cresult;
 						  }
-					      console.log("XXXX "+JSON.stringify(json));
-					      	
-					        try {
-					            res.set('Content-type', 'text/json');
-					          }  catch (e) { }
-					          res.json(json);
-					  });
+						  //get just my parents in particular context
+						  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+							  if (presult) {
+								  json.pcontable = presult;
+							  }
+						       return res.json(json);
+						  });
 
-				  });
-		    	  
-		      });
+						});
+			    	  
+					});
+				} else {
+					return res.redirect('/error/UnableToDisplay');
+				}
 		    });
 		      
 	  });		
