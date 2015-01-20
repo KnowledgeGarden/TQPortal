@@ -2,7 +2,7 @@
   "scripts": {
     "start": "nf start 2>&1 | tee -a logs/development.log | cat",
     "debug": "nf run node-debug server.js",
-    "test": "eslint ."
+    "test": "eslint --ignore-path .gitignore ."
   },
   "name": "TQPortal",
   "version": "0.21.1",
