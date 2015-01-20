@@ -1,4 +1,4 @@
-# TQPortal
+# TQPortal [![Build Status](https://travis-ci.org/KnowledgeGarden/TQPortal.svg?branch=develop)](https://travis-ci.org/KnowledgeGarden/TQPortal)
 A simple node-express-mongo with topic map portal
 
 In a sense, this portal mimics, as a scaled down prototype of ["https://github.com/KnowledgeGarden/ExpressDerbyPrototype"]("https://github.com/KnowledgeGarden/ExpressDerbyPrototype" "another project.")
