@@ -5,11 +5,16 @@
     "test": "eslint ."
   },
   "name": "TQPortal",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "description": "A Landing Page and Portal Framework for TopicQuests",
   "main": "server.js",
   "author": "park",
   "license": "Apache 2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KnowledgeGarden/TQPortal"
+  },
+
   "dependencies": {
     "express": "~4.4.3",
     "d-bootstrap": "~0.1.0",

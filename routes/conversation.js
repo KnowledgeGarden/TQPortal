@@ -207,93 +207,97 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//fetch the node itself
 		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
 			console.log('CONVERSATIONrout-1 '+err+" "+result);
-			myEnvironment.logDebug("Conversation.ajaxfetch- "+result.toJSON());
 			var data =  myEnvironment.getCoreUIData(req);
-			var nodetype = result.getNodeType();
-			//Fetch the tags
-			var docs=[];
-			var tags = [];
-			if (nodetype !== types.TAG_TYPE ) {
-				tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-				if (!tags) {
-					tags = [];
+			if (result) {
+				myEnvironment.logDebug("Conversation.ajaxfetch- "+result.toJSON());
+				var nodetype = result.getNodeType();
+				//Fetch the tags
+				var docs=[];
+				var tags = [];
+				if (nodetype !== types.TAG_TYPE ) {
+					tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+					if (!tags) {
+						tags = [];
+					}
+				} else {
+					docs = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+					if (!docs) {
+						docs = [];
+					}
 				}
-			} else {
-				docs = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-				if (!docs) {
-					docs = [];
-				}
-			}
-			
+				
 
-			var users=[];
-			var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
-            if (!transcludes) {
-                transcludes = [];
-            }
-			//Tell the view that it will start a new conversation with a MAPTYPE node
-			//NOTE: this could change: we might actually install that map when the node is built
-		//	data.newnodetype = conversationConstants.MAPTYPE;
-			myEnvironment.logDebug("Conversation.ajaxfetch-1 "+JSON.stringify(data));
-			CommonModel.__doAjaxFetch(result, credentials, "/conversation/", tags, docs, users, transcludes, data, req, function(json, contextLocator) {
-				myEnvironment.logDebug("Conversation.ajaxfetch-2 "+JSON.stringify(json));
-				//gather evidence
-				var kids = result.listChildNodes(contextLocator);
-				if (kids) {
-					myEnvironment.logDebug("Conversation.ajaxfetch-3 "+JSON.stringify(kids));
+				var users=[];
+				var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+	            if (!transcludes) {
+	                transcludes = [];
+	            }
+				//Tell the view that it will start a new conversation with a MAPTYPE node
+				//NOTE: this could change: we might actually install that map when the node is built
+			//	data.newnodetype = conversationConstants.MAPTYPE;
+				myEnvironment.logDebug("Conversation.ajaxfetch-1 "+JSON.stringify(data));
+				CommonModel.__doAjaxFetch(result, credentials, "/conversation/", tags, docs, users, transcludes, data, req, function(json, contextLocator) {
+					myEnvironment.logDebug("Conversation.ajaxfetch-2 "+JSON.stringify(json));
+					//gather evidence
+					var kids = result.listChildNodes(contextLocator);
+					if (kids) {
+						myEnvironment.logDebug("Conversation.ajaxfetch-3 "+JSON.stringify(kids));
 
-					var evid = [];
-					var x;
-					var len = kids.length;
-					for (var i=0;i<len;i++) {
-						x = kids[i];
-						if (x.isevidence) {
-							evid.push(x);
+						var evid = [];
+						var x;
+						var len = kids.length;
+						for (var i=0;i<len;i++) {
+							x = kids[i];
+							if (x.isevidence) {
+								evid.push(x);
+							}
+						}
+						if (evid.length > 0) {
+							json.evidence = evid;
 						}
 					}
-					if (evid.length > 0) {
-						json.evidence = evid;
+	                var clipboard = req.session.clipboard;
+					if (credentials.length > 0 && clipboard && clipboard !== "") {
+						var transcludeLocator = req.session.clipboard;
+						//conversationmodel must clear this when it's used.
+						//THIS Button is for plain transclude4
+						var htmx = "<form method=\"post\" action=\"/conversation/transclude\"  role=\"form\" class=\"form-horizontal\">";
+						htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
+						htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
+						htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
+						htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
+						htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node</button>";
+						htmx += "</div></div></form><p></p><hr>";
+						json.transclude=htmx;
+						//THIS Button is for transcludeAsEvidence
+						htmx = "<form method=\"post\" action=\"/conversation/transcludeEvidence\"  role=\"form\" class=\"form-horizontal\">";
+						htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
+						htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
+						htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
+						htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
+						htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node As Evidence</button>";
+						htmx += "</div></div></form><p></p><hr>";
+						json.transcludeevidence=htmx;
 					}
-				}
-                var clipboard = req.session.clipboard;
-				if (credentials.length > 0 && clipboard && clipboard !== "") {
-					var transcludeLocator = req.session.clipboard;
-					//conversationmodel must clear this when it's used.
-					//THIS Button is for plain transclude4
-					var htmx = "<form method=\"post\" action=\"/conversation/transclude\"  role=\"form\" class=\"form-horizontal\">";
-					htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
-					htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
-					htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
-					htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
-					htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node</button>";
-					htmx += "</div></div></form><p></p><hr>";
-					json.transclude=htmx;
-					//THIS Button is for transcludeAsEvidence
-					htmx = "<form method=\"post\" action=\"/conversation/transcludeEvidence\"  role=\"form\" class=\"form-horizontal\">";
-					htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
-					htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
-					htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
-					htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
-					htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node As Evidence</button>";
-					htmx += "</div></div></form><p></p><hr>";
-					json.transcludeevidence=htmx;
-				}
-				//TODO add response html here  {{#if isAuthenticated}}
-				if (credentials.length > 0) {
-					var htx = "<h2>Respond with these options...</h2>";
-					htx += "<table width=\"100%\"><tbody><tr>";
-					htx += "<td><center><a title=\"New Map: conversation branch\" href=\"/conversation/newMap/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/map.png\"></a></center</td>";
-					htx += "<td><center><a title=\"New Question/Issue\" href=\"/conversation/newIssue/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/issue.png\"></a></center</td>";
-					htx += "<td><center><a title=\"New Answer/Position\" href=\"/conversation/newPosition/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/position.png\"></a></center</td>";
-					htx += "<td><center><a title=\"New Pro Argument\" href=\"/conversation/newPro/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/plus.png\"></a></center</td>";
-					htx += "<td><center><a title=\"New Con Argument\" href=\"/conversation/newCon/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/minus.png\"></a></center</td>";
-					htx += "</tr></tbody></table>";
-					json.responsebuttons = htx;
-				}
-				myEnvironment.logDebug("Conversation.ajaxfetch+ "+JSON.stringify(json));
-				//send the response
-				return res.json(json);
-			});
+					//TODO add response html here  {{#if isAuthenticated}}
+					if (credentials.length > 0) {
+						var htx = "<h2>Respond with these options...</h2>";
+						htx += "<table width=\"100%\"><tbody><tr>";
+						htx += "<td><center><a title=\"New Map: conversation branch\" href=\"/conversation/newMap/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/map.png\"></a></center</td>";
+						htx += "<td><center><a title=\"New Question/Issue\" href=\"/conversation/newIssue/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/issue.png\"></a></center</td>";
+						htx += "<td><center><a title=\"New Answer/Position\" href=\"/conversation/newPosition/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/position.png\"></a></center</td>";
+						htx += "<td><center><a title=\"New Pro Argument\" href=\"/conversation/newPro/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/plus.png\"></a></center</td>";
+						htx += "<td><center><a title=\"New Con Argument\" href=\"/conversation/newCon/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/minus.png\"></a></center</td>";
+						htx += "</tr></tbody></table>";
+						json.responsebuttons = htx;
+					}
+					myEnvironment.logDebug("Conversation.ajaxfetch+ "+JSON.stringify(json));
+					//send the response
+					return res.json(json);
+				});
+			} else {
+				return return res.redirect('/error/UnableToDisplay'); 
+			}
 		});
 	});
   

@@ -117,7 +117,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   });
   
 
-  app.get("/bookmark/ajaxfetch/:id", isPrivate, function(req,res) {
+	app.get("/bookmark/ajaxfetch/:id", isPrivate, function(req,res) {
 		//establish the node's identity
 		var q = req.params.id;
 		//establish credentials
@@ -128,29 +128,33 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//fetch the node itself
 		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
 			console.log('BOOKMARKrout-1 '+err+" "+result);
-			var data =  myEnvironment.getCoreUIData(req);
-			//Fetch the tags
-			var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-			if (!tags) {
-				tags = [];
+			if (result) {
+				var data =  myEnvironment.getCoreUIData(req);
+				//Fetch the tags
+				var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+				if (!tags) {
+					tags = [];
+				}
+				var docs=[];
+				var users=[];
+				var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+	            if (!transcludes) {
+	                transcludes = [];
+	            }
+				myEnvironment.logDebug("Bookmark.ajaxfetch "+JSON.stringify(data));
+				CommonModel.__doAjaxFetch(result, credentials,"/bookmark/",tags,docs,users,transcludes,data,req,function(json) {
+					myEnvironment.logDebug("Bookmark.ajaxfetch-1 "+JSON.stringify(json));
+						//send the response
+						try {
+							res.set('Content-type', 'text/json');
+						}  catch (e) { }
+						res.json(json);
+				});
+			} else {
+				return res.redirect('/error/UnableToDisplay');
 			}
-			var docs=[];
-			var users=[];
-			var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
-            if (!transcludes) {
-                transcludes = [];
-            }
-			myEnvironment.logDebug("Bookmark.ajaxfetch "+JSON.stringify(data));
-			CommonModel.__doAjaxFetch(result, credentials,"/bookmark/",tags,docs,users,transcludes,data,req,function(json) {
-				myEnvironment.logDebug("Bookmark.ajaxfetch-1 "+JSON.stringify(json));
-					//send the response
-					try {
-						res.set('Content-type', 'text/json');
-					}  catch (e) { }
-					res.json(json);
-			} );
 		}); 
-  });
+	});
   
   /**
    * Fill ViewFirst
