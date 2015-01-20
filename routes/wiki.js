@@ -107,7 +107,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var usr = req.user;
 		if (usr) { credentials = usr.credentials;}
 		//fetch the node itself
-		Dataprovider.getNodeByLocator(q, credentials, function(err result) {
+		Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
 			console.log('WIKIrout-1 '+err+" "+result);
 			if (result) {
 				var data =  myEnvironment.getCoreUIData(req);

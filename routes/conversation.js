@@ -296,7 +296,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					return res.json(json);
 				});
 			} else {
-				return return res.redirect('/error/UnableToDisplay'); 
+				return res.redirect('/error/UnableToDisplay'); 
 			}
 		});
 	});
