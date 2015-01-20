@@ -48,6 +48,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 				result = true;
 			}
 		}
+		topicMapEnvironment.logDebug("CommonModel.canEdit "+JSON.stringify(credentials)+" | "+node.getCreatorId()+" | "+result);
 		return result;
 	};
 
@@ -387,24 +388,6 @@ var CommonModel = module.exports = function(environment, tmenv) {
 			return callback(data);
 		}
 	};
-    
-	self.canEdit = function(node, credentials) {
-		console.log("CommonModel.canEdit "+JSON.stringify(credentials));
-		var result = false;
-		if (credentials) {
-			// node is deemed editable if the user created the node
-			// or if user is an admin
-			var cid = node.getCreatorId();
-			var where = credentials.indexOf(cid);
-			if (where < 0) {
-				var where2 = credentials.indexOf(constants.ADMIN_CREDENTIALS);
-				if (where > -1) {result = true;}
-			} else {
-				result = true;
-			}
-		}
-		return result;
-	};
 	
 	/**
 	 * This is the big kahoona for handling an ajax fetch for ViewFirst views
@@ -458,7 +441,9 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		} else {
 			canEdit = data.isNotEditable;
 		}
-		self.canEdit(theNode,credentials);
+		if (!isQuestGameNode && !data.isNotEditable) {
+			canEdit = self.canEdit(theNode,credentials);
+		}
 		//must pass this to view
 		var editLocator = app+"edit/"+theNode.getLocator();
 		//we leave it to the caller to load pivots
