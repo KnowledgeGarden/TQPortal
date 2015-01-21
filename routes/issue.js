@@ -36,7 +36,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
 			res.redirect('/login');
 		} else {
-			{return next();}
+			return next();
 		}
 	}
 	function isLoggedIn(req, res, next) {
@@ -48,7 +48,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (isPrivatePortal) {
 			return res.redirect('/login');
 		}
-		res.redirect('/');
+		return res.redirect('/');
 	}
 	/////////////////
 	// Menu
@@ -76,17 +76,18 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  data.guildquery="/guild/index";
 
 		  data.type = "landing";
-	    res.render('issuehome',data);
+	    return res.render('issuehome',data);
 	  });
 	  
 	  /**
 	   * Fire up the blog new post form
+	   * Called on a New Topic in the issue app
 	   */
 	  app.get('/issue/new', isLoggedIn, function(req,res) {
 		var data =  myEnvironment.getCoreUIData(req);
 		data.formtitle = "New Issue";
 	    data.isNotEdit = true;
-		res.render('issueform',data); //,
+		return res.render('issueform',data); //,
 	  });
 	  
 	  /**
@@ -119,11 +120,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var credentials = usx.credentials;
 		if (body.locator === "") {
 			IssueModel.create(body, usx, credentials, function(err,result) {
-				callback(err,result);
+				return callback(err,result);
 			});
 		} else {
 	        IssueModel.update(body, usx, credentials, function(err,result) {
-	            callback(err,result);
+	            return callback(err,result);
 	        });
 		}
 	  };
@@ -169,8 +170,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				CommonModel.__doAjaxFetch(result, credentials,"/issue/",tags,docs,users,transcludes,data,req,function(json) {
 					myEnvironment.logDebug("Issue.ajaxfetch-1 "+JSON.stringify(json));
 						//send the response
-						res.json(json);
-				} );
+						return res.json(json);
+				});
 			});
 		  });
 		  

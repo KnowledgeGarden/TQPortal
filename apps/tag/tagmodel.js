@@ -1,5 +1,6 @@
 /**
  * TagModel
+ * NOTE: in this implementation, all tags are public
  */
 var types = require('tqtopicmap/lib/types')
 	, icons = require('tqtopicmap/lib/icons')
@@ -40,16 +41,17 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 				//do the deed
 				self.processTagList(taglist,userTopic,docTopic,credentials,function(err,result) {
 					if (err) {error+=err;}
-					callback(error,result);
+					return callback(error,result);
 				});
 			});
 			
 		});
-	},
+	};
+	
 	  /**
 	   * Update an existing tag entry; no tags included
 	   */
-	  self.update = function(blog,user,credentials,callback) {
+	self.update = function(blog,user,credentials,callback) {
 		  topicMapEnvironment.logDebug("TAG.UPDATE "+JSON.stringify(blog));
 		  var lox = blog.locator;
 		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
@@ -76,7 +78,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
 		    		  if (err) {error += err;}
 		    		  console.log("TagModel.update "+error+" "+oldLabel+" "+title);
-		    		  callback(error,data);
+		    		  return callback(error,data);
 		    	  });
 	    	  } else if (!isNotUpdateToBody) {
 	    		  //simple update
@@ -84,16 +86,16 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
     			  result.setLastEditDate(new Date());
     			  DataProvider.putNode(result,function(err,data) {
     				  if (err) {error += err;}
-    				  callback(error,data);
+    				  return callback(error,data);
     			  });
 	    	  } else {
 	    		  //nothing to do. Wonder why?
-	    		  callback(error,null);
+	    		  return callback(error,null);
 	    	  }
 		  });
-	  },
+	};
 	  
-	  self.__makeLocator = function(tagString) {
+	self.__makeLocator = function(tagString) {
 		  var label = tagString.trim();
           label = label.toLowerCase();
 	      var locator = label.replace(" ", "_");
@@ -103,7 +105,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
           locator = replaceAll(locator, "-", "M");
 	      locator = locator+'_TAG';
 	      return locator;
-	  },
+	};
 	  
   /**
    * Process new tags into Topic objects
@@ -119,14 +121,14 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	  //ADD ability to setIntersect joint tags
   self.processTagList = function(tagList, usertopic, docTopic, credentials, callback) {
     console.log('TAGS.processTagList '+tagList+' '+usertopic);
-    var labels = [];
-    var locators = [];
-    var locator;
-    var result = {};
-    var len = tagList.length;
-    var label, cursor = 0;
-    var error='';
-    var myTags = [];
+    var labels = [],
+		locators = [],
+		locator,
+		result = {},
+		len = tagList.length,
+		label, cursor = 0,
+		error='',
+		myTags = [];
     function loop() {
       if (cursor >= len) {
         console.log('TAGS.processTagList+ '+myTags);
@@ -147,7 +149,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
     }
     //start the loop
     loop();
-  },
+  };
 	
   self.processTag = function(tagString, usertopic, docTopic, credentials, callback) {
     console.log('TAGS.processTag '+tagString+' '+usertopic);
@@ -159,18 +161,16 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
       var locator, label;
       label = tagString.trim();
       console.log('TAG-2 '+label);
-      var buf = new sb();
-      var len = label.length;
-      var c;
+		var buf = new sb(),
+			len = label.length,
+			c;
       //We really have to clean up the locator: no funky stuff
       for (var i=0;i<len;i++) {
     	  c = label.charAt(i);
     	  if (c === ' ' ||
     		  c === '\'' ||
     		  c === ',' ||
-    		  c === '-') {
-    		  c = '_';
-    	  }
+    		  c === '-') { c = '_'; }
     	  buf.append(c);
       }
       
@@ -179,12 +179,13 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
       //find or create this tag
       self.__findOrCreateTag(taglist,locator, label, usertopic,docTopic, credentials, function(err,aTag) {
         console.log('TAGS.processTag-1 '+err+' '+aTag);
-        if (aTag) // sanity 
+        if (aTag) {// sanity 
           myTags.push(aTag);
-        callback(err,myTags);
+      	}
+        return callback(err,myTags);
       });
     }
-  },
+  };
   
   /**
    * Creates and maintains a set of shared tags
@@ -212,7 +213,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 		  }
 	  }
 	  tagNode.setProperty(extendedtypes.JOINT_TAG_LIST, jl);
-  }
+  };
 
   /**
    * Utility to see if a tag with <code>tagLocator</code> exists. If not, create it.
@@ -230,7 +231,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
   self.__findOrCreateTag = function(taglist, tagLocator, label, usertopic, docTopic, credentials, callback) {
 	console.log('TagModel.__findOrCreateTag '+tagLocator+' '+usertopic);
 	var error='';
-	DataProvider.getNodeByLocator(tagLocator,credentials, function(err,result) {
+	DataProvider.getNodeByLocator(tagLocator,credentials, function(err, result) {
 		console.log('TagModel.__findOrCreateTag-1 '+tagLocator+' '+err+' '+result);
 		if (err) {error += err;}
 		//Result will be a Topic or null
@@ -249,7 +250,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 					topicMapEnvironment.logDebug("TagModel just added to RingBuffer");
 					if (err) {error += err;}
 					//wire this tag's relations
-					self.__wireRelations(theTag,  docTopic, usertopic,credentials, function(err,data) {
+					self.__wireRelations(theTag,  docTopic, usertopic, credentials, function(err, data) {
 						if (err) {error += err;}
 					});
 				});
@@ -258,13 +259,13 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 			self.__joinTags(theTag,taglist);
 			topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
 			//wire this tag's relations
-			self.__wireRelations(theTag,  docTopic, usertopic,credentials, function(err,data) {
+			self.__wireRelations(theTag,  docTopic, usertopic, credentials, function(err, data) {
 				if (err) {error += err;}
 			});
 		}
-		callback(error,theTag);
+		return callback(error, theTag);
 	});
-  },
+  };
   
 
   self.__wireRelations = function(theTag, theDoc, theUser, credentials, callback) {
@@ -275,20 +276,18 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	//largeImagePath, isTransclude, isPrivate, credentials, callback
 	//myEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
 	topicMapEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
-	TopicModel.relateExistingNodesAsPivots(theUser,theTag,types.TAG_CREATOR_RELATION_TYPE,
-			theUser.getLocator(),
-			icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function(err,data) {
+	TopicModel.relateExistingNodesAsPivots(theUser, theTag,types.TAG_CREATOR_RELATION_TYPE,
+			theUser.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function(err, data) {
 		if (err) {error+=err;}
 		//myEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
 		topicMapEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
-		TopicModel.relateExistingNodesAsPivots(theTag,theDoc,types.TAG_DOCUMENT_RELATION_TYPE,
-				theUser.getLocator(),
-				icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function(err,data) {
+		TopicModel.relateExistingNodesAsPivots(theTag, theDoc, types.TAG_DOCUMENT_RELATION_TYPE,
+				theUser.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function(err, data) {
 			if (err) {error+=err;}
-			callback(error,null);
+			return callback(error, null);
 		});
 	});
-  },
+  };
   
   
   self.listTags = function(start, count, credentials, callback) {
@@ -297,21 +296,20 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	//DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
 	DataProvider.listInstanceNodes(types.TAG_TYPE, start,count,credentials, function(err,data,total) {
 		console.log("TagModel.listTags "+err+" "+data,total);
-		callback(err,data, total);
+		return callback(err,data, total);
 	});
-  },
+  };
 
   /**
    * @param credentials
    * @param callback signatur (data)
    */
   self.fillDatatable = function(start, count, credentials, callback) {
-	self.listTags(start,count,credentials,function(err,result,totalx) {
+	self.listTags(start,count,credentials,function(err, result, totalx) {
 		console.log('ROUTES/tag '+err+' '+result);
-	      CommonModel.fillSubjectAuthorDateTable(result,"/tag/",totalx, function(html,len,total) {
+	      CommonModel.fillSubjectAuthorDateTable(result,"/tag/",totalx, function(html, len, total) {
 		      console.log("FILLING "+start+" "+count+" "+total);
-		      callback(html,len,total);
-	    	  
+		      return callback(html, len, total);
 	      });
 	});
   };

@@ -16,14 +16,14 @@ var types = require('tqtopicmap/lib/types')
   , tagmodel = require('../tag/tagmodel');
 
 var BlogModel =  module.exports = function(environment) {
-	var CommonModel = environment.getCommonModel();
-	var PortalNodeModel = environment.getPortalNodeModel();
-	var myEnvironment = environment;
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var DataProvider = topicMapEnvironment.getDataProvider();
-	var TopicModel = topicMapEnvironment.getTopicModel();
-	var TagModel = new tagmodel(environment);
-	var queryDSL = topicMapEnvironment.getQueryDSL();
+	var CommonModel = environment.getCommonModel(),
+      PortalNodeModel = environment.getPortalNodeModel(),
+      myEnvironment = environment,
+      topicMapEnvironment = environment.getTopicMapEnvironment(),
+      DataProvider = topicMapEnvironment.getDataProvider(),
+      TopicModel = topicMapEnvironment.getTopicModel(),
+      TagModel = new tagmodel(environment),
+      queryDSL = topicMapEnvironment.getQueryDSL();
   console.log("BlogModel");
 //  this.types = types;
 //  this.icons = icons;
@@ -32,11 +32,11 @@ var BlogModel =  module.exports = function(environment) {
   /**
    * Update an existing node; no tags included
    */
-  self.update = function(json,user,callback) {
+  self.update = function(json, user, callback) {
 	  PortalNodeModel.update(json,user,function(err,result) {
-		  callback(err,null);
+		  return callback(err, null);
 	  });
-  },
+  };
   
   /**
    * Create a new blog post
@@ -46,20 +46,25 @@ var BlogModel =  module.exports = function(environment) {
    */
   self.create = function (json, user, callback) {
 	  console.log('BMXXXX '+JSON.stringify(json));
-	  var isPrivate = false; //TODO
-	  PortalNodeModel.create(json,user,types.BLOG_TYPE,icons.PUBLICATION_SM, icons.PUBLICATION, isPrivate,function(err,lox) {
-		  myEnvironment.addRecentBlog(lox,json.title);
-		  callback(err,lox);
+	  var isPrivate = false;
+    if (json.isPrivate) {
+      isPrivate = json.isPrivate;
+    }
+	  PortalNodeModel.create(json, user,types.BLOG_TYPE,icons.PUBLICATION_SM, icons.PUBLICATION, isPrivate, function(err, lox) {
+      if (!isPrivate) {
+		    myEnvironment.addRecentBlog(lox,json.title);
+      }
+		  return callback(err,lox);
 	  });
-  },
+  };
   
   self.listBlogPosts = function(start, count, credentials, callback) {
     var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BLOG_TYPE,start,count);
-    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
+    DataProvider.listNodesByQuery(query, start,count,credentials, function(err, data, total) {
       console.log("BlogModel.listBlogPosts "+err+" "+data);
-      callback(err,data, total);
+      return callback(err, data, total);
     });
-  },
+  };
   
   /**
    * @param start
@@ -68,15 +73,14 @@ var BlogModel =  module.exports = function(environment) {
    * @param callback signatur (data, countsent, totalavailable)
    */
   self.fillDatatable = function(start, count,credentials, callback) {
-	  self.listBlogPosts(start,count,credentials,function(err,result, totalx) {
+	  self.listBlogPosts(start, count, credentials, function(err, result, totalx) {
 	      console.log('BlogModel.fillDatatable '+err+' '+totalx+" "+result);
-	      CommonModel.fillSubjectAuthorDateTable(result,"/blog/",totalx, function(html,len,total) {
+	      CommonModel.fillSubjectAuthorDateTable(result,"/blog/",totalx, function(html, len, total) {
 		      console.log("FILLING "+start+" "+count+" "+total);
-		      callback(html,len,total);
-	    	  
+		      return callback(html, len, total);
 	      });
 	  });
-  }
+  };
   
 };
 

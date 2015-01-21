@@ -95,7 +95,11 @@ var GuildModel =  module.exports = function(environment) {
 	    var userLocator = user.handle; // It's supposed to be user.handle;
 	    //first, fetch this user's topic
 	    var userTopic,
-            theGuild;
+            theGuild,
+            isPrivate = false;
+      if (blog.isPrivate) {
+        isPrivate = blog.isPrivate;
+      }
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
 	      userTopic = result;
 	      console.log('GuildModel.create-1 '+userLocator+' | '+userTopic);
@@ -105,7 +109,7 @@ var GuildModel =  module.exports = function(environment) {
             //This creates the guild itself
 	      TopicModel.newInstanceNode(uuid.newUUID(), types.GUILD_TYPE,
                                      "", "", constants.ENGLISH, userLocator,
-                                     icons.COLLABORATION_SM, icons.COLLABORATION, false, credentials, function(err, article) {
+                                     icons.COLLABORATION_SM, icons.COLLABORATION, isPrivate, credentials, function(err, article) {
 	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
 	    	  var subj = blog.title;
@@ -137,7 +141,7 @@ var GuildModel =  module.exports = function(environment) {
 
                               TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                                      userTopic.getLocator(),
-                                                                     icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+                                                                     icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
                                   if (err) {console.log('ARTICLES_CREATE-3d '+err);}
                                   return callback(err,article.getLocator());
                               }); //r1
@@ -151,7 +155,7 @@ var GuildModel =  module.exports = function(environment) {
 
                           TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                                  userTopic.getLocator(),
-                                                                 icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+                                                                 icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
                               if (err) {console.log('ARTICLES_CREATE-3d '+err);}
                               return callback(err,article.getLocator());
                           }); //r1

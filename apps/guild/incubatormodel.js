@@ -95,16 +95,16 @@ var IncubatorModel =  module.exports = function(environment) {
       //it doesn't exist: we must create it.
       DataProvider.getNodeByLocator(questLocator, credentials, function(err, quest) {
         if (err) {error += err;}
-        var title = quest.getSubject(language).theText;
+        var title = quest.getSubject(language).theText,
+            isPrivate = true;
         //create a new Meta conversation map
         var bx = {};
         bx.title = "Meta Conversation";
         bx.body = "";
         bx.language = "en"; //TODO
         //CREATE the Meta Conversation
-        ConversationModel.createMap(bx, usr, null, credentials, function(err, qnode) {
+        ConversationModel.createMap(bx, usr, null, true, credentials, function(err, qnode) {
           if (err) {error += err}
-          qnode.setIsPrivate(true); // make it private
           qnode.addACLValue(guildNode.getLocator()); // add to ACL
           qnode.setCreatorId(guildNode.getLocator()); // the guild is the creator
           myEnvironment.logDebug("IncubatorModel.joinQuest-2 "+qnode);
@@ -143,12 +143,12 @@ var IncubatorModel =  module.exports = function(environment) {
    */
   self.createOtherNode = function(blog, user, credentials, callback) {
     var guildLocator = blog.contextLocator;
+    var isPrivate = true;
     myEnvironment.logDebug("GUILD LOCATOR -4 "+guildLocator); // debug establish the identity of this guild.
 
     // create the node
-    ConversationModel.createOtherNode(blog, user, credentials, function(err, qnode) {
+    ConversationModel.createOtherNode(blog, user, isPrivate, credentials, function(err, qnode) {
       //now make it private with ACL
-      qnode.setIsPrivate(true); // make it private
       qnode.addACLValue(guildLocator); // add to ACL
       qnode.setCreatorId(guildLocator); // the guild is the creator
       myEnvironment.logDebug("IncubatorModel.createOtherNode "+qnode.toJSON());
@@ -241,10 +241,13 @@ var IncubatorModel =  module.exports = function(environment) {
         questLocator = guildNode.getProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY),
         infobox = guildNode.getInfoBox(questLocator),
         lang = "en"; //TODO
+    var ib, rootLocator;
+    if (infobox) {
+      ib = JSON.parse(infobox);
+      rootLocator = ib[Infobox.QUEST_CONTEXT_LOCATOR];
+    }
     myEnvironment.logDebug("IncubatorModel.getGameTree "+questLocator+" | "+infobox);
-    var ib = JSON.parse(infobox),
-        rootLocator = ib[Infobox.QUEST_CONTEXT_LOCATOR],
-        rootNode; // leave undefined
+    var rootNode; // leave undefined
     myEnvironment.logDebug("IncubatorModel.getGameTree-1 "+rootLocator+" | "+infobox);
     if (rootLocator) {
       DataProvider.getNodeByLocator(rootLocator, credentials, function(err, rn) {
@@ -266,9 +269,12 @@ var IncubatorModel =  module.exports = function(environment) {
         questLocator = guildNode.getProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY),
         infobox = guildNode.getInfoBox(questLocator);
     myEnvironment.logDebug("IncubatorModel.getMetaTree "+questLocator+" "+infobox);
-    var ib = JSON.parse(infobox),
-        lang = "en", //TODO
-        rootLocator = ib[Infobox.META_TREE_ROOT_LOCATOR],
+    var ib , rootLocator;
+    if (infobox) {
+      ib = JSON.parse(infobox);
+      rootLocator = ib[Infobox.META_TREE_ROOT_LOCATOR];
+    }
+    var lang = "en", //TODO
         rootNode; // leave undefined
     myEnvironment.logDebug("IncubatorModel.getMetaTree-1 "+rootLocator+" "+infobox);
     if (rootLocator) {

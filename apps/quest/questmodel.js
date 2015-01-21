@@ -92,7 +92,11 @@ var IssueModel =  module.exports = function(environment) {
     var userLocator = user.handle,
         userTopic,
         error = "",
-        issueloc = blog.parent;
+        issueloc = blog.parent,
+        isPrivate = false;
+    if (blog.isPrivate) {
+      isPrivate = blog.isPrivate;
+    }
     myEnvironment.logDebug("QuestModel.create-1 "+issueloc+" | "+JSON.stringify(blog));
     //get the user
     DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
@@ -139,7 +143,7 @@ var IssueModel =  module.exports = function(environment) {
           myEnvironment.logDebug("QuestModel.create-2 "+error);
           TopicModel.relateExistingNodesAsPivots(issuenode, qnode, extendedtypes.ISSUE_QUEST_RELATION_TYPE,
                                 userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-                                false, credentials, function(err, data) {
+                                isPrivate, credentials, function(err, data) {
             if (err) {error += err}
             DataProvider.putNode(qnode, function(err, dx) {
               if (err) {error += err}
@@ -155,7 +159,7 @@ var IssueModel =  module.exports = function(environment) {
                   console.log("ARTICLES_CREATE_2 "+JSON.stringify(qnode));
                   TopicModel.relateExistingNodesAsPivots(userTopic, qnode, types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                       userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-                                                      false, credentials, function(err, data) {
+                                                      isPrivate, credentials, function(err, data) {
                     if (err) {error += err}
                     return callback(error, qnode.getLocator());
                   }); //r1
@@ -163,7 +167,7 @@ var IssueModel =  module.exports = function(environment) {
               } else {
                 TopicModel.relateExistingNodesAsPivots(userTopic,qnode,types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                     userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-                                                    false, credentials, function(err, data) {
+                                                    isPrivate, credentials, function(err, data) {
                   if (err) {error += err}
                   return callback(error, qnode.getLocator());
                 }); //r1

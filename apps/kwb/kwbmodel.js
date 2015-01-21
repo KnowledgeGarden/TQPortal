@@ -83,6 +83,7 @@ var KnowledgeWorkbenchModel =  module.exports = function(environment, cm, tmenv)
      * @param taglist
      * @param callback signature (err, relationnode)
      */
+     //TODO needs isPrivate
     self.createConnection = function(sourceLocator, targetLocator, relationType, userObject, taglist, callback) {
         console.log("KnowledgeWorkbenchModel.createConnection "+sourceLocator+" "+targetLocator+" "+relationType);
         var error = "",

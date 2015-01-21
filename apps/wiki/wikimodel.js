@@ -33,9 +33,14 @@ var WikiModel =  module.exports = function(environment) {
 	 * @user: a User object to be converted to a userTopic
 	 */
 	self.create = function (json, user, callback) {
-		var isPrivate = false; //TODO
+		var isPrivate = false;
+		if (json.isPrivate) {
+			isPrivate = json.isPrivate;
+		}
 		PortalNodeModel.create(json, user, types.WIKI_TYPE, icons.PUBLICATION_SM, icons.PUBLICATION, isPrivate,function(err, lox) {
-			myEnvironment.addRecentWiki(lox, json.title);
+			if (!isPrivate) {
+				myEnvironment.addRecentWiki(lox, json.title);
+			}
 			return callback(err,lox);
 		});
 	};

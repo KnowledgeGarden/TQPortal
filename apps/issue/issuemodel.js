@@ -92,6 +92,10 @@ var IssueModel =  module.exports = function(environment) {
 	    var userLocator = user.handle; // It's supposed to be user.handle;
 	    //first, fetch this user's topic
 	    var userTopic;
+		var isPrivate = false;
+		if (json.isPrivate) {
+			isPrivate = json.isPrivate;
+		}
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
 	      userTopic = result;
 	      console.log('IssueModel.create-1 '+userLocator+' | '+userTopic);
@@ -100,7 +104,7 @@ var IssueModel =  module.exports = function(environment) {
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
 	      TopicModel.newInstanceNode(uuid.newUUID(), types.CHALLENGE_TYPE,
 	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.WARNING_SM, icons.WARNING, false, credentials, function(err, article) {
+	      		icons.WARNING_SM, icons.WARNING, isPrivate, credentials, function(err, article) {
 	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
 	    	  var subj = blog.title;
@@ -124,7 +128,7 @@ var IssueModel =  module.exports = function(environment) {
 
 	                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+	                      		icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 	                    return callback(err,article.getLocator());
 	                 }); //r1
@@ -138,7 +142,7 @@ var IssueModel =  module.exports = function(environment) {
 
 	                  TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                  		userTopic.getLocator(),
-	                       icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+	                       icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
 	                               if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 	                               return callback(err, article.getLocator());
 	                       }); //r1

@@ -38,8 +38,8 @@ var ConversationModel = module.exports = function(environment) {
 	//TODO
 	// We need a create for each node type
 	// The root class is CONVERSATION_MAP_TYPE
-	self.createHelpMap = function(blog, user, credentials, callback) {
-		self.createRootMap(blog,user, credentials, function(err, data) {
+	self.createHelpMap = function(blog, user, isPrivate, credentials, callback) {
+		self.createRootMap(blog, user, isPrivate, credentials, function(err, data) {
 			var lox = data.getLocator(),
 				name = data.getSubject(constants.ENGLISH).theText; //TODO
 			myEnvironment.addConversationToHelp("/conversation/"+lox, name);
@@ -47,7 +47,7 @@ var ConversationModel = module.exports = function(environment) {
 		});
 	};
   
-	self.createRootMap = function(blog, user, credentials, callback) {
+	self.createRootMap = function(blog, user, isPrivate, credentials, callback) {
 		//NOTE: if parentNodeLocator exists, this is not a new map, so we use create
 		var userLocator = user.handle, // It's supposed to be user.handle;
 	    	//first, fetch this user's topic
@@ -65,7 +65,7 @@ var ConversationModel = module.exports = function(environment) {
 			//largeImagePath,  isPrivate, credentials
 			TopicModel.newInstanceNode(uuid.newUUID(), types.CONVERSATION_MAP_TYPE,
 								"", "", constants.ENGLISH, userLocator, icons.MAP_SM, icons.MAP,
-								false, credentials, function(err, article) {
+								isPrivate, credentials, function(err, article) {
 				if (err) {error += err;}
 				var lang = blog.language;
 				if (!lang) {lang = "en";}
@@ -74,7 +74,9 @@ var ConversationModel = module.exports = function(environment) {
 				article.setSubject(subj,lang,userLocator);
 				article.setBody(body.trim(),lang,userLocator);
 	    //	  console.log('BlogModel.create-2 '+article.toJSON());
-				myEnvironment.addRecentConversation(article.getLocator(),blog.title);
+	    		if (!isPrivate) {
+					myEnvironment.addRecentConversation(article.getLocator(),blog.title);
+				}
 	    	     // now deal with tags
 				var taglist = CommonModel.makeTagList(blog);
 				if (taglist.length > 0) {
@@ -115,29 +117,29 @@ var ConversationModel = module.exports = function(environment) {
 		});
 	};
   
-	self.createOtherNode = function(blog, user, credentials, callback) {
+	self.createOtherNode = function(blog, user, isPrivate, credentials, callback) {
 		//console.log("ConversationModel.createOtherNode "+JSON.stringify(blog));
 		myEnvironment.logDebug("ConversationModel.createOtherNode- "+JSON.stringify(blog));
 		var typ = blog.nodefoo,
 			parentLocator = blog.locator;
 		if (typ === conversationConstants.MAPTYPE) {
-			self.createMap(blog, user, parentLocator, credentials, function(err, result) {
+			self.createMap(blog, user, parentLocator, isPrivate, credentials, function(err, result) {
 				return callback(err, result);
 			});
 		} else if (typ === conversationConstants.QUESTIONTYPE) {
-			self.createIssue(blog, user, parentLocator, credentials, function(err, result) {
+			self.createIssue(blog, user, parentLocator, isPrivate, credentials, function(err, result) {
 			  return callback(err, result);
 			});
 		} else if (typ === conversationConstants.ANSWERTYPE) {
-			self.createPosition(blog, user, parentLocator, credentials, function(err, result) {
+			self.createPosition(blog, user, parentLocator, isPrivate, credentials, function(err, result) {
 				return callback(err, result);
 			});		  
 		} else if (typ === conversationConstants.PROTYPE) {
-			self.createPro(blog, user, parentLocator, credentials, function(err, result) {
+			self.createPro(blog, user, parentLocator, isPrivate, credentials, function(err, result) {
 				return callback(err, result);
 			});
 		} else if (typ === conversationConstants.CONTYPE) {
-			self.createCon(blog, user, parentLocator, credentials, function(err, result) {
+			self.createCon(blog, user, parentLocator, isPrivate, credentials, function(err, result) {
 				return callback(err, result);
 			});
 		} else {
@@ -148,34 +150,34 @@ var ConversationModel = module.exports = function(environment) {
 	  
 	};
   
-	self.createMap = function(blog, user, parentNodeLocator, credentials, callback) {
-		self.create(blog, user, types.CONVERSATION_MAP_TYPE, parentNodeLocator, icons.MAP_SM, icons.MAP, credentials, function(err, result) {
+	self.createMap = function(blog, user, parentNodeLocator, isPrivate, credentials, callback) {
+		self.create(blog, user, types.CONVERSATION_MAP_TYPE, parentNodeLocator, icons.MAP_SM, icons.MAP, isPrivate, credentials, function(err, result) {
 			return callback(err, result);
 		});
 	};
 
-	self.createIssue = function(blog, user, parentNodeLocator, credentials, callback) {
+	self.createIssue = function(blog, user, parentNodeLocator, isPrivate, credentials, callback) {
 		//myEnvironment.logDebug("ConversationModel.createIssue "+parentNodeLocator);
-		self.create(blog, user, types.ISSUE_TYPE, parentNodeLocator, icons.ISSUE_SM, icons.ISSUE, credentials, function(err, result) {
+		self.create(blog, user, types.ISSUE_TYPE, parentNodeLocator, icons.ISSUE_SM, icons.ISSUE, isPrivate, credentials, function(err, result) {
 			//myEnvironment.logDebug("ConversationModel.createIssue-1 "+err+" | "+result);
 			return callback(err, result);
 		});
 	};
     
-	self.createPosition = function(blog, user, parentNodeLocator, credentials, callback) {
-		self.create(blog, user, types.POSITION_TYPE, parentNodeLocator, icons.POSITION_SM, icons.POSITION, credentials, function(err, result) {
+	self.createPosition = function(blog, user, parentNodeLocator, isPrivate, credentials, callback) {
+		self.create(blog, user, types.POSITION_TYPE, parentNodeLocator, icons.POSITION_SM, icons.POSITION, isPrivate, credentials, function(err, result) {
 			return callback(err, result);
 		});
 	};
 
-	self.createPro = function(blog, user, parentNodeLocator, credentials, callback) {
-		self.create(blog, user, types.PRO_TYPE, parentNodeLocator, icons.PRO_SM, icons.PRO,credentials, function(err, result) {
+	self.createPro = function(blog, user, parentNodeLocator, isPrivate, credentials, callback) {
+		self.create(blog, user, types.PRO_TYPE, parentNodeLocator, icons.PRO_SM, icons.PRO, isPrivate, credentials, function(err, result) {
 			return callback(err, result);
 		});
 	};
 
-	self.createCon = function(blog, user, parentNodeLocator, credentials, callback) {
-		self.create(blog,user,types.CON_TYPE, parentNodeLocator, icons.CON_SM, icons.CON, credentials, function(err, result) {
+	self.createCon = function(blog, user, parentNodeLocator, isPrivate, credentials, callback) {
+		self.create(blog,user,types.CON_TYPE, parentNodeLocator, icons.CON_SM, icons.CON, isPrivate, credentials, function(err, result) {
 			return callback(err, result);
 		});
 	};
@@ -187,11 +189,12 @@ var ConversationModel = module.exports = function(environment) {
 	 * @param user: a JSON object of the user from the session
 	 * @param nodeType: maptype, protype, etc
 	 * @param parentNodeLocator: can be <code>null</code>
+	 * @param isPrivate
 	 * @param credentials
 	 * @param callback: signature (err, result): result = the entire new object
 	 */
 	self.create = function (blog, user, nodeType, parentNodeLocator,
-							smallIcon, largeIcon, credentials, callback) {
+							smallIcon, largeIcon, isPrivate, credentials, callback) {
 		var credentials = user.credentials,
 			language = constants.ENGLISH, //TODO
 			contextLocator = parentNodeLocator; // default
@@ -221,11 +224,13 @@ var ConversationModel = module.exports = function(environment) {
 				parent = result;
 				TopicModel.createTreeNode(contextLocator, parent, lox, nodeType,
 										blog.title, blog.body, language, smallIcon, largeIcon,
-										credentials, userLocator, false, function(err, data) {
+										credentials, userLocator, isPrivate, function(err, data) {
 					if (err) {error += err;}
 					//data is the created node
 					myEnvironment.logDebug("ConversationModel.create-1 "+parentNodeLocator+" "+data.toJSON());
-					myEnvironment.addRecentConversation(data.getLocator(),blog.title);
+					if (!isPrivate) {
+						myEnvironment.addRecentConversation(data.getLocator(),blog.title);
+					}
 					article = data;
 					DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
 						userTopic = result;
@@ -277,11 +282,13 @@ var ConversationModel = module.exports = function(environment) {
 			//credentials, userLocator, isPrivate,
 			TopicModel.createTreeNode(contextLocator, parent, lox, nodeType,
 								blog.title, blog.body, language, smallIcon, largeIcon,
-								credentials, userLocator, false, function(err, data) {
+								credentials, userLocator, isPrivate, function(err, data) {
 				if (err) {error += err;}
 				//data is the created node
 				myEnvironment.logDebug("ConversationModel.create-2 "+parentNodeLocator+" "+data.toJSON());
-				myEnvironment.addRecentConversation(data.getLocator(),blog.title);
+				if (!isPrivate) {
+					myEnvironment.addRecentConversation(data.getLocator(), blog.title);
+				}
 				article = data;
 				DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
 					if (err) {error += err;}

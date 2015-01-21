@@ -10,19 +10,20 @@ var types = require('tqtopicmap/lib/types')
   , tagmodel = require('../tag/tagmodel');
 
 var BookmarkModel =  module.exports = function(environment) {
-	var myEnvironment = environment;
-	var CommonModel = environment.getCommonModel();
-	var PortalNodeModel = environment.getPortalNodeModel();
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var DataProvider = topicMapEnvironment.getDataProvider();
-	var TopicModel = topicMapEnvironment.getTopicModel();
-	var TagModel = new tagmodel(environment);
-	var queryDSL = topicMapEnvironment.getQueryDSL();
-	var self = this;
+	var myEnvironment = environment,
+		CommonModel = environment.getCommonModel(),
+		PortalNodeModel = environment.getPortalNodeModel(),
+		topicMapEnvironment = environment.getTopicMapEnvironment(),
+		DataProvider = topicMapEnvironment.getDataProvider(),
+		TopicModel = topicMapEnvironment.getTopicModel(),
+		TagModel = new tagmodel(environment),
+		queryDSL = topicMapEnvironment.getQueryDSL(),
+		self = this;
   
 	self.getBookmarkByURL = function(url, credentials, callback) {
-		DataProvider.getNodeByURL(url,credentials, function(err,data) {
+		DataProvider.getNodeByURL(url, credentials, function(err, data) {
 			console.log('BookmarkModel.getNodeByURL '+url+" "+err+" "+data);
+			return callback(err, data);
 		});
 	};
 
@@ -44,8 +45,10 @@ var BookmarkModel =  module.exports = function(environment) {
 		var lang = blog.language,
 			url = blog.url,
 			error = "";
+		var isPrivate = bookmarkNode.getIsPrivate();
 
-	  if (!lang) {lang = "en";}
+
+		if (!lang) {lang = "en";}
 
 		myEnvironment.logDebug("BookmarkModel.createAnnotationAndTags "+bookmarkNode.toJSON());
 		//contextLocator, parentNode,newLocator, 
@@ -53,10 +56,12 @@ var BookmarkModel =  module.exports = function(environment) {
 		//  credentials, userLocator, isPrivate, callback
 		TopicModel.createTreeNode(bookmarkNode.getLocator(), bookmarkNode, "", types.NOTE_TYPE,
 						blog.subject, blog.body, lang, icons.NOTE_SM, icons.NOTE,
-						credentials, userTopic.getLocator(), false, function(err, data) {
+						credentials, userTopic.getLocator(), isPrivate, function(err, data) {
 			var positionNode = data;
 			positionNode.setResourceUrl(url);
+			if (!isPrivate) {
 			  myEnvironment.addRecentConversation(positionNode.getLocator(),blog.subject);
+			}
 			if (err) {error += err;}
 			var taglist = CommonModel.makeTagList(blog);
 	        if (taglist.length > 0) {
@@ -71,7 +76,7 @@ var BookmarkModel =  module.exports = function(environment) {
 						console.log('ARTICLES_CREATE-3b '+userTopic);	  
 						TopicModel.relateExistingNodesAsPivots(userTopic ,positionNode, types.CREATOR_DOCUMENT_RELATION_TYPE,
 														userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-														false, credentials, function(err, data) {
+														isPrivate, credentials, function(err, data) {
 							if (err) {error += err;}
 							return callback(error,positionNode.getLocator());
 						}); //r1
@@ -84,7 +89,7 @@ var BookmarkModel =  module.exports = function(environment) {
 					console.log('ARTICLES_CREATE-3b '+userTopic);	  
 					TopicModel.relateExistingNodesAsPivots(userTopic, positionNode,types.CREATOR_DOCUMENT_RELATION_TYPE,
 		              			userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-		              			false, credentials, function(err, data) {
+		              			isPrivate, credentials, function(err, data) {
 		      			if (err) {error += err;}
 						return callback(error, positionNode.getLocator());
 					}); //r1
@@ -108,6 +113,10 @@ var BookmarkModel =  module.exports = function(environment) {
 	    var userTopic
 	      , bookmarkTopic;
 	    var error = '';
+	    var isPrivate = false;
+	    if (blog.isPrivate) {
+	    	isPrivate = blog.isPrivate;
+	    }
 	    //get the user
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,utpx) {
 	      userTopic = utpx;
@@ -134,7 +143,7 @@ var BookmarkModel =  module.exports = function(environment) {
 		    	  //create the bookmark
 			      TopicModel.newInstanceNode(uuid.newUUID(), types.BOOKMARK_TYPE,
 				      		"", "", constants.ENGLISH, userLocator,
-				      		icons.BOOKMARK_SM, icons.BOOKMARK, false, credentials, function(err, article) {
+				      		icons.BOOKMARK_SM, icons.BOOKMARK, isPrivate, credentials, function(err, article) {
 			    	  myEnvironment.logDebug("BookmarkModel.create-2 "+err+" "+article);
 				      if (err) {error+=err;}
 				      bookmarkTopic = article;
@@ -144,12 +153,14 @@ var BookmarkModel =  module.exports = function(environment) {
 			    	  article.setSubject(subj,lang,userLocator);
 			    	  article.setBody("",lang,userLocator);
 			    	  article.setResourceUrl(url);
-					  myEnvironment.addRecentBookmark(bookmarkTopic.getLocator(),blog.title);
+			    	  if (!isPrivate) {
+					  	myEnvironment.addRecentBookmark(bookmarkTopic.getLocator(), blog.title);
+					  }
 					  DataProvider.putNode(bookmarkTopic, function(err,data) {
 					      if (err) {error+=err;}
 					      TopicModel.relateExistingNodesAsPivots(userTopic,bookmarkTopic,types.CREATOR_DOCUMENT_RELATION_TYPE,
 				              						userTopic.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON,
-				              						false, credentials, function(err, data) {
+				              						isPrivate, credentials, function(err, data) {
 					  			  if (err) {error += err;}
 					  			  //MAKE POSITION
 					  			  //TAGS to Bookmark and Position

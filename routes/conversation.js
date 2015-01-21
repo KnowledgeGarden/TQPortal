@@ -210,6 +210,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			var data =  myEnvironment.getCoreUIData(req);
 			if (result) {
 				myEnvironment.logDebug("Conversation.ajaxfetch- "+result.toJSON());
+				topicMapEnvironment.logDebug("Conversation.ajaxfetch- "+JSON.stringify(credentials)+" | "+result.toJSON());
 				var nodetype = result.getNodeType();
 				//Fetch the tags
 				var docs=[];
