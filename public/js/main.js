@@ -588,12 +588,12 @@ function getPage(type, query) {
         }
         //specific to kwb.js
         if (data.relnSubject) {
-            var x = '<a href="/blog/"+data.relnSubject+">Relation Source</a>';
+            var x = "<a href='/blog/"+data.relnSubject+"'>Relation Source</a>";
             $("div.relnsubj").html(x);
         }
    //     alert(data.relnObject);
         if (data.relnObject) {
-             var x = '<a href="/blog/"+data.relnObject+">Relation Target</a>';
+             var x = "<a href='/blog/"+data.relnObject+"'>Relation Target</a>";
             $("div.relnobj").html(x);
        }
 	});

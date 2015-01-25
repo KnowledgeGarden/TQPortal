@@ -18,12 +18,13 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         KnowledgeWorkbenchModel = new kwb(environment),
         CommonModel = environment.getCommonModel();
 	console.log("KnowledgeWorkbench started "+JSON.stringify(relationlist));
+
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
-			res.redirect('/login');
+			return res.redirect('/login');
 		} else {
-			{return next();}
+			return next();
 		}
 	}
     
@@ -37,12 +38,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     app.get("/kwb/newrelation", isPrivate, function(req, res) {
         var data = environment.getCoreUIData(req),
         //it's rerq.query in a get
-            lox = req.query.myLocator,
-            targ = req.query.targetLocator,
-            credentials = [],
-            usr = req.user,
-            src,
-            trg;
+        lox = req.query.myLocator,
+        targ = req.query.targetLocator,
+        credentials = [],
+        usr = req.user,
+        src,
+        trg;
         data.relationlist = KnowledgeWorkbenchModel.getNewRelationForm();
         Dataprovider.getNodeByLocator(lox, credentials, function(err,p1) {
             trg = p1;
@@ -72,49 +73,53 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         });
     });
     
-    app.get("/kwb/ajaxfetch/:id", isPrivate, function(req,res) {
+    app.get("/kwb/ajaxfetch/:id", isPrivate, function(req, res) {
         //establish the node's identity
-        var q = req.params.id;
+        var q = req.params.id,
         //establish credentials
         //defaults to an empty array if no user logged in
-        var credentials = [];
-        var usr = req.user;
+            credentials = [],
+            usr = req.user;
         if (usr) { credentials = usr.credentials;}
         //fetch the node itself
-        Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+        Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
             console.log('KWBrout-1 '+err+" "+result);
-            var data =  myEnvironment.getCoreUIData(req),
-            //Fetch the tags
-                tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-            if (!tags) {
-                tags = [];
+            if (result) {
+                var data =  myEnvironment.getCoreUIData(req),
+                //Fetch the tags
+                    tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+                if (!tags) {
+                    tags = [];
+                }
+                //this is a relation view
+                var srcid = result.getSubjectLocator(),
+                    trgtid = result.getObject();
+                data.relnSubject = srcid;
+                data.relnObject = trgtid;
+                var docs = [],
+                    users = [],
+                    transcludes = result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+                if (!transcludes) {
+                    transcludes = [];
+                }
+                myEnvironment.logDebug("KWb.ajaxfetch "+JSON.stringify(data));
+                CommonModel.__doAjaxFetch(result, credentials, "/kwb/", tags, docs, users, transcludes, data, req, function(json) {
+                    myEnvironment.logDebug("kwb.ajaxfetch-1 "+JSON.stringify(json));
+                    //send the response
+                    return res.json(json);
+                });
+            } else {
+                return res.redirect('/error/CannotDisplay');
             }
-            //this is a relation view
-            var srcid = result.getSubjectLocator();
-            var trgtid = result.setObject();
-            data.relnSubject = srcid;
-            data.relnObject = trgtid;
-            var docs = [];
-            var users = [];
-            var transcludes = result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
-            if (!transcludes) {
-                transcludes = [];
-            }
-            myEnvironment.logDebug("KWb.ajaxfetch "+JSON.stringify(data));
-            CommonModel.__doAjaxFetch(result, credentials, "/kwb/", tags, docs, users, transcludes, data, req, function(json) {
-                myEnvironment.logDebug("kwb.ajaxfetch-1 "+JSON.stringify(json));
-                //send the response
-                res.json(json);
-            });
         });
     });
   
     /**
      * Model Fill ViewFirst: get cycle starts here
      */
-    app.get('/kwb/:id', isPrivate,function(req,res) {
-        var q = req.params.id;
-        var data = myEnvironment.getCoreUIData(req);
+    app.get('/kwb/:id', isPrivate,function(req, res) {
+        var q = req.params.id,
+            data = myEnvironment.getCoreUIData(req);
         myEnvironment.logDebug("KWBBY "+JSON.stringify(req.query));
         CommonModel.__doGet(q,"/kwb/",data, req, function(viewspec, data) {
             if (viewspec === "Dashboard") {
@@ -128,12 +133,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     /**
      * Add a new connection among two nodes
      */
-    app.post('/kwb/add', function(req,res) {
+    app.post('/kwb/add', function(req, res) {
         //it's req.body in a post
-        var src = req.body.sourceLocator;
-        var targ = req.body.targetLocator;
-        var reln = req.body.relnselection;
-        var taglist = [];
+        var src = req.body.sourceLocator,
+            targ = req.body.targetLocator,
+            reln = req.body.relnselection,
+            taglist = [];
 		if (req.body.tag1 && req.body.tag1.length > 0) {
 			taglist.push(req.body.tag1);
 		}
@@ -159,7 +164,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                 var data =  myEnvironment.getCoreUIData(req);
                 data.errormessage = "Internal failure making a connection";
                 console.log("WTF?");
-                res.render("500",data);
+                return res.render("500", data);
             }
         });
     });
