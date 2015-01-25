@@ -5,7 +5,7 @@
     "test": "eslint --ignore-path .gitignore ."
   },
   "name": "TQPortal",
-  "version": "0.22.12,
+  "version": "0.22.2",
   "description": "A Landing Page and Portal Framework for TopicQuests",
   "main": "server.js",
   "author": "park",
