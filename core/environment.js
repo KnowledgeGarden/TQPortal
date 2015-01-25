@@ -22,10 +22,11 @@ var //lgr = require('log4js'),
 /**
  * @param callback: signature(err, result) // result is the environment
  */
-var Environment = module.exports = function() {  //function(callback) {
+var Environment = function(callback) {  //function(callback) {
 	console.log("Environment A");
 	//create a logging system
-	var logger,
+	var logApp,
+		logger,
         monitorLogger,
         apiLogger,
         configProperties,
@@ -52,10 +53,12 @@ var Environment = module.exports = function() {  //function(callback) {
         // need to save their recents and other things
         saveRecentListeners = [];
 
+    var self = this;
+
     /**
      * Primary bootup
      */
-	this.init = function(callback) {
+	self.init = function(callback) {
 		///////////////////////
 		//Populate the environment
 		///////////////////////
@@ -63,15 +66,17 @@ var Environment = module.exports = function() {  //function(callback) {
 			recentspath = __dirname+"/../config/recents.json",
 			helppath = __dirname+"/../config/help.json";
 			
+		var myself = this;
 
 		//get the logs
-		var lgr = new Lp(function(logp) {
-			logger = logp.getLogger();
+		logApp = new Lp(function(logp) {
+			logApp = logp;
+			logger = logApp.getLogger();
 			    console.log("AAAA "+logger.category);
 
 			logger.debug("TQPortalEnvironment just getting started");
-			monitorLogger = logp.getMonitorLogger();
-			apiLogger = logp.getAPILogger();
+			monitorLogger = logApp.getMonitorLogger();
+			apiLogger = logApp.getAPILogger();
 			//read the config file
 			fs.readFile(path, function(err, configfile) {
 				configProperties = JSON.parse(configfile);
@@ -79,16 +84,23 @@ var Environment = module.exports = function() {  //function(callback) {
 					helpMenuProperties = JSON.parse(helpfile);
 					helpMenu = helpMenuProperties.helpMenu;
 					if (!helpMenu) {helpMenu = [];}
+					logger.debug("TQPortalEnvironment just getting started 2");
+
 					//bring up mongo
 					//TODO improve the connect string with credentials, etc
 //					userdatabase = new Udb(configProperties, function(err, dx) {
 					//Bring up the topicmap
 		            var foo = new Indx(function(err, tmx) {
 		                TopicMapEnvironment = tmx;
+		                logger.debug("TQPortalEnvironment just getting started 3");
 		                //grab ESClient from the topic map
 		                var esclient = TopicMapEnvironment.getDatabase();
 		                //now bring up the userdatabase using elasticsearch
+		                			
+
 						userdatabase = new Udes(this, esclient, configProperties, function(err, dx) {
+										logger.debug("TQPortalEnvironment just getting started 4");
+
 				            //user databasea
 				            //userdatabase = dx;
 				            //now boot the topic map
@@ -159,23 +171,23 @@ var Environment = module.exports = function() {  //function(callback) {
 			                    self.logAPIDebug("Portal Environment started ");
 			                    TopicMapEnvironment.logDebug("PortalEnvironment started "+blogRing);
 			                    logger.debug("Environment C");
-			                    return callback("foo","bar");  	
-			                }); // read file
-			            });  // foo topicmap
-					}); //udb
+			                    return callback("foo", myself);  	
+			                }); // recents
+			            });  // userdatabase
+					}); //topicmap
 				}); 
 		    }); //config
 		}); //logging
 	}; //init
 
-	var   self = this;
 
+/*	self = this;
 	self.start = function(callback) {
 		console.log("ENVIRONMENT STARTING")
 		this.init(function (err, data) {
 			return callback(err, data);
 		});
-	};
+	}; */
 
 	///////////////////////
 	// API
@@ -394,6 +406,15 @@ var Environment = module.exports = function() {  //function(callback) {
 	self.logAPIError = function(message) {
 		apiLogger.error(message);
 	};
+	self = this;
 	console.log("ENVIRONMENT END");
+	self.init(function(err,data) {
+		self.logDebug("FUCK");
+		logger.debug("FUCK MORE");
+		//self = this;
+		callback( err, self);
+	});
+
 };
 
+module.exports = Environment;

@@ -38,8 +38,8 @@ var ConversationModel = module.exports = function(environment) {
 	//TODO
 	// We need a create for each node type
 	// The root class is CONVERSATION_MAP_TYPE
-	self.createHelpMap = function(blog, user, isPrivate, credentials, callback) {
-		self.createRootMap(blog, user, isPrivate, credentials, function(err, data) {
+	self.createHelpMap = function(blog, user, credentials, callback) {
+		self.createRootMap(blog, user, true, credentials, function(err, data) {
 			var lox = data.getLocator(),
 				name = data.getSubject(constants.ENGLISH).theText; //TODO
 			myEnvironment.addConversationToHelp("/conversation/"+lox, name);
@@ -117,7 +117,12 @@ var ConversationModel = module.exports = function(environment) {
 		});
 	};
   
-	self.createOtherNode = function(blog, user, isPrivate, credentials, callback) {
+	self.createOtherNode = function(blog, user, credentials, callback) {
+		var isPrivate = false;
+    	if (json.isPrivate) {
+      		isPrivate = json.isPrivate;
+    	}
+
 		//console.log("ConversationModel.createOtherNode "+JSON.stringify(blog));
 		myEnvironment.logDebug("ConversationModel.createOtherNode- "+JSON.stringify(blog));
 		var typ = blog.nodefoo,

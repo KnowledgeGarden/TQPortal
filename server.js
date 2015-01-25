@@ -18,9 +18,12 @@ var express = require("express"),
 //Environment
 // The Environment boots databases and provides logging services
 ////////////////////////////
-var Environment  = new Env();
-Environment.start(function(err, env) {
+var x = new Env(function(err, env) {
 	console.log("SERVER A "+env);
+	var Environment  =  env;
+	//Environment = env;
+	Environment.logDebug("Yup");
+//	console.log(stop);  // for debugging to stop before loading bootstraps to look at what happened earlier
 	var bootstrap = new Bs(Environment.getTopicMapEnvironment()),
 
 		//models/lib/tqtopicmap/node_modules
@@ -45,7 +48,7 @@ Environment.start(function(err, env) {
 			cookieParser = require("cookie-parser"),
 			flash = require("connect-flash");
 		//   logger = require("logger").createLogger("development.log");
-		Environment.logDebug("Server Starting-2 "+app);
+		env.logDebug("Server Starting-2 "+app);
 		require("./core/config/express")(app,passport,flash);
 		//placed here due to __dirname; otherwise, can't find /views
 		app.use(express.static(path.join(__dirname, "public")));

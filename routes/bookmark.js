@@ -117,7 +117,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   });
   
 
-	app.get("/bookmark/ajaxfetch/:id", isPrivate, function(req,res) {
+	app.get("/bookmark/ajaxfetch/:id", isPrivate, function(req, res) {
 		//establish the node's identity
 		var q = req.params.id;
 		//establish credentials
@@ -126,7 +126,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var usr = req.user;
 		if (usr) { credentials = usr.credentials;}
 		//fetch the node itself
-		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+		Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
 			console.log('BOOKMARKrout-1 '+err+" "+result);
 			if (result) {
 				var data =  myEnvironment.getCoreUIData(req);

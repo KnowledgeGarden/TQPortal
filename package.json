@@ -5,7 +5,7 @@
     "test": "eslint --ignore-path .gitignore ."
   },
   "name": "TQPortal",
-  "version": "0.22.0",
+  "version": "0.22.1",
   "description": "A Landing Page and Portal Framework for TopicQuests",
   "main": "server.js",
   "author": "park",
@@ -51,7 +51,7 @@
     "jsonlint": "^1.6.2"
   },
   "non-npmDependencies": {
-    "tqtopicmap": "0.12.3"
+    "tqtopicmap": "0.12.4"
   },
   "eslintConfig": {
     "env": {
