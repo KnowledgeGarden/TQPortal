@@ -133,7 +133,7 @@ var IssueModel =  module.exports = function(environment) {
         myEnvironment.logDebug("QuestModel.create-2B ");
         //NoW create the quest's Issue
         var parent; // there is no parent
-        ConversationModel.createIssue(bx, user, parent, credentials, function(err, qnode) {
+        ConversationModel.createIssue(bx, user, parent, isPrivate, credentials, function(err, qnode) {
           if (err) {error += err}
           //Change the icons in qnode and save it
           qnode.setImage(icons.CHALLENGE);

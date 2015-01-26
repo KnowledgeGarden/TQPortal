@@ -5,14 +5,14 @@
     "test": "eslint --ignore-path .gitignore ."
   },
   "name": "TQPortal",
-  "version": "0.22.2",
+  "version": "0.22.3",
   "description": "A Landing Page and Portal Framework for TopicQuests",
   "main": "server.js",
   "author": "park",
   "license": "Apache 2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KnowledgeGarden/TQPortal"
+    "url": "git://github.com/KnowledgeGarden/TQPortal.git"
   },
 
   "dependencies": {

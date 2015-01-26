@@ -85,7 +85,7 @@ var IssueModel =  module.exports = function(environment) {
 	   * @param credentials
 	   * @param callback: signature (err, result): result = _id of new object
 	   */
-	  self.create = function (blog, user, credentials, callback) {
+	self.create = function (blog, user, credentials, callback) {
 		  console.log('BMXXXX '+JSON.stringify(blog));
 		// some really wierd shit: the User object for the user database stores
 		// as user.handle, but passport seems to muck around and return user.username
@@ -93,8 +93,8 @@ var IssueModel =  module.exports = function(environment) {
 	    //first, fetch this user's topic
 	    var userTopic;
 		var isPrivate = false;
-		if (json.isPrivate) {
-			isPrivate = json.isPrivate;
+		if (blog.isPrivate) {
+			isPrivate = blog.isPrivate;
 		}
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
 	      userTopic = result;
@@ -151,7 +151,7 @@ var IssueModel =  module.exports = function(environment) {
 	          }    	
 	      });
 	    });
-	  };
+	};
 	  
 	  self.listIssues = function(start, count, credentials, callback) {
         DataProvider.listInstanceNodes(types.CHALLENGE_TYPE, start,count,credentials, function(err,data,total){
