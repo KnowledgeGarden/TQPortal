@@ -305,19 +305,23 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
   });
 
-  app.get('/selectuser', isAdmin, function(req,res) {
+  app.get('/selectuser', isAdmin, function(req, res) {
 	var email = req.query.email;
 	console.log("Admin.selectuser "+email);
-	AdminModel.getUser(email, function(err,data) {
+	AdminModel.getUser(email, function(err, data) {
 		console.log("Admin.selectuser-1 "+err+" "+data);
-		//TODO watch for null
-		var d = environment.getCoreUIData(req)
-		d.email = data.email;
-		d.credentials = data.credentials;
-		return res.render('editcredentials',d);
+		if (data) {
+			var d = environment.getCoreUIData(req)
+			d.email = data.email;
+			d.credentials = data.credentials;
+			return res.render('editcredentials',d);
+		} else {
+			return res.redirect('/error/NoSuchEmail');
+		}
 	});
   
   });
+  
   app.get('/removeuser', isAdmin, function(req,res) {
 		var email = req.query.email;
 		console.log("Admin.selectuser "+email);
