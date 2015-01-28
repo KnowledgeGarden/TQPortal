@@ -259,30 +259,30 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   // Admin functions
   ///////////////////////////////
   app.get('/admin', isAdmin, function(req, res) {
-	res.render('admin',environment.getCoreUIData(req));
+	return res.render('admin',environment.getCoreUIData(req));
   });
   app.get('/admin/setmessage', isAdmin, function(req,res) {
 	  var msg = req.query.message;
 	  environment.setMessage(msg);
-	  res.redirect('/admin');
+	  return res.redirect('/admin');
   });
   app.get('/clearmessage', isAdmin, function(req,res) {
 	  environment.clearMessage();
-	  res.redirect('/admin');
+	  return res.redirect('/admin');
   });
   app.get('/saverecents', isAdmin, function(req,res) {
 	  environment.persistRecents();
-	  res.redirect('/admin');
+	 return res.redirect('/admin');
   });
   app.get('/importdb', isAdmin, function(req, res) {
-	res.render('admin',environment.getCoreUIData(req)); //TODO
+	return res.render('admin',environment.getCoreUIData(req)); //TODO
   });
   app.get('/exportdb', isAdmin, function(req, res) {
 	res.render('admin'); //TODO
   });
   
   app.get('/inviteuser', isAdmin, function(req, res) {
-	res.render('inviteuser',environment.getCoreUIData(req));
+	return res.render('inviteuser',environment.getCoreUIData(req));
   });
   
   app.post('/inviteuser', isAdmin, function(req,res) {
@@ -291,7 +291,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  console.log("DEF "+JSON.stringify(req.query));
 	AdminModel.addInvitation(email, function(err,data) {
 		console.log("Admin.inviteUser "+email+" "+err+" "+data);
-		res.redirect('/admin');
+		return res.redirect('/admin');
 	});
   });
 
@@ -301,7 +301,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		console.log("AdminModel.listUsers "+json);
 		var data = environment.getCoreUIData(req);
 		data.usrtable = json.data;
-		res.render('listusers',data); 
+		return res.render('listusers',data); 
 	});
   });
 
@@ -314,7 +314,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var d = environment.getCoreUIData(req)
 		d.email = data.email;
 		d.credentials = data.credentials;
-		res.render('editcredentials',d);
+		return res.render('editcredentials',d);
 	});
   
   });
@@ -322,7 +322,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var email = req.query.email;
 		console.log("Admin.selectuser "+email);
 		AdminModel.removeUser(email, function(err,data) {
-			res.redirect('/admin');
+			return res.redirect('/admin');
 		});
 	  
 	  });
@@ -337,14 +337,18 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	}
 
 	console.log('Admin,editcredentials '+email+" "+nc);
-	AdminModel.getUser(email, function(err,data) {
+	AdminModel.getUser(email, function(err, data) {
 //		console.log("AX1 "+JSON.stringify(data));
-		data.credentials = nc;
-//		console.log("AX2 "+JSON.stringify(data));
-		AdminModel.updateUser(data,function(err,data) {
-			console.log('Admin,editcredentials-1 '+err);
-			res.redirect('/admin');		
-		});
+		if (data) {
+			data.credentials = nc;
+	//		console.log("AX2 "+JSON.stringify(data));
+			AdminModel.updateUser(data,function(err,data) {
+				console.log('Admin,editcredentials-1 '+err);
+				return res.redirect('/admin');		
+			});
+		} else {
+			return res.redirect('/error/NoSuchEmail');
+		}
 	});
 	  
   });
