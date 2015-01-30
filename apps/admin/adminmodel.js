@@ -19,7 +19,7 @@ var AdminModel =  module.exports = function(environment) {
 	self.validateDefaultUser = function() {
 		var defaultEmail = environment.getConfigProperties().defaultadminemail;
 		var defaultPwd = environment.getConfigProperties().defaultadminpwd;
-		userDatabase.findOne(defaultEmail, function(err, data) {
+		userDatabase.findOne(defaultEmail, function adminMValidateDefaultUser(err, data) {
 			console.log("AdminModel.validateDefaultUser "+err+" "+data);
 			if (!data || data === null) {
 				console.log("AdminModel.validateDefaultUser-1");
@@ -33,12 +33,12 @@ var AdminModel =  module.exports = function(environment) {
 			        //leave handle out: set next
 				});
 				xuser.setHandle(defaultEmail);
-				xuser.setPassword(defaultPwd, function (err) {
+				xuser.setPassword(defaultPwd, function adminMSetPassword(err) {
 					if (err) {
 						console.log("AdminModel.validateDefaultUser-2 "+err);
 					}
 					xuser.addCredential(constants.ADMIN_CREDENTIALS);
-					userDatabase.save(xuser.getData(), function(err, data) {
+					userDatabase.save(xuser.getData(), function adminMSave1(err, data) {
 						if (err) {
 							console.log("AdminModel.validateDefaultUser-3 "+err);
 						}	
@@ -62,21 +62,21 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
 	
 	self.handleExists = function(email, callback) {
 
-		userDatabase.handleExists(email, function(err,truth) {
+		userDatabase.handleExists(email, function adminMHandleExists(err,truth) {
 			//TODO this should also call the topic map to make sure
-			callback(err, truth);
+			return callback(err, truth);
 		});		
 	};
 	
-	self.getUser = function(email,callback) {
-		userDatabase.findOne(email, function(err, data) {
-			callback(err, data);
+	self.getUser = function(email, callback) {
+		userDatabase.findOne(email, function adminMFindONe(err, data) {
+			return callback(err, data);
 		});
 	};
 	
 	self.updateUser = function(user,callback) {
-		userDatabase.save(user,function(err, data) {
-			callback(err, data);
+		userDatabase.save(user, function adminMSave2(err, data) {
+			return callback(err, data);
 		});
 	};
         
@@ -84,8 +84,8 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
         var creds = user.credentials;
         creds.push(credential);
         user.credentials = creds;
-        self.updateUser(user, function(err, data) {
-            callback(err, data);
+        self.updateUser(user, function adminMUpdateUser1(err, data) {
+            return callback(err, data);
         });
     };
         
@@ -95,11 +95,11 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
         if (where > -1) {
             creds.splice(where,1);
             user.credentials = creds;
-            self.updateUser(user, function(err, data) {
+            self.updateUser(user, function adminMUpdateUser2(err, data) {
                 //fall through
             });
         }
-        callback(err, data);
+        return callback(err, data);
     };
         
 	/**
@@ -107,32 +107,32 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
 	 * @param callback: signature(err, truth)
 	 */
 	self.hasInvitation = function(email, callback) {
-		userDatabase.hasInvitation(email, function(err, truth) {
-			callback(err, truth);
+		userDatabase.hasInvitation(email, function adminMHasInvitation(err, truth) {
+			return callback(err, truth);
 		});
 	};
 	
 	self.addInvitation = function(email,callback) {
-		userDatabase.addInvitation(email, function(err, truth) {
-			callback(err, truth);
+		userDatabase.addInvitation(email, function adminMAddInvitation(err, truth) {
+			return callback(err, truth);
 		});
 	};
 	
 	self.removeUser = function(email, callback) {
-		userDatabase.removeUser(email, function(err,truth) {
-			callback(err,truth);
+		userDatabase.removeUser(email, function adminMRemoveUser(err, truth) {
+			return callback(err, truth);
 		});	
 	};
 	
 	self.removeInvitation = function(email, callback) {
-		userDatabase.removeInvitation(email, function(err, truth) {
-			callback(err, truth);
+		userDatabase.removeInvitation(email, function adminMRemoveInvitation(err, truth) {
+			return callback(err, truth);
 		});
 	};
 	
 	self.listUsers = function(callback) {
-		userDatabase.listUsers(function(err, data) {
-			callback(err, data);
+		userDatabase.listUsers(function adminMListUsers(err, data) {
+			return callback(err, data);
 		});
 	};
 	
@@ -141,7 +141,7 @@ ed"],"password":"$2a$10$381wbTB6cGg/7OH5XGotqOhgVC5t0/Qii33PbULEdYPKqKrc7CGPi"}
 	 */
 	self.fillDatatable = function(callback) {
 		var theResult = {};
-		self.listUsers(function(err, result) {
+		self.listUsers(function adminMListUsers2(err, result) {
 			//list of user objects
 			/*
 { "_id" : "jackpark@gmail.com", "handle" : "jackpark", "fullname" : "Jack Park",
@@ -150,12 +150,12 @@ wledgegardens.wordpress.com/", "password" : "$2a$10$tyiCOKvgaAuYfn/MaqSTlOt05Fbr
 uJd3ccZwwZ/cIuJ5PAf0ix3LC" }
 			 */
 			console.log('ROUTES/adminusers '+err+' '+result);
-			var data = [];
-			var len = result.length;
-			var p; //the proxy
-			var m; //the individual message
-			var url;
-			var posts = [];
+			var data = [],
+				len = result.length,
+				p, //the proxy
+				m, //the individual message
+				url,
+				posts = [];
 			for (var i=0;i<len;i++) {
 				p = result[i];
 				m = {};
@@ -174,7 +174,7 @@ uJd3ccZwwZ/cIuJ5PAf0ix3LC" }
 			console.log();
 			console.log("AdminModel.fillDatatable "+JSON.stringify(theResult));
 			console.log();
-			callback(theResult);
+			return callback(theResult);
 		});
 	};
 	

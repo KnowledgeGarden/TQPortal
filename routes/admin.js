@@ -64,7 +64,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	// Here since Admin is always an app in a system
 	// Otherapps can do the same to switch a view that is live
 	///////////////
-	app.get("/admin,setview/:id", function(req,res) {
+	app.get("/admin,setview/:id", function adminGetSetView(req, res) {
 		var q = req.params.id;
 		console.log("Admin.setView "+q);
 		req.session.viewtype = q;
@@ -73,7 +73,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	///////////////
 	// LOGOUT
 	///////////////
-	app.get('/logout', function(req, res) {
+	app.get('/logout', function adminGetLogout(req, res) {
 		req.session.clipboard = "";
 		req.logout();
 		res.redirect('/');
@@ -82,15 +82,15 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	///////////////
 	// login
 	///////////////
-	app.get('/login', function(req, res) {
+	app.get('/login', function adminGetLogin(req, res) {
 		res.render('login', environment.getCoreUIData(req));
 	});
   
-	app.post('/login', function(req, res, next) {
+	app.post('/login', function adminPostLogin(req, res, next) {
 		console.log('Login: '+req.body.email);
 		var bugfix = false;
 		//Do the authentication using passport local strategy
-		passport.authenticate('local', function(err, user, info) {
+		passport.authenticate('local', function adminAuthenticate(err, user, info) {
 			console.log('Login2: '+err+' '+user+' '+info);
 			
 			//in node_modules/passport/middleware/authenticate.js
@@ -124,7 +124,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			sess.clipboard = "";
 			//Tell the session this user is logged in
 			// required for "isLoggedIn" to work
-			req.logIn(user, function(err) {
+			req.logIn(user, function adminLogIn2(err) {
 				if (err) {
 					return next(err);
 				}
@@ -136,16 +136,16 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	///////////////
 	//signup
 	///////////////
-	app.get('/signup', function(req, res){
+	app.get('/signup', function adminGetSignup(req, res){
 		var data = environment.getCoreUIData(req);
 		data.invitationOnly = isInvitationOnly;
 		res.render('signup', data);
 	});
 	
-	app.post('/validate', function(req, res) {
+	app.post('/validate', function adminPostValidate(req, res) {
 		var handle = req.body.vhandle;
 		console.log("Validating "+handle);
-		AdminModel.handleExists(handle, function(err,truth) {
+		AdminModel.handleExists(handle, function adminHandleExists(err, truth) {
 			console.log("Validating-1 "+truth);
 			var data = environment.getCoreUIData(req);
 			data.invitationOnly = isInvitationOnly;
@@ -157,11 +157,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/**
 	 * Utility for post
 	 */
-	var __doPostSignup = function(req, res) {
-		var handle = req.body.handle;
-		var email = req.body.email;
-		var password = req.body.password;
-		var fullname = req.body.fullname;
+	var __doPostSignup = function adminDoPostSignup(req, res) {
+		var handle = req.body.handle,
+			email = req.body.email,
+			password = req.body.password,
+			fullname = req.body.fullname;
 		if (fullname === "") {
 			fullname = "no name given";
 		}
@@ -187,7 +187,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			return res.redirect("/error/BadHandle");
 		}
 		//validate handle -2
-		AdminModel.handleExists(handle, function(err,truth) {
+		AdminModel.handleExists(handle, function adminHandleExists(err, truth) {
 			if (truth) {
 				console.log('SIGNUP-B');
 				return res.redirect('/error/HandleExists');
@@ -208,16 +208,16 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				});
 				xuser.setHandle(handle);
 				console.log('SIGNUP-XXX '+xuser.getEmail());
-				xuser.setPassword(password, function (err) {
+				xuser.setPassword(password, function adminSetPassword(err) {
 					console.log('Saving '+ JSON.stringify(xuser.getData()));
-					userDatabase.save(xuser.getData(), function(err,data) {
+					userDatabase.save(xuser.getData(), function adminSave(err, data) {
 						if(err) {
 							console.log('Usererror '+err);
 							return res.redirect('/error/SignupError');
 						} else {
 							console.log('User: ' + xuser.getEmail() + " saved.");
 							//now create a topic for this user
-							UserModel.newUserTopic(xuser,function(err, result) {
+							UserModel.newUserTopic(xuser, function adminNewUserTopic(err, result) {
 								console.log('ROUTES.signup '+err+" "+result);
 								if (err) {
 									console.log('ROUTES.signup/post error '+err);
@@ -233,14 +233,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		});
 	};
   
-	app.post('/signup', function(req,res) {
+	app.post('/signup', function adminPostSignup(req,res) {
 		var email = req.body.email;
 		console.log("Admin.signup "+isInvitationOnly+" "+email);
 		if (isInvitationOnly) {
-			AdminModel.hasInvitation(email, function(err, truth) {
+			AdminModel.hasInvitation(email, function adminHasInvitation(err, truth) {
 				console.log("Admin.signup-1 "+truth);
 				if (truth) {
-					AdminModel.removeInvitation(email, function(err, truth) {
+					AdminModel.removeInvitation(email, function adminRemoveInvitation(err, truth) {
 						console.log("Admin.signup-4 ");
 						return __doPostSignup(req,res);
 					});
@@ -258,46 +258,46 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   ///////////////////////////////
   // Admin functions
   ///////////////////////////////
-  app.get('/admin', isAdmin, function(req, res) {
+  app.get('/admin', isAdmin, function adminGet(req, res) {
 	return res.render('admin',environment.getCoreUIData(req));
   });
-  app.get('/admin/setmessage', isAdmin, function(req,res) {
+  app.get('/admin/setmessage', isAdmin, function adminGetSetMessage(req,res) {
 	  var msg = req.query.message;
 	  environment.setMessage(msg);
 	  return res.redirect('/admin');
   });
-  app.get('/clearmessage', isAdmin, function(req,res) {
+  app.get('/clearmessage', isAdmin, function adminGetClearMessage(req, res) {
 	  environment.clearMessage();
 	  return res.redirect('/admin');
   });
-  app.get('/saverecents', isAdmin, function(req,res) {
+  app.get('/saverecents', isAdmin, function adminGetSaveRecents(req, res) {
 	  environment.persistRecents();
 	 return res.redirect('/admin');
   });
-  app.get('/importdb', isAdmin, function(req, res) {
+  app.get('/importdb', isAdmin, function adminGetImportDb(req, res) {
 	return res.render('admin',environment.getCoreUIData(req)); //TODO
   });
-  app.get('/exportdb', isAdmin, function(req, res) {
+  app.get('/exportdb', isAdmin, function adminGetExportDb(req, res) {
 	res.render('admin'); //TODO
   });
   
-  app.get('/inviteuser', isAdmin, function(req, res) {
+  app.get('/inviteuser', isAdmin, function adminGetInviteUser(req, res) {
 	return res.render('inviteuser',environment.getCoreUIData(req));
   });
   
-  app.post('/inviteuser', isAdmin, function(req,res) {
+  app.post('/inviteuser', isAdmin, function adminPostInviteUser(req, res) {
 	var email = req.body.email;
 	  console.log("ABC "+JSON.stringify(req.body));
 	  console.log("DEF "+JSON.stringify(req.query));
-	AdminModel.addInvitation(email, function(err,data) {
+	AdminModel.addInvitation(email, function adminAddInvitation(err, data) {
 		console.log("Admin.inviteUser "+email+" "+err+" "+data);
 		return res.redirect('/admin');
 	});
   });
 
  
-  app.get('/listusers', isAdmin, function(req, res) {
-	AdminModel.fillDatatable(function(json) {
+  app.get('/listusers', isAdmin, function adminGetListUsers(req, res) {
+	AdminModel.fillDatatable(function adminFillDT(json) {
 		console.log("AdminModel.listUsers "+json);
 		var data = environment.getCoreUIData(req);
 		data.usrtable = json.data;
@@ -305,10 +305,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
   });
 
-  app.get('/selectuser', isAdmin, function(req, res) {
+  app.get('/selectuser', isAdmin, function adminGetSelectUser(req, res) {
 	var email = req.query.email;
 	console.log("Admin.selectuser "+email);
-	AdminModel.getUser(email, function(err, data) {
+	AdminModel.getUser(email, function adminGetUser1(err, data) {
 		console.log("Admin.selectuser-1 "+err+" "+data);
 		if (data) {
 			var d = environment.getCoreUIData(req)
@@ -321,17 +321,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
   
   });
-  
-  app.get('/removeuser', isAdmin, function(req,res) {
+
+  app.get('/removeuser', isAdmin, function adminGetRemoveUser(req,res) {
 		var email = req.query.email;
 		console.log("Admin.selectuser "+email);
-		AdminModel.removeUser(email, function(err,data) {
+		AdminModel.removeUser(email, function adminRemoveUser2(err,data) {
 			return res.redirect('/admin');
 		});
 	  
 	  });
 
-  app.post('/editcredentials', isAdmin, function(req,res) {
+  app.post('/editcredentials', isAdmin, function adminPostEditCredentials(req,res) {
 	var email = req.body.email;
 	var creds = req.body.credentials;
 	var ic = creds.split(',');
@@ -341,12 +341,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	}
 
 	console.log('Admin,editcredentials '+email+" "+nc);
-	AdminModel.getUser(email, function(err, data) {
+	AdminModel.getUser(email, function adminGetUser3(err, data) {
 //		console.log("AX1 "+JSON.stringify(data));
 		if (data) {
 			data.credentials = nc;
 	//		console.log("AX2 "+JSON.stringify(data));
-			AdminModel.updateUser(data,function(err,data) {
+			AdminModel.updateUser(data, function adminUpdateUser3(err, data) {
 				console.log('Admin,editcredentials-1 '+err);
 				return res.redirect('/admin');		
 			});
@@ -362,34 +362,39 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     /**
      * Fired by Admin panel button
      */
-  app.get('/editnode', isAdmin, function(req,res) {
+  app.get('/editnode', isAdmin, function adminGetEditNode(req, res) {
     var data = environment.getCoreUIData(req);
     res.render('adminnodeedit', data);
   });
     
-  app.get('/choosenode', isAdmin, function(req,res) {
-      //It's interesting that req.query works on this one
-     // var foo = req.body;
-     // if (foo) {
-     //     console.log("FOO "+JSON.stringify(foo));
-     // }
-     // var bar = req.query;
-     // if (bar) {
-     //   console.log("BAR "+JSON.stringify(bar));
-     // }
-      var locator = req.query.locator;
-      console.log("Admin.choosenode "+locator);
-      var creds = req.body.credentials;
-      Dataprovider.getNodeByLocator(locator,creds,function(err,ndx) {
-        console.log("BAR "+err+" "+ndx.toJSON());
-          var data = environment.getCoreUIData(req);
-          data.locator = locator;
-          data.json = ndx.toJSON();
-          return res.render('nodeeditform',data);
-      });
+	app.get('/choosenode', isAdmin, function adminGetChooseNode(req, res) {
+		//It's interesting that req.query works on this one
+		// var foo = req.body;
+		// if (foo) {
+		//     console.log("FOO "+JSON.stringify(foo));
+		// }
+		// var bar = req.query;
+		// if (bar) {
+		//   console.log("BAR "+JSON.stringify(bar));
+		// }
+		var locator = req.query.locator;
+		console.log("Admin.choosenode "+locator);
+		var creds = req.body.credentials;
+		Dataprovider.getNodeByLocator(locator, creds, function adminGetNodeByLocator(err, ndx) {
+	        console.log("BAR "+err+" "+ndx.toJSON());
+	        if (ndx) {
+				var data = environment.getCoreUIData(req);
+				data.locator = locator;
+				data.json = ndx.toJSON();
+				return res.render('nodeeditform',data);
+			} else {
+				return res.redirect('/error/CannotLoadNode');
+			}
+		});
 	  
-  });
-  app.post('/updatenode', isAdmin, function(req,res) {
+	});
+
+	app.post('/updatenode', isAdmin, function adminPostUpdateNode(req, res) {
       //it's interesting that req.body works on this one
 //     var foo = req.body;
 //      if (foo) {
@@ -399,24 +404,24 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 //      if (bar) {
 //        console.log("BAR "+JSON.stringify(bar));
  //     }
-	var locator = req.body.locator;
-	var json = req.body.body;
-      var node,
-          error,
-          data = myEnvironment.getCoreUIData(req);
+		var locator = req.body.locator,
+			json = req.body.body,
+			node,
+			error,
+			data = myEnvironment.getCoreUIData(req);
      // console.log("BAR "+json);
-      try {
+		try {
           var jo = JSON.parse(json);
      //     console.log("FOO "+jo);
           node = new proxy(jo);
           node.setLastEditDate(new Date());
           console.log(" BAH "+node.toJSON()); // this works!
-      } catch (e) {
+		} catch (e) {
           console.log("GAK "+e);
           myEnvironment.logError("Admin.postUpdateNode-1 "+err);
            return res.render('500', data);
-      }
-        Dataprovider.putNode(node, function(err,dx) {
+		}
+        Dataprovider.putNode(node, function adminPutNode2(err, dx) {
           if (err) {
               myEnvironment.logError("Admin.postUpdateNode-2 "+err);
               console.log("GOK "+err);
