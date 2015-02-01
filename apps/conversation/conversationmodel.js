@@ -39,7 +39,7 @@ var ConversationModel = module.exports = function(environment) {
 	// We need a create for each node type
 	// The root class is CONVERSATION_MAP_TYPE
 	self.createHelpMap = function(blog, user, credentials, callback) {
-		self.createRootMap(blog, user, true, credentials, function(err, data) {
+		self.createRootMap(blog, user, credentials, function(err, data) {
 			var lox = data.getLocator(),
 				name = data.getSubject(constants.ENGLISH).theText; //TODO
 			myEnvironment.addConversationToHelp("/conversation/"+lox, name);
