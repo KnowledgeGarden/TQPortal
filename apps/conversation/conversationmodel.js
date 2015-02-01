@@ -119,8 +119,8 @@ var ConversationModel = module.exports = function(environment) {
   
 	self.createOtherNode = function(blog, user, credentials, callback) {
 		var isPrivate = false;
-    	if (json.isPrivate) {
-      		isPrivate = json.isPrivate;
+    	if (blog.isPrivate) {
+      		isPrivate = blog.isPrivate;
     	}
 
 		//console.log("ConversationModel.createOtherNode "+JSON.stringify(blog));
