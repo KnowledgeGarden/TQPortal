@@ -142,19 +142,26 @@ var IncubatorModel =  module.exports = function(environment) {
    * Augment ConversationModel creating incubator nodes to add privacy and ACLs
    */
   self.createOtherNode = function(blog, user, credentials, callback) {
-    var guildLocator = blog.contextLocator;
-    var isPrivate = true;
+    var guildLocator = blog.contextLocator,
+        isPrivate = true,
+        error = '';
     myEnvironment.logDebug("GUILD LOCATOR -4 "+guildLocator); // debug establish the identity of this guild.
 
     // create the node
     ConversationModel.createOtherNode(blog, user, isPrivate, credentials, function(err, qnode) {
+      if (err) {error += err;}
       //now make it private with ACL
-      qnode.addACLValue(guildLocator); // add to ACL
-      qnode.setCreatorId(guildLocator); // the guild is the creator
-      myEnvironment.logDebug("IncubatorModel.createOtherNode "+qnode.toJSON());
-      DataProvider.putNode(qnode, function(err, data) {
-        return callback(err, data);
-      });
+      if (qnode) {
+        qnode.addACLValue(guildLocator); // add to ACL
+        qnode.setCreatorId(guildLocator); // the guild is the creator
+        myEnvironment.logDebug("IncubatorModel.createOtherNode "+qnode.toJSON());
+        DataProvider.putNode(qnode, function(err, data) {
+          if (err) {error += err;}
+          return callback(error, data);
+        });
+      } else {
+        return callback(error, qnode);
+      }
     });
   };
 

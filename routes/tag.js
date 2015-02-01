@@ -43,7 +43,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/////////////////
 	// Routes
 	/////////////////
-	app.get('/tag', isPrivate,function(req,res) {
+	app.get('/tag', isPrivate, function tagGet(req, res) {
 		  var data = environment.getCoreUIData(req);
 		  data.start=0;
 		  data.count=constants.MAX_HIT_COUNT; //pagination size
@@ -51,33 +51,34 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  data.query="/tag/index";
 		  //rendering this will cause an ajax query to blog/index
 		  res.render('tagindex',data);
-	  });
-	  app.get('/tag/addtag/:id', isLoggedIn, function(req,res) {
+	});
+
+	app.get('/tag/addtag/:id', isLoggedIn, function tagGetAddTag(req, res) {
 		  var data = environment.getCoreUIData(req);
 			var q = req.params.id;
 		  data.locator = q;
 		  res.render('addtagform',data);
-		  
-	  });
+			  
+	});
 	  
-	  app.post('/tag/add', isPrivate, function(req,res) {
+	app.post('/tag/add', isPrivate, function tagPostAdd(req, res) {
 	    var body = req.body;
 	    var usx = req.user;
 		var credentials = usx.credentials;
 		console.log("Tag.add "+JSON.stringify(body));
-		TagModel.addTagsToNode(body,usx,credentials, function(err,data) {
+		TagModel.addTagsToNode(body,usx,credentials, function tagAddTags(err, data) {
 			console.log("Tag.add "+err);
 			res.redirect('/');
 		});
-	  });
+	});
 	  
-	  app.get('/tag/edit/:id', isLoggedIn, function(req,res) {
+	app.get('/tag/edit/:id', isLoggedIn, function tagGetEdit(req, res) {
 			var q = req.params.id;
 			var usx = req.user;
 			var credentials = [];
 			if (usx) {credentials = usx.credentials;}
 			var data =  myEnvironment.getCoreUIData(req);
-			Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+			Dataprovider.getNodeByLocator(q, credentials, function tagGetNode(err, result) {
 				myEnvironment.logDebug("TAG.edit "+q+" "+result);
 				if (result) {
 					data.title = result.getLabel(constants.ENGLISH);
@@ -87,9 +88,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				}
 				res.render('tagform', data); //,
 			});
-		  });
+	});
 		
-	  app.get("/tag/index", isPrivate,function(req,res) {
+	app.get("/tag/index", isPrivate, function tagGetIndex(req, res) {
 		  var start = parseInt(req.query.start);
 		  var count = parseInt(req.query.count);
 //		  var isNext = req.query.isNext.trim();
@@ -97,7 +98,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  var credentials= [];
 		  if (req.user) {credentials = req.user.credentials;}
 
-		  TagModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+		  TagModel.fillDatatable(start, count, credentials, function tagFillTable(data, countsent, totalavailable) {
 			  console.log("Tag.index "+data);
 			  var cursor;
 			  //if (isNext === "T") {
@@ -117,8 +118,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			  }  catch (e) { }
 		      res.json(json);
 		  });
-	  });	
-	app.get("/tag/ajaxfetch/:id", isPrivate, function(req,res) {
+	});
+
+	app.get("/tag/ajaxfetch/:id", isPrivate, function tagGetAjax(req, res) {
 		    var q = req.params.id;
 			var lang = req.query.language;
 		    console.log('TAGajax '+q+" "+lang);
@@ -126,7 +128,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		    var credentials = [];
 		    var usr = req.user;
 		    if (usr) { credentials = usr.credentials;}
-		    Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+		    Dataprovider.getNodeByLocator(q, credentials, function tagGetNode1(err, result) {
 				console.log('TAGrout-1 '+err+" "+result);
 				if (result) {
 					var data = myEnvironment.getCoreUIData(req);
@@ -162,31 +164,32 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 					    	  users = [];
 					      }
 					      var transcludeUser = "";  //TODO
-					CommonModel.generateViewFirstData(result, [], docs,users,credentials, canEdit, data, contextLocator, "/tag/", clipboard, lang, transcludeUser, viewspec, function(json) {
+					CommonModel.generateViewFirstData(result, [], docs,users,credentials, canEdit, data, contextLocator, "/tag/", clipboard, lang, transcludeUser, viewspec, function tagGenerateView(json) {
 			  			json.canEdit = false; // prevent editing
 					  //get all parents
-					  CommonModel.fillConversationTable(true, true,q,"",credentials,function(err,cresult) {
-						  if (cresult) {
+						CommonModel.fillConversationTable(true, true, q, "", credentials, function tagFillConTable1(err, cresult) {
+							if (cresult) {
 							  json.ccontable = cresult;
-						  }
+							}
 						  //get just my parents in particular context
-						  CommonModel.fillConversationTable(true, false,q,contextLocator,credentials,function(err,presult) {
+							CommonModel.fillConversationTable(true, false, q, contextLocator, credentials, function tagFillConTable2(err,presult) {
 							  if (presult) {
 								  json.pcontable = presult;
 							  }
 						       return res.json(json);
-						  });
+							});
 
 						});
 			    	  
 					});
 				} else {
-					return res.redirect('/error/UnableToDisplay');
+					return res.redirect('/error/UnableToDisplayTag');
 				}
 		    });
 		      
-	  });		
-	app.get('/tag/:id', isPrivate,function(req,res) {
+	});
+
+	app.get('/tag/:id', isPrivate, function tagGetId(req, res) {
 	    var q = req.params.id;
 	    console.log('TAGrout '+q);
 	    var data = myEnvironment.getCoreUIData(req);
@@ -199,11 +202,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    res.render('vf_topic', data);
 	});
 	
-	app.post('/tag', isPrivate, function(req,res) {
+	/**
+	 * Used to update a tag
+	 */
+	app.post('/tag', isPrivate, function tagPost(req, res) {
 	    var body = req.body;
 	    var usx = req.user;
 		var credentials = usx.credentials;
-	    TagModel.update(body, usx, credentials, function(err,result) {
+	    TagModel.update(body, usx, credentials, function tagUpdate(err, result) {
 	    	return res.redirect('/tag');
         });
 	});

@@ -16,7 +16,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 
         self = this;
 
-  console.log("Starting User "+UserModel);
+	console.log("Starting User "+UserModel);
   //TODO lots!
 	self.canEdit = function(node, credentials) {
 		console.log("USER.canEdit "+JSON.stringify(credentials));
@@ -37,12 +37,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		return result;
 	};
 
-  function isPrivate(req,res,next) {
+  function isPrivate(req, res, next) {
 	if (isPrivatePortal) {
       if (req.isAuthenticated()) {return next();}
-        res.redirect('/login');
+      return res.redirect('/login');
 	} else {
-		{return next();}
+		return next();
 	}
   };
     
@@ -55,7 +55,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	if (isPrivatePortal) {
       return res.redirect('/login');
     }
-    res.redirect('/');
+    return res.redirect('/');
   };
     
 	/////////////////
@@ -65,17 +65,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /////////////////
   // Routes
   /////////////////
-  app.get('/user', isPrivate,function(req,res) {
+	app.get('/user', isPrivate, function userGet(req, res) {
 	  var data = environment.getCoreUIData(req);
 	  data.start=0;
 	  data.count=constants.MAX_HIT_COUNT; //pagination size
 	  data.total=0;
 	  data.query="/user/index";
 	  //rendering this will cause an ajax query to blog/index
-	  res.render('userindex',data);
-  });
+	  return res.render('userindex',data);
+	});
 	
-  app.get("/user/index", isPrivate,function(req,res) {
+	app.get("/user/index", isPrivate, function userGetIndex(req, res) {
 	  var start = parseInt(req.query.start);
 	  var count = parseInt(req.query.count);
 //	  var isNext = req.query.isNext.trim();
@@ -83,7 +83,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  var credentials= [];
 	  if (req.user) {credentials = req.user.credentials;}
 
-	  UserModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+	  UserModel.fillDatatable(start, count, credentials, function userFillTable(data, countsent, totalavailable) {
 		  console.log("User.index "+data);
 		  var cursor;
 		  //if (isNext === "T") {
@@ -98,20 +98,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		  json.count = constants.MAX_HIT_COUNT; //pagination size
 		  json.total = totalavailable;
 		  json.table = data;
-		  try {
-			  res.set('Content-type', 'text/json');
-		  }  catch (e) { }
-	      res.json(json);
+	      return res.json(json);
 	  });
-  });
+	});
 
-  app.get('/user/edit/:id', isLoggedIn, function(req,res) {
+	app.get('/user/edit/:id', isLoggedIn, function userGetEdit(req, res) {
 		var q = req.params.id;
 		var usx = req.user;
 		var credentials = [];
 		if (usx) {credentials = usx.credentials;}
 		var data =  myEnvironment.getCoreUIData(req);
-		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+		Dataprovider.getNodeByLocator(q, credentials, function userGetNode(err, result) {
 			myEnvironment.logDebug("User.edit "+q+" "+result);
 			if (result) {
 				if (result.getBody(constants.ENGLISH)) {
@@ -119,37 +116,36 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				}
 				data.locator = result.getLocator();
 			}
-			res.render('userform', data); //,
+			return res.render('userform', data); //,
 		});
-  });
-
-  var _usersupport = function(body,usx, callback) {
-	var credentials = usx.credentials;
-	  UserModel.update(body, usx, credentials, function(err,result) {
-          callback(err,result);
-      });
-  };
-  
-  app.post('/user', isLoggedIn, function(req,res) {
-	var body = req.body;
-	var usx = req.user;
-	console.log('USER_EDIT '+JSON.stringify(usx)+' | '+JSON.stringify(body));
-	_usersupport(body, usx, function(err,result) {
-	console.log('USER_EDIT-1 '+err+' '+result);
-		return res.redirect('/user');
 	});
 
-  });
+	var _usersupport = function(body,usx, callback) {
+		var credentials = usx.credentials;
+		UserModel.update(body, usx, credentials, function userUpdate(err,result) {
+          callback(err,result);
+      });
+	};
   
-	app.get("/user/ajaxfetch/:id", isPrivate, function(req,res) {
-	    var q = req.params.id;
-		var lang = req.query.language;
-		var viewspec = "Dashboard";
+	app.post('/user', isLoggedIn, function userPost(req, res) {
+		var body = req.body;
+		var usx = req.user;
+		console.log('USER_EDIT '+JSON.stringify(usx)+' | '+JSON.stringify(body));
+		_usersupport(body, usx, function userSupport(err, result) {
+		console.log('USER_EDIT-1 '+err+' '+result);
+			return res.redirect('/user');
+		});
+	});
+  
+	app.get("/user/ajaxfetch/:id", isPrivate, function userGetAjax(req, res) {
+	    var q = req.params.id,
+			lang = req.query.language,
+			viewspec = "Dashboard";
 	    console.log('USERajax '+q+" "+lang);
-	    var credentials = [];
-	    var usr = req.user;
+	    var credentials = [],
+			usr = req.user;
 	    if (usr) { credentials = usr.credentials;}
-	    Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+	    Dataprovider.getNodeByLocator(q, credentials, function userGetNode1(err, result) {
 			console.log('USERrout-1 '+err+" "+result);
 			if (result) {
 				var data = myEnvironment.getCoreUIData(req),
@@ -181,20 +177,20 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	            if (!transcludeList) {
 	                transcludeList = [];
 	            }
-				CommonModel.generateViewFirstData(result, tags, docs,[],credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, transcludeList, viewspec,function(json) {
+				CommonModel.generateViewFirstData(result, tags, docs,[], credentials, canEdit, data, contextLocator, "/user/", clipboard, lang, transcludeList, viewspec, function userGetnerateView(json) {
 					json.myLocatorXP = q+"?contextLocator="+contextLocator;
 					json.myLocator = q;
 					console.log("XXXX "+JSON.stringify(json));
 					return res.json(json);
 				});
 			} else {
-				res.redirect('/error/UnableToDisplay');
+				return res.redirect('/error/UnableToDisplay');
 			}
 	    });
 	      
 	});
 
-  app.get('/user/:id', isPrivate,function(req,res) {
+	app.get('/user/:id', isPrivate, function userGetId(req, res) {
 	    var q = req.params.id;
 	    console.log('USERrout '+q);
 	    var data = myEnvironment.getCoreUIData(req);
@@ -205,7 +201,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	    	data.contextLocator = req.query.contextLocator;
 	    }
 	    res.render('vf_topic', data);
-  });
+	});
 
 
 };

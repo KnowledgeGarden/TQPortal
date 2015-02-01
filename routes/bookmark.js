@@ -51,7 +51,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/////////////////
 	// Routes
 	/////////////////
-	app.get('/bookmark', isPrivate, function(req,res) {
+	app.get('/bookmark', isPrivate, function bookmarkGet(req, res) {
 		var data = environment.getCoreUIData(req);
 		data.start=0;
 		data.count=constants.MAX_HIT_COUNT; //pagination size
@@ -61,13 +61,13 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		return res.render('bookmarkindex',data);
 	});
 	
-	app.get("/bookmark/index", isPrivate,function(req,res) {
+	app.get("/bookmark/index", isPrivate, function bookmarkGetIndex(req, res) {
 		var start = parseInt(req.query.start),
 			count = parseInt(req.query.count),
 			credentials= [];
 		if (req.user) {credentials = req.user.credentials;}
 
-		BookmarkModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+		BookmarkModel.fillDatatable(start,count, credentials, function bookmarkFillTable(data, countsent, totalavailable) {
 			console.log("Bookmark.index "+data);
 			var cursor = start+countsent,
 				json = {};
@@ -79,7 +79,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		});
 	});
 
-	app.get('/bookmark/new', isLoggedIn, function(req,res) {
+	app.get('/bookmark/new', isLoggedIn, function bookmarkGetNew(req, res) {
 		//console.log("BOOKMARKNEW "+JSON.stringify(req.query));
 		//BOOKMARKNEW {"url":"http://localhost:3000/","title":"TopicQuests Foundation"}
 		var query = req.query,
@@ -94,14 +94,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/**
 	 * Fire up the blog edit form on a given node
 	 */
-	app.get('/bookmark/edit/:id', isLoggedIn, function(req,res) {
+	app.get('/bookmark/edit/:id', isLoggedIn, function bookmarkGetEdit(req, res) {
 		var q = req.params.id,
 			usx = req.user,
 			credentials = [];
 		if (usx) {credentials = usx.credentials;}
 		var data =  myEnvironment.getCoreUIData(req);
 		data.formtitle = "Edit Bookmark";
-		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+		Dataprovider.getNodeByLocator(q, credentials, function bookmarkGetNode(err, result) {
 			myEnvironment.logDebug("BookMark.edit "+q+" "+result);
 			if (result) {
 				//A blog post is an AIR
@@ -117,7 +117,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
   
 
-	app.get("/bookmark/ajaxfetch/:id", isPrivate, function(req, res) {
+	app.get("/bookmark/ajaxfetch/:id", isPrivate, function bookmarkGetAjax(req, res) {
 		//establish the node's identity
 		var q = req.params.id,
 		//establish credentials
@@ -126,7 +126,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			varusr = req.user;
 		if (usr) { credentials = usr.credentials;}
 		//fetch the node itself
-		Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+		Dataprovider.getNodeByLocator(q, credentials, function bookmarkGetNode1(err, result) {
 			console.log('BOOKMARKrout-1 '+err+" "+result);
 			if (result) {
 				var data =  myEnvironment.getCoreUIData(req),
@@ -142,7 +142,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	                transcludes = [];
 	            }
 				myEnvironment.logDebug("Bookmark.ajaxfetch "+JSON.stringify(data));
-				CommonModel.__doAjaxFetch(result, credentials,"/bookmark/",tags,docs,users,transcludes,data,req,function(json) {
+				CommonModel.__doAjaxFetch(result, credentials,"/bookmark/",tags, docs, users, transcludes, data, req, function bookmarkDoAjax(json) {
 					myEnvironment.logDebug("Bookmark.ajaxfetch-1 "+JSON.stringify(json));
 						//send the response
 					return res.json(json);
@@ -156,11 +156,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Fill ViewFirst
    */
-  app.get('/bookmark/:id', isPrivate,function(req,res) {
+  app.get('/bookmark/:id', isPrivate, function bookmarkGetId(req, res) {
 	var q = req.params.id,
 		data = myEnvironment.getCoreUIData(req);
 	myEnvironment.logDebug("BOOKMARKY "+JSON.stringify(req.query));
-	CommonModel.__doGet(q,"/bookmark/",data, req, function(viewspec, data) {
+	CommonModel.__doGet(q,"/bookmark/",data, req, function bookmarkDoGet(viewspec, data) {
 		if (viewspec === "Dashboard") {
 			return res.render('vf_topic', data);
 		} else {
@@ -172,21 +172,21 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   var _bookmarksupport = function(body,usx, callback) {
 	var credentials = usx.credentials;
 	if (body.locator === "") {
-		BookmarkModel.create(body, usx, credentials, function(err,result) {
+		BookmarkModel.create(body, usx, credentials, function bookmarkCreate(err, result) {
 			return callback(err,result);
 		});
 	} else {
-		BookmarkModel.update(body, usx, function(err,result) {
+		BookmarkModel.update(body, usx, function bookmarkUpdate(err, result) {
 			return callback(err,result);
 		});
 	}
   };
 
-  app.post('/bookmark', isLoggedIn, function(req, res) {
+  app.post('/bookmark', isLoggedIn, function bookmarkPost(req, res) {
 	var body = req.body,
 		usx = req.user;
 	console.log('BOOKMARK_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
-	_bookmarksupport(body, usx, function(err, result) {
+	_bookmarksupport(body, usx, function bookmarkSupport(err, result) {
 		console.log('BOOKMARK_NEW_POST-1 '+err+' '+result);
 		//technically, this should return to "/" since Lucene is not ready to display
 		// the new post; you have to refresh the page in any case

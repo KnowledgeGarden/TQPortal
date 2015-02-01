@@ -14,12 +14,12 @@ var Incmodel = require('../apps/guild/incubatormodel'),
 
 exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var myEnvironment = environment,
-        CommonModel = environment.getCommonModel(),
-        topicMapEnvironment = environment.getTopicMapEnvironment(),
-        Dataprovider = topicMapEnvironment.getDataProvider(),
-        IncubatorModel = new Incmodel(environment),
-        self = this;
-    console.log("Incubator up");
+      CommonModel = environment.getCommonModel(),
+      topicMapEnvironment = environment.getTopicMapEnvironment(),
+      Dataprovider = topicMapEnvironment.getDataProvider(),
+      IncubatorModel = new Incmodel(environment),
+      self = this;
+  console.log("Incubator up");
     
  
   function isPrivate(req, res, next) {
@@ -40,7 +40,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     if (isPrivatePortal) {
       return res.redirect('/login');
     }
-    res.redirect('/');
+    return res.redirect('/');
   }
 
   /////////////////
@@ -50,7 +50,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     /**
      * Edits in incubator are always game nodes
      */
-  app.get('/incubator/edit/:id', isPrivate, function(req, res) {
+  app.get('/incubator/edit/:id', isPrivate, function incubatorGetEdit(req, res) {
     var q = req.params.id,
         contextLocator = req.query.contextLocator;
         usx = req.user;
@@ -60,19 +60,22 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
           data =  myEnvironment.getCoreUIData(req);
       data.isedit = "T";
       data.formtitle = "Edit Node";
-      Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+      Dataprovider.getNodeByLocator(q, credentials, function incubatorGetNode8(err, result) {
         myEnvironment.logDebug("Incubator.edit-1 "+q+" "+result);
         if (result) {
           data.title = result.getSubject(constants.ENGLISH).theText;
+          if (result.getBody(constants.ENGLISH)) {
+            data.body = result.getBody(constants.ENGLISH).theText;
+          }
+          data.locator = result.getLocator();
+          data.context = contextLocator;
+          data.isNotEdit = false;
+          return res.render('incubatorconversationform', data); //,
+        } else {
+          return res.redirect("/error/IncubatorCannotEdit");
         }
-        if (result.getBody(constants.ENGLISH)) {
-          data.body = result.getBody(constants.ENGLISH).theText;
-        }
-        data.locator = result.getLocator();
-        data.context = contextLocator;
-        data.isNotEdit = false;
-        return res.render('incubatorconversationform', data); //,
       });
+
     } else {
       //fall through to here:
       myEnvironment.logDebug("Incubator.edit-bad "+q+" "+usx);
@@ -83,7 +86,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Leader has chosen to make a game move
    */
-  app.get("/incubator/play/:id", isPrivate, function(req, res) {
+  app.get("/incubator/play/:id", isPrivate, function incubatorGetPlay(req, res) {
     var q = req.params.id;
      myEnvironment.logDebug("GUILD LOCATOR -Play "+q); // debug establish the identity of this guild after ajax fetch
     //establish credentials
@@ -93,14 +96,18 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     if (usr) { 
       credentials = usr.credentials;
       //fetch the node itself
-      Dataprovider.getNodeByLocator(q, credentials, function(err, guildnode) {
+      Dataprovider.getNodeByLocator(q, credentials, function incubatorGetNode7(err, guildnode) {
         //sanity check
-        if (IncubatorModel.isLeader(guildnode, usr.handle)) {
-          IncubatorModel.play(guildnode, usr, function(err) {
+        if (guildNode) {
+          if (IncubatorModel.isLeader(guildnode, usr.handle)) {
+            IncubatorModel.play(guildnode, usr, function incubatorPlay(err) {
+              return res.redirect("/incubator/"+q);
+            });
+          } else {
             return res.redirect("/incubator/"+q);
-          });
+          }
         } else {
-          return res.redirect("/incubator/"+q);
+          return res.redirect("/error/IncubatorCannotPlay");
         }
       });
     } else {
@@ -114,7 +121,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Leave the incubator room
    */
-  app.get('/incubator/leave', function(req, res) {
+  app.get('/incubator/leave', function incubatorGetLeave(req, res) {
     var q = req.params.id;
      myEnvironment.logDebug("GUILD LOCATOR -Play "+q); // debug establish the identity of this guild after ajax fetch
     //establish credentials
@@ -124,21 +131,26 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     if (usr) { 
       credentials = usr.credentials;
       //fetch the node itself
-      Dataprovider.getNodeByLocator(q, credentials, function(err, guildnode) {
+      Dataprovider.getNodeByLocator(q, credentials, function incubatorGetNode6(err, guildnode) {
         //sanity check
-        if (IncubatorModel.isLeader(guildnode, usr.handle)) {
-          IncubatorModel.leaveQuest(guildnode,  function(err) {
+        if (guildnode) {
+          if (IncubatorModel.isLeader(guildnode, usr.handle)) {
+            IncubatorModel.leaveQuest(guildnode,  function incubatorLeaveQuest(err) {
+              return res.redirect("/incubator/"+q);
+            });
+          } else {
             return res.redirect("/incubator/"+q);
-          });
+          }
         } else {
-          return res.redirect("/incubator/"+q);
+          return res.redirect("/error/IncubatorCannotLeave");
         }
       });
     } else {
       // fall through to here
       //not supposed to be here
      return res.redirect("/");
-    }  });
+    }
+  });
     
   ///////////////////////////////////////////////////////
   // Conversation facade
@@ -148,10 +160,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Configure a conversation node form
    */
-  var __getNewSomething = function(q, type, req,res) {
+  var __getNewSomething = function incubatorGetNewSomething(q, type, req, res) {
     var contextLocator = req.query.contextLocator,
         data = environment.getCoreUIData(req),
-      label = "New Map Node"; //default
+        label = "New Map Node"; //default
     if (type === conversationConstants.QUESTIONTYPE) {label = "New Question/Issue Node";}
     else if (type === conversationConstants.ANSWERTYPE) {label = "New Answer/Position Node";}
     else if (type === conversationConstants.PROTYPE) {label = "New Pro Argument Node";}
@@ -170,26 +182,30 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     return res.render('incubatorconversationform', data);
   };
   
-  app.get('/incubator/newMap/:id', isPrivate, function(req,res) {
+  app.get('/incubator/newMap/:id', isPrivate, function incubatorGetNewMap(req, res) {
     var q = req.params.id;
     __getNewSomething(q, conversationConstants.MAPTYPE, req, res);
   });
-  app.get('/incubator/newIssue/:id', isPrivate, function(req,res) {
+
+  app.get('/incubator/newIssue/:id', isPrivate, function incubatorGetNewIssue(req, res) {
     var q = req.params.id,
         cx = req.query.contextLocator;
     myEnvironment.logDebug("GUILD LOCATOR -2A "+q+" "+cx);
     console.log("Conversation.newIssue");
     __getNewSomething(q, conversationConstants.QUESTIONTYPE, req, res);
   });
-  app.get('/incubator/newPosition/:id', isPrivate, function(req,res) {
+
+  app.get('/incubator/newPosition/:id', isPrivate, function incubatorGetNewPosition(req, res) {
     var q = req.params.id;
     __getNewSomething(q, conversationConstants.ANSWERTYPE, req, res);
   });
-  app.get('/incubator/newPro/:id', isPrivate, function(req,res) {
+
+  app.get('/incubator/newPro/:id', isPrivate, function incubatorGetNewPro(req, res) {
     var q = req.params.id;
     __getNewSomething(q, conversationConstants.PROTYPE, req, res);
   });
-  app.get('/incubator/newCon/:id', isPrivate, function(req,res) {
+
+  app.get('/incubator/newCon/:id', isPrivate, function incubatorGetNewCon(req, res) {
     var q = req.params.id;
     __getNewSomething(q, conversationConstants.CONTYPE, req, res);
   });
@@ -216,7 +232,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    * This route is associated with an Enter button at the Guild's landing page
    * That Enter Button is not available to any other than a guild member
    */
-  app.get('/incubator/:id', isPrivate, function(req, res) {
+  app.get('/incubator/:id', isPrivate, function incubatorGet1(req, res) {
     //establish the node's identity
     var usr = req.user;
     //sanity check
@@ -227,29 +243,33 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 
       myEnvironment.logDebug("GUILD LOCATOR -1X "+q); // debug establish the identity of this guild.
 			credentials = usr.credentials;
-      Dataprovider.getNodeByLocator(q, credentials, function(err, dx) {
+      Dataprovider.getNodeByLocator(q, credentials, function incubatorGetNode5(err, dx) {
         myEnvironment.logDebug("INCUBATORX "+q);
-        var data =  myEnvironment.getCoreUIData(req);
-        data.guildlocator = q;
-        data.questTitle = IncubatorModel.getQuestTitle(dx);
-        if (questLocator) {
-          data.locator = questLocator;
-        }
-        var curquest = dx.getProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY);
-        if (curquest) {
-          data.nodelocator = questLocator;
-          data.inQuest = inQuest = "true";
-          if (IncubatorModel.isLeader(dx, usr.handle)) {
-            data.leaderInQuest = "true";
+        if (dx) {
+          var data =  myEnvironment.getCoreUIData(req);
+          data.guildlocator = q;
+          data.questTitle = IncubatorModel.getQuestTitle(dx);
+          if (questLocator) {
+            data.locator = questLocator;
           }
+          var curquest = dx.getProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY);
+          if (curquest) {
+            data.nodelocator = questLocator;
+            data.inQuest = inQuest = "true";
+            if (IncubatorModel.isLeader(dx, usr.handle)) {
+              data.leaderInQuest = "true";
+            }
+          }
+          data.query = "/incubator/ajaxfetch/" + q;
+          data.type = "Dashboard";
+          data.language = "en"; //TODO
+          console.log("BBB "+JSON.stringify(data));
+          return res.render('vf_incubator', data);
+        } else {
+          return res.redirect("/error/IncubatorCannotDisplay");
         }
-        data.query = "/incubator/ajaxfetch/" + q;
-        data.type = "Dashboard";
-        data.language = "en"; //TODO
-        console.log("BBB "+JSON.stringify(data));
-        return res.render('vf_incubator', data);
       });
-    } else {
+   } else {
       //got here by mistake
       return res.redirect("/");
     }
@@ -263,7 +283,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    *    leave quest requires a)isLeader and b) data.inQuest
    * @see vf_incubator.handlebars 
    */
-  app.get("/incubator/ajaxfetch/:id", isPrivate, function(req, res) {
+  app.get("/incubator/ajaxfetch/:id", isPrivate, function incubatorGetAjax(req, res) {
     //establish the node's identity the guild itself
     var q = req.params.id;
     myEnvironment.logDebug("GUILD LOCATOR -2 "+q); // debug establish the identity of this guild after ajax fetch
@@ -273,26 +293,30 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     var usr = req.user;
     if (usr) { credentials = usr.credentials;}
     //fetch the node itself
-    Dataprovider.getNodeByLocator(q, credentials, function(err, guildnode) {
+    Dataprovider.getNodeByLocator(q, credentials, function incubatorGetNode4(err, guildnode) {
       console.log('INCUBATORrout-1 '+err+" "+guildnode);
-      var data =  myEnvironment.getCoreUIData(req),
-          gameTree,  metaTree;
-      //Get the MillerColumn trees, both meta and game
-      IncubatorModel.getMetaTree(guildnode, usr, function(err, mn) {
-        if (mn) { metaTree = mn; }
-        IncubatorModel.getGameTree(guildnode, usr, function(err, gn) {
-          if(gn) { gameTree = gn; }
-          data.metaConTree = metaTree;
-          data.gameConTree = gameTree;
-          //send the response
-          return res.json(data);
-        });               
-      });
+      if (guildnode) {
+        var data =  myEnvironment.getCoreUIData(req),
+            gameTree,  metaTree;
+        //Get the MillerColumn trees, both meta and game
+        IncubatorModel.getMetaTree(guildnode, usr, function incubatorGetMeta(err, mn) {
+          if (mn) { metaTree = mn; }
+          IncubatorModel.getGameTree(guildnode, usr, function incubatorGetGame(err, gn) {
+            if(gn) { gameTree = gn; }
+            data.metaConTree = metaTree;
+            data.gameConTree = gameTree;
+            //send the response
+            return res.json(data);
+          });               
+        });
+      } else {
+        return res.redirect("/error/IncubatorCannotDisplay");
+      }
     });
   }); 
     
     
-  app.get("/incubator/ajaxtreefetch/:id", isPrivate, function(req,res) {
+  app.get("/incubator/ajaxtreefetch/:id", isPrivate, function incubatorGetAjaxTree(req, res) {
     //establish the node's identity
 		var q = req.params.id,
             guildLocator = req.query.guildLocator,
@@ -304,97 +328,100 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var usr = req.user;
 		if (usr) { credentials = usr.credentials;}
 		//fetch the node itself
-		Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+		Dataprovider.getNodeByLocator(q, credentials, function incubatorGetNode3(err, result) {
 			console.log('INCUBATORrout-1 '+err+" "+result);
-			myEnvironment.logDebug("Incubator.ajaxfetch "+result.toJSON());
-			var data =  myEnvironment.getCoreUIData(req),
-          language = req.query.language;
-      if (!language) { language = "en"; }
-      var contextLocator = guildLocator;
-      data.language = language;
-      var title = result.getSubject(language).theText;
-      data.title = "<h2 class=\"blog-post-title\"><img src="+result.getImage()+">&nbsp;"+title+"</h2>";
-      var details;
-      try {
-        details = result.getBody(language).theText;
-      } catch (e) {}
-      if (!details) { details = ""; }
-      data.body = details;
-      var editLocator = "/incubator/edit/"+q;
-      //TODO: would like to include a "Transcluded by: " user href here;
-      //It's not at all clear just how to go about doing that.
-      //One approach is to include a transcludeuser parameter in a rest call if this is painted
-      //from a list, which means changing the signature of this method to include that.
-      var tu="", 
-          edithtml = "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\""+editLocator+"?contextLocator="+guildLocator+"\"><b>Edit</b></a>";
-      data.user = result.getLastEditDate()+"&nbsp;&nbsp;<a href=\"/user/"+
-      result.getCreatorId()+"\">Created by: "+result.getCreatorId()+"</a>"+tu+edithtml;
-      var clipboard = req.session.clipboard;
-      if (credentials.length > 0 && clipboard && clipboard !== "") {
-        //////////////////////////////////////////
-        //TODO
-        // These can all be moved to html templates
-        //////////////////////////////////////////
-				var transcludeLocator = req.session.clipboard;
-				//conversationmodel must clear this when it's used.
-				//THIS Button is for plain transclude4
-				var htmx = "<form method=\"post\" action=\"/incubator/transclude\"  role=\"form\" class=\"form-horizontal\">";
-				htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
-				htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
-				htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
-				htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
-				htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node</button>";
-				htmx += "</div></div></form><p></p><hr>";
-				data.transclude=htmx;
-				//THIS Button is for transcludeAsEvidence
-				htmx = "<form method=\"post\" action=\"/incubator/transcludeEvidence\"  role=\"form\" class=\"form-horizontal\">";
-				htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
-				htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
-				htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
-				htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
-				htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node As Evidence</button>";
-				htmx += "</div></div></form><p></p><hr>";
-				data.transcludeevidence=htmx;
-      }
-			//TODO add response html here  {{#if isAuthenticated}}
-      if (req.isAuthenticated()) {
-				var htx = "<h2>Respond with these options...</h2>";
-				htx += "<table width=\"100%\"><tbody><tr>";
-				htx += "<td><center><a title=\"New Map: conversation branch\" href=\"/incubator/newMap/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/map.png\"></a></center</td>";
-				htx += "<td><center><a title=\"New Question/Issue\" href=\"/incubator/newIssue/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/issue.png\"></a></center</td>";
-				htx += "<td><center><a title=\"New Answer/Position\" href=\"/incubator/newPosition/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/position.png\"></a></center</td>";
-				htx += "<td><center><a title=\"New Pro Argument\" href=\"/incubator/newPro/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/plus.png\"></a></center</td>";
-				htx += "<td><center><a title=\"New Con Argument\" href=\"/incubator/newCon/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/minus.png\"></a></center</td>";
-				htx += "</tr></tbody></table>";
-				data.responsebuttons = htx;
-      }
+      if (result) {
+  			myEnvironment.logDebug("Incubator.ajaxfetch "+result.toJSON());
+  			var data =  myEnvironment.getCoreUIData(req),
+            language = req.query.language;
+        if (!language) { language = "en"; }
+        var contextLocator = guildLocator;
+        data.language = language;
+        var title = result.getSubject(language).theText;
+        data.title = "<h2 class=\"blog-post-title\"><img src="+result.getImage()+">&nbsp;"+title+"</h2>";
+        var details;
+        try {
+          details = result.getBody(language).theText;
+        } catch (e) {}
+        if (!details) { details = ""; }
+        data.body = details;
+        var editLocator = "/incubator/edit/"+q;
+        //TODO: would like to include a "Transcluded by: " user href here;
+        //It's not at all clear just how to go about doing that.
+        //One approach is to include a transcludeuser parameter in a rest call if this is painted
+        //from a list, which means changing the signature of this method to include that.
+        var tu="", 
+            edithtml = "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\""+editLocator+"?contextLocator="+guildLocator+"\"><b>Edit</b></a>";
+        data.user = result.getLastEditDate()+"&nbsp;&nbsp;<a href=\"/user/"+
+        result.getCreatorId()+"\">Created by: "+result.getCreatorId()+"</a>"+tu+edithtml;
+        var clipboard = req.session.clipboard;
+        if (credentials.length > 0 && clipboard && clipboard !== "") {
+          //////////////////////////////////////////
+          //TODO
+          // These can all be moved to html templates
+          //////////////////////////////////////////
+  				var transcludeLocator = req.session.clipboard;
+  				//conversationmodel must clear this when it's used.
+  				//THIS Button is for plain transclude4
+  				var htmx = "<form method=\"post\" action=\"/incubator/transclude\"  role=\"form\" class=\"form-horizontal\">";
+  				htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
+  				htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
+  				htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
+  				htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
+  				htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node</button>";
+  				htmx += "</div></div></form><p></p><hr>";
+  				data.transclude=htmx;
+  				//THIS Button is for transcludeAsEvidence
+  				htmx = "<form method=\"post\" action=\"/incubator/transcludeEvidence\"  role=\"form\" class=\"form-horizontal\">";
+  				htmx += "<input type=\"hidden\" name=\"transcludeLocator\" value="+transcludeLocator+">";
+  				htmx += "<input type=\"hidden\" name=\"myLocator\" value="+q+">";
+  				htmx += "<input type=\"hidden\" name=\"contextLocator\" value="+contextLocator+">";
+  				htmx += "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
+  				htmx += "<button type=\"submit\" class=\"btn btn-primary\">Transclude Chosen Node As Evidence</button>";
+  				htmx += "</div></div></form><p></p><hr>";
+  				data.transcludeevidence=htmx;
+        }
+  			//TODO add response html here  {{#if isAuthenticated}}
+        if (req.isAuthenticated()) {
+  				var htx = "<h2>Respond with these options...</h2>";
+  				htx += "<table width=\"100%\"><tbody><tr>";
+  				htx += "<td><center><a title=\"New Map: conversation branch\" href=\"/incubator/newMap/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/map.png\"></a></center</td>";
+  				htx += "<td><center><a title=\"New Question/Issue\" href=\"/incubator/newIssue/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/issue.png\"></a></center</td>";
+  				htx += "<td><center><a title=\"New Answer/Position\" href=\"/incubator/newPosition/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/position.png\"></a></center</td>";
+  				htx += "<td><center><a title=\"New Pro Argument\" href=\"/incubator/newPro/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/plus.png\"></a></center</td>";
+  				htx += "<td><center><a title=\"New Con Argument\" href=\"/incubator/newCon/"+q+"?contextLocator="+contextLocator+"\"><img src=\"/images/ibis/minus.png\"></a></center</td>";
+  				htx += "</tr></tbody></table>";
+  				data.responsebuttons = htx;
+        }
 
-      if (clipboard === "") {
-        //deal with remembering this node
-        transcludehtml =
-          "<form method=\"post\" action=\"/incubator/remember\"  role=\"form\" class=\"form-horizontal\">";
-        transcludehtml +=
-				  "<input type=\"hidden\" name=\"transcludeLocator\" value=\"\">";
-        transcludehtml +=
-				  "<input type=\"hidden\" name=\"myLocator\" value=\""+q+"\">";
-        transcludehtml +=
-				  "<input type=\"hidden\" name=\"contextLocator\" value=\""+contextLocator+"\">";
-        transcludehtml +=
-				  "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
-        transcludehtml +=
-				  "<button type=\"submit\" class=\"btn btn-info  btn-xs\" title=\"Remember for transclusion or relation\">Remember This Node</button>";
-        transcludehtml += "</div></div></form>";
-        data.transclude = transcludehtml;
+        if (clipboard === "") {
+          //deal with remembering this node
+          transcludehtml =
+            "<form method=\"post\" action=\"/incubator/remember\"  role=\"form\" class=\"form-horizontal\">";
+          transcludehtml +=
+  				  "<input type=\"hidden\" name=\"transcludeLocator\" value=\"\">";
+          transcludehtml +=
+  				  "<input type=\"hidden\" name=\"myLocator\" value=\""+q+"\">";
+          transcludehtml +=
+  				  "<input type=\"hidden\" name=\"contextLocator\" value=\""+contextLocator+"\">";
+          transcludehtml +=
+  				  "<div class=\"form-group\"><div class=\"col-sm-offset-2 col-sm-10\">";
+          transcludehtml +=
+  				  "<button type=\"submit\" class=\"btn btn-info  btn-xs\" title=\"Remember for transclusion or relation\">Remember This Node</button>";
+          transcludehtml += "</div></div></form>";
+          data.transclude = transcludehtml;
+        }
+        return res.json(data);
+      } else {
+        return res.redirect("/error/IncubatorCannotDisplayTree");
       }
-
-      return res.json(data);
 		});
   });
 
   /**
    * Leave the current quest fired by a button in Incubator
    */
-  app.get('/incubator/leavequest/:id', isPrivate, function(req, res) {
+  app.get('/incubator/leavequest/:id', isPrivate, function incubatorGetLeaveQuest(req, res) {
 		var q = req.params.id;
  		//establish credentials
 		//defaults to an empty array if no user logged in
@@ -403,13 +430,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     if (usr) { 
       credentials = usr.credentials;
       //fetch the node itself
-      Dataprovider.getNodeByLocator(q, credentials, function(err, guildnode) {
-        if (IncubatorModel.isLeader(guildnode, usr.handle)) {
-          IncubatorModel.leaveQuest(guildnode, function(err) {
-            return res.redirect("/incubator/"+q);
-          });
+      Dataprovider.getNodeByLocator(q, credentials, function incubatorGetNode2(err, guildnode) {
+        if (guildNode) {
+          if (IncubatorModel.isLeader(guildnode, usr.handle)) {
+            IncubatorModel.leaveQuest(guildnode, function incubatorLeaveQuest(err) {
+              return res.redirect("/incubator/"+q);
+            });
+          } else {
+             return res.redirect("/incubator/"+q);
+          }
         } else {
-           return res.redirect("/incubator/"+q);
+          res.redirect("/error/IncubatorLeaveQuestFail");
         }
       });
     } else {
@@ -422,7 +453,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Join a chosen quest fired by a button in Incubator
    */
-  app.post('/incubator/joinquest', isPrivate, function(req, res) {
+  app.post('/incubator/joinquest', isPrivate, function incubatorPostJoinQuest(req, res) {
  	  var questLocator = req.body.locator,
         guildLocator = req.body.guildlocator,
         usx = req.user,
@@ -431,14 +462,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         userLocator = usx.handle;
         req.session.clipboard = ""; //clear the clipboard
     myEnvironment.logDebug("Incubator.joinquest "+questLocator+" "+guildLocator);
-    Dataprovider.getNodeByLocator(guildLocator, credentials, function(err, guildnode) {
+    Dataprovider.getNodeByLocator(guildLocator, credentials, function incubatorGetNode1(err, guildnode) {
       if (err) {error += err;}
       var isldr = IncubatorModel.isLeader(guildnode, userLocator);
       myEnvironment.logDebug("Incubator.joinquest-1 "+isldr+" "+err);
       //sanith check
-      if (isldr) {
+      if (guildnode && isldr) {
         myEnvironment.logDebug("Incubator.joinquest-2 "+questLocator);
-        IncubatorModel.joinQuest(guildnode, questLocator, usx, function(err) {
+        IncubatorModel.joinQuest(guildnode, questLocator, usx, function incubatorJoinQuest(err) {
           if (err) {error += err;}
           return res.redirect("/incubator/"+guildLocator);
         });
@@ -449,31 +480,31 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     });
   });
 
-  app.post("/incubator/transcludeEvidence", isPrivate, function(req, res) {
+  app.post("/incubator/transcludeEvidence", isPrivate, function incubatorPostTransEvid(req, res) {
     var user = req.user,
       body = req.body,
       q = body.contextLocator;
     myEnvironment.logDebug("Incubator.postTransclude "+JSON.stringify(body));
     req.session.clipboard = ""; //clear the clipboard
     //TODO body.transcludeLocator and body.myLocator determine this transclusion
-    IncubatorModel.performTransclude(body, user,"T",function(err,result) {
+    IncubatorModel.performTransclude(body, user,"T", function incubatorPerformTransclude1(err,result) {
       return res.redirect('/incubator/'+q);
     });
   });
     
-  app.post("/incubator/transclude", isPrivate, function(req, res) {
+  app.post("/incubator/transclude", isPrivate, function incubatorPostTransclude(req, res) {
     var user = req.user,
       body = req.body,
       q = body.contextLocator;
     myEnvironment.logDebug("Incubator.postTransclude "+JSON.stringify(body));
     req.session.clipboard = ""; //clear the clipboard
     //TODO body.transcludeLocator and body.myLocator determine this transclusion
-    IncubatorModel.performTransclude(body, user,"F",function(err,result) {
+    IncubatorModel.performTransclude(body, user,"F", function incubatorPerformTransclude2(err, result) {
       return res.redirect('/incubator/'+q);
     });
   });
     
-  app.post("/incubator/remember", isPrivate, function(req, res) {
+  app.post("/incubator/remember", isPrivate, function incubatorPostRemember(req, res) {
     var body = req.body,
       q = body.contextLocator;
     myEnvironment.logDebug("Incubator.postRemember "+JSON.stringify(body));
@@ -485,7 +516,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Select a Quest's GameTree node as root node for Guild gameplay
    */
-  app.post('/incubator/selectrootnode', isPrivate, function(req, res) {
+  app.post('/incubator/selectrootnode', isPrivate, function incubatorPostSelRootNode(req, res) {
   	var guildLocator = req.body.guildlocator,
         rootLocator = req.body.nodelocator,
         usx = req.user,
@@ -494,13 +525,13 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         userLocator = usx.handle;
         req.session.clipboard = ""; //clear the clipboard
     myEnvironment.logDebug("Incubator.selectrootnode "+rootLocator+" "+guildLocator);
-    Dataprovider.getNodeByLocator(guildLocator, credentials, function(err, guildnode) {
+    Dataprovider.getNodeByLocator(guildLocator, credentials, function incubatorPostGetNode(err, guildnode) {
       if (err) {error += err;}
       var isldr = IncubatorModel.isLeader(guildnode, userLocator);
       myEnvironment.logDebug("Incubator.selectrootnode-1 "+isldr+" "+guildnode+" "+err);
-      //sanith check
-      if (isldr) {
-        IncubatorModel.setQuestRootNodeLocator(guildnode, rootLocator, usx, function(err) {
+      //sanity checks
+      if (guildnode && isldr) {
+        IncubatorModel.setQuestRootNodeLocator(guildnode, rootLocator, usx, function incubatorSetQuestRoot(err) {
           if (err) {error += err;}
           return res.redirect("/incubator/"+guildLocator);
         });
@@ -511,27 +542,31 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
             
     });
   });
-    
+  
+  /////////////////////////////////////////
+  // Note that createOtherNode can return an error
+  // and we don't do anything about that
+  /////////////////////////////////////////
     
   var _consupport = function(body, usx, callback) {
     var credentials = usx.credentials;
       myEnvironment.logDebug("Incubator._consupport "+IncubatorModel.getConversationModel());
     if (body.isedit === "T") {
-    	IncubatorModel.update(body, usx, credentials, function(err,result) {
+    	IncubatorModel.update(body, usx, credentials, function incubator_ConSub1(err, result) {
     		return callback(err,result);
     	});
     } else {
-    	IncubatorModel.createOtherNode(body,usx,credentials, function(err,result) {
+    	IncubatorModel.createOtherNode(body, usx, credentials, function incubator_ConSub2(err, result) {
     		return callback(err,result);
     	});
     }
   };
 
-  app.post('/incubator', isLoggedIn, function(req, res) {
+  app.post('/incubator', isLoggedIn, function incubatorPostInc(req, res) {
     var body = req.body,
         usx = req.user;
     myEnvironment.logDebug('Incubator.post '+JSON.stringify(body));
-    _consupport(body, usx, function(err, result) {
+    _consupport(body, usx, function incubatorConSup(err, result) {
       console.log('INCUBATOR_NEW_POST-1 '+err+' '+result);
       //technically, this should return to "/" since Lucene is not ready to display
       // the new post; you have to refresh the page in any case

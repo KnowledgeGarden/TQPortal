@@ -80,11 +80,12 @@ var Environment = function(callback) {  //function(callback) {
 			//read the config file
 			fs.readFile(path, function(err, configfile) {
 				configProperties = JSON.parse(configfile);
+				// load the help menu
 				fs.readFile(helppath, function(err, helpfile) {  
 					helpMenuProperties = JSON.parse(helpfile);
 					helpMenu = helpMenuProperties.helpMenu;
 					if (!helpMenu) {helpMenu = [];}
-					logger.debug("TQPortalEnvironment just getting started 2");
+					logger.debug("TQPortalEnvironment just getting started 2 "+helpMenu);
 
 					//bring up mongo
 					//TODO improve the connect string with credentials, etc
@@ -181,14 +182,6 @@ var Environment = function(callback) {  //function(callback) {
 	}; //init
 
 
-/*	self = this;
-	self.start = function(callback) {
-		console.log("ENVIRONMENT STARTING")
-		this.init(function (err, data) {
-			return callback(err, data);
-		});
-	}; */
-
 	///////////////////////
 	// API
 	///////////////////////
@@ -246,7 +239,17 @@ var Environment = function(callback) {  //function(callback) {
 	self.getApplicationMenu = function() {
 		return appMenu;
 	};
+
+	/////////////////////////////////////////////////
+	// Help menu looks like this:
+	// {"helpMenu":[{"url":"/conversation/acdc0a70-aa43-11e4-97c0-6ff617af7921","name":"ToDo"}]}
+	/////////////////////////////////////////////////
 	
+	/**
+	 * Admins can add items to the Help menu. The process goes through the conversation app
+	 * @param url (actually, locator of the new Help map)
+	 * Name given to this menu item
+	 */
 	self.addConversationToHelp = function(url, name) {
 		if (!helpMenuProperties) {helpMenuProperties = {};}
         var helpx = helpMenuProperties.helpMenu;
@@ -256,7 +259,7 @@ var Environment = function(callback) {  //function(callback) {
 		urx.name = name;
 		helpx.push(urx);
         helpMenuProperties.helpMenu = helpx;
-		
+        helpMenu = helpx;
 		self.saveHelp();
 	};
 

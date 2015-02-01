@@ -62,7 +62,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
      * this is really just a tab in issuehome, which means this belongs
      * in issue.js
      */
-	app.get('/quest', isPrivate, function(req, res) {
+	app.get('/quest', isPrivate, function questGet(req, res) {
 		var data = myEnvironment.getCoreUIData(req);
 		//We can change the brand
 		data.brand = "GetTheIssues";
@@ -76,7 +76,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/**
 	 * Fire up the blog new post form
 	 */
-	app.get('/quest/new/:id', isLoggedIn, function(req, res) {
+	app.get('/quest/new/:id', isLoggedIn, function questGetNew(req, res) {
 		var q = req.params.id,
 			data =  myEnvironment.getCoreUIData(req);
 		data.formtitle = "New Issue";
@@ -88,14 +88,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/**
 	 * Fire up the guild edit form on a given quest
 	 */
-	app.get('/quest/edit/:id', isLoggedIn, function(req, res) {
+	app.get('/quest/edit/:id', isLoggedIn, function questEdit(req, res) {
 		var q = req.params.id,
 			usx = req.user,
 			credentials = [];
 		if (usx) {credentials = usx.credentials;}
 		var data =  myEnvironment.getCoreUIData(req);
 		data.formtitle = "Edit Quest";
-		Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+		Dataprovider.getNodeByLocator(q, credentials, function questGetNode(err, result) {
 			myEnvironment.logDebug("QUEST.edit "+q+" "+result);
 			if (result) {
 				//A blog post is an AIR
@@ -113,13 +113,13 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/**
 	 * Fetch based on page Next and Previous buttons from ajax
 	 */
-	app.get("/quest/index", isPrivate, function(req, res) {
+	app.get("/quest/index", isPrivate, function questGetIndex(req, res) {
 		var start = parseInt(req.query.start);
 		var count = parseInt(req.query.count);
 		var credentials = [];
 		if (req.user) {credentials = req.user.credentials;}
 
-		QuestModel.fillDatatable(start,count, credentials, function(data, countsent, totalavailable) {
+		QuestModel.fillDatatable(start, count, credentials, function questFillTable(data, countsent, totalavailable) {
 			console.log("Quest.index "+data);
 			var cursor = start+countsent;
 			var json = {};
@@ -136,7 +136,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/**
 	 * Handles posts from new and from edit
 	 */
-	app.post('/quest', isLoggedIn, function(req, res) {
+	app.post('/quest', isLoggedIn, function questPost(req, res) {
 	    var body = req.body,
             usx = req.user,
             credentials = usx.credentials;
@@ -144,7 +144,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//  parent means this is a new quest against a parent issue
 		if (body.locator === "") {
             console.log("Quest-2");
-			QuestModel.create(body, usx, credentials, function(err, result) {
+			QuestModel.create(body, usx, credentials, function questCreate(err, result) {
                 myEnvironment.logDebug('QUEST_NEW_POST-3 '+res.headersSent);
                 //TODO: we really mostly ignore err here; ought to find something
                 // really sophisticated to do with error messages
@@ -153,7 +153,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                 return res.redirect('/issue');
 			});
 		} else {
- 	        QuestModel.update(body, usx, credentials, function(err, result) {
+ 	        QuestModel.update(body, usx, credentials, function questUpdate(err, result) {
                  console.log("Quest-5 "+err);
                //TODO: we really mostly ignore err here; ought to find something
                 // really sophisticated to do with error messages
@@ -165,44 +165,48 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
 	  
 	  
-	app.get("/quest/ajaxfetch/:id", isPrivate, function(req, res) {
+	app.get("/quest/ajaxfetch/:id", isPrivate, function questGetAjax(req, res) {
 		//establish the node's identity
 		var q = req.params.id;
 		//establish credentials
 		//defaults to an empty array if no user logged in
-		var credentials = [];
-		var usr = req.user;
+		var credentials = [],
+			usr = req.user;
 		if (usr) { credentials = usr.credentials;}
 		//fetch the node itself
-		Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+		Dataprovider.getNodeByLocator(q, credentials, function questGetNode1(err, result) {
 			console.log('QUESTrout-1 '+err+" "+result);
-			var data =  myEnvironment.getCoreUIData(req);
-			data.isQuestGameNode = true; // block editing
-			//Fetch the tags
-			var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-			if (!tags) {
-				tags = [];
+			if (result) {
+				var data =  myEnvironment.getCoreUIData(req);
+				data.isQuestGameNode = true; // block editing
+				//Fetch the tags
+				var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+				if (!tags) {
+					tags = [];
+				}
+				var docs=[],
+					users=[],
+					transcludes=[];
+				myEnvironment.logDebug("Quest.ajaxfetch "+JSON.stringify(data));
+				CommonModel.__doAjaxFetch(result, credentials, "/quest/", tags, docs, users, transcludes, data, req, function(json) {
+					myEnvironment.logDebug("Quest.ajaxfetch-1 "+JSON.stringify(json));
+					//send the response
+					return res.json(json);
+				});
+			} else {
+				return res.redirect('/error/QuestUnableToDisplay');
 			}
-			var docs=[];
-			var users=[];
-			var transcludes=[];
-			myEnvironment.logDebug("Quest.ajaxfetch "+JSON.stringify(data));
-			CommonModel.__doAjaxFetch(result, credentials, "/quest/", tags, docs, users, transcludes, data, req, function(json) {
-				myEnvironment.logDebug("Quest.ajaxfetch-1 "+JSON.stringify(json));
-				//send the response
-				return res.json(json);
-			});
 		});
 	});
 	  
 	/**
 	 * Model Fill ViewFirst: get cycle starts here
 		   */
-	app.get('/quest/:id', isPrivate,function(req,res) {
+	app.get('/quest/:id', isPrivate, function questGetId(req, res) {
 		var q = req.params.id;
 		var data = myEnvironment.getCoreUIData(req);
 		myEnvironment.logDebug("QUESTY "+JSON.stringify(req.query));
-		CommonModel.__doGet(q,"/quest/",data, req, function(viewspec, data) {
+		CommonModel.__doGet(q,"/quest/",data, req, function questDoGet(viewspec, data) {
 			if (viewspec === "Dashboard") {
 				return res.render('vf_quest', data);
 			} else {

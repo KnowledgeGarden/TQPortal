@@ -47,7 +47,11 @@ var ConversationModel = module.exports = function(environment) {
 		});
 	};
   
-	self.createRootMap = function(blog, user, isPrivate, credentials, callback) {
+	self.createRootMap = function(blog, user, credentials, callback) {
+		var isPrivate = false;
+    	if (blog.isPrivate) {
+      		isPrivate = blog.isPrivate;
+    	}
 		//NOTE: if parentNodeLocator exists, this is not a new map, so we use create
 		var userLocator = user.handle, // It's supposed to be user.handle;
 	    	//first, fetch this user's topic
@@ -133,7 +137,7 @@ var ConversationModel = module.exports = function(environment) {
 			});
 		} else if (typ === conversationConstants.QUESTIONTYPE) {
 			self.createIssue(blog, user, parentLocator, isPrivate, credentials, function(err, result) {
-			  return callback(err, result);
+				return callback(err, result);
 			});
 		} else if (typ === conversationConstants.ANSWERTYPE) {
 			self.createPosition(blog, user, parentLocator, isPrivate, credentials, function(err, result) {

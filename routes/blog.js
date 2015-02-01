@@ -16,7 +16,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 
 	console.log("Starting Blog "+this.BlogModel);
   
-	function isPrivate(req,res,next) {
+	function isPrivate(req, res, next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
 			res.redirect('/login');
@@ -49,7 +49,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Initial fetch of the /blog landing page
    */
-  app.get('/blog', isPrivate,function(req,res) {
+  app.get('/blog', isPrivate, function blogGet(req, res) {
 	var data = environment.getCoreUIData(req);
 	data.start=0;
 	data.count=constants.MAX_HIT_COUNT; //pagination size
@@ -62,13 +62,13 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Fetch based on page Next and Previous buttons from ajax
    */
-  app.get("/blog/index", isPrivate,function(req,res) {
+  app.get("/blog/index", isPrivate, function blogGetIndex(req, res) {
 	var start = parseInt(req.query.start);
 	var count = parseInt(req.query.count);
 	var credentials= [];
 	if (req.user) {credentials = req.user.credentials;}
 
-	BlogModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+	BlogModel.fillDatatable(start,count, credentials, function blogFillTable(data, countsent, totalavailable) {
 		console.log("Blog.index "+data);
 		var cursor = start+countsent;
 		var json = {};
@@ -85,7 +85,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Fire up the blog new post form
    */
-  app.get('/blog/new', isLoggedIn, function(req,res) {
+  app.get('/blog/new', isLoggedIn, function blogGetNew(req, res) {
 	var data =  myEnvironment.getCoreUIData(req);
 	data.formtitle = "New Article";
     data.isNotEdit = true;
@@ -95,14 +95,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Fire up the blog edit form on a given node
    */
-  app.get('/blog/edit/:id', isLoggedIn, function(req,res) {
+  app.get('/blog/edit/:id', isLoggedIn, function blogGetEdit(req, res) {
 	var q = req.params.id;
 	var usx = req.user;
 	var credentials = [];
 	if (usx) {credentials = usx.credentials;}
 	var data =  myEnvironment.getCoreUIData(req);
 	data.formtitle = "Edit Article";
-	Dataprovider.getNodeByLocator(q, credentials, function(err,result) {
+	Dataprovider.getNodeByLocator(q, credentials, function blogGetNode(err, result) {
 		myEnvironment.logDebug("BLOG.edit "+q+" "+result);
 		if (result) {
 			//A blog post is an AIR
@@ -127,7 +127,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   //TODO this will become more complex when we use viewspec to
   //decide if to fill the P-Conversation tab, which isn't used
   //in Conversation mode
-	app.get("/blog/ajaxfetch/:id", isPrivate, function(req, res) {
+	app.get("/blog/ajaxfetch/:id", isPrivate, function blogGetAjax(req, res) {
 		//establish the node's identity
 		var q = req.params.id;
 		//establish credentials
@@ -136,7 +136,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			usr = req.user;
 		if (usr) { credentials = usr.credentials;}
 		//fetch the node itself
-		Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+		Dataprovider.getNodeByLocator(q, credentials, function blogGetNode1(err, result) {
 			console.log('BLOGrout-1 '+err+" "+result);
 			if (result) {
 				var data =  myEnvironment.getCoreUIData(req);
@@ -145,14 +145,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 				if (!tags) {
 					tags = [];
 				}
-				var docs=[];
-				var users=[];
-					var transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
-		            if (!transcludes) {
+				var docs=[],
+					users=[],
+					transcludes=result.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+				if (!transcludes) {
 		                transcludes = [];
-		            }
+				}
 				myEnvironment.logDebug("Blog.ajaxfetch "+JSON.stringify(data));
-				CommonModel.__doAjaxFetch(result, credentials, "/blog/", tags, docs, users, transcludes, data, req, function(json) {
+				CommonModel.__doAjaxFetch(result, credentials, "/blog/", tags, docs, users, transcludes, data, req, function blogDoAjax(json) {
 					myEnvironment.logDebug("Blog.ajaxfetch-1 "+JSON.stringify(json));
 						//send the response
 						return res.json(json);
@@ -166,11 +166,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Model Fill ViewFirst: get cycle starts here
    */
-  app.get('/blog/:id', isPrivate,function(req,res) {
-	var q = req.params.id;
-	var data = myEnvironment.getCoreUIData(req);
+  app.get('/blog/:id', isPrivate, function blogGetId(req, res) {
+	var q = req.params.id,
+		data = myEnvironment.getCoreUIData(req);
 	myEnvironment.logDebug("BLOGGY "+JSON.stringify(req.query));
-	CommonModel.__doGet(q,"/blog/", data, req, function(viewspec, data) {
+	CommonModel.__doGet(q,"/blog/", data, req, function blogDoGet(viewspec, data) {
 		if (viewspec === "Dashboard") {
 			return res.render('vf_topic', data);
 		} else {
@@ -184,11 +184,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
    */
   var _blogsupport = function(body,usx, callback) {
 	if (body.locator === "") {
-		BlogModel.create(body, usx, function(err, result) {
+		BlogModel.create(body, usx, function blogCreate(err, result) {
 			return callback(err, result);
 		});
 	} else {
-        BlogModel.update(body, usx, function(err, result) {
+        BlogModel.update(body, usx, function blogUpdate(err, result) {
             return callback(err, result);
         });
 	}
@@ -197,12 +197,12 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /**
    * Handles posts from new and from edit
    */
-  app.post('/blog', isLoggedIn, function(req, res) {
-    var body = req.body;
-    var usx = req.user;
+  app.post('/blog', isLoggedIn, function blogPost(req, res) {
+    var body = req.body,
+		usx = req.user;
     console.log('BLOG_NEW_POST '+JSON.stringify(usx)+' | '+JSON.stringify(body));
       myEnvironment.logDebug("BLOG POST "+JSON.stringify(body));
-    _blogsupport(body, usx, function(err,result) {
+    _blogsupport(body, usx, function blogSupport(err, result) {
       console.log('BLOG_NEW_POST-1 '+err+' '+result);
       //technically, this should return to "/" since Lucene is not ready to display
       // the new post; you have to refresh the page in any case

@@ -35,7 +35,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     /**
      * Forge a new connection between two nodes
      */
-    app.get("/kwb/newrelation", isPrivate, function(req, res) {
+    app.get("/kwb/newrelation", isPrivate, function kwbGetNewRelation(req, res) {
         var data = environment.getCoreUIData(req),
         //it's rerq.query in a get
         lox = req.query.myLocator,
@@ -45,35 +45,43 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         src,
         trg;
         data.relationlist = KnowledgeWorkbenchModel.getNewRelationForm();
-        Dataprovider.getNodeByLocator(lox, credentials, function(err,p1) {
-            trg = p1;
-            data.targetLocator = lox;
-            Dataprovider.getNodeByLocator(targ, credentials, function(err, p2) {
-                //we are going to reverse target and source
-                // since people tend to choose the source, A cause B (A) first for transclude
-                src = p2;
-                var slab = "";
-                if (src.getLabel(constants.ENGLISH)) {
-				    slab = src.getLabel(constants.English);
-                } else {
-				    slab = src.getSubject(constants.ENGLISH).theText;
-                }
-                data.sourcelabel = slab;
-                data.sourceLocator = targ;
-                if (trg.getLabel(constants.ENGLISH)) {
-				    slab = src.getLabel(constants.English);
-                } else {
-				    slab = trg.getSubject(constants.ENGLISH).theText;
-                }
-                data.targetlabel = slab;
-                data.isNotEdit = true;
-                console.log("KWB.newrelation "+lox+" "+targ);
-                return res.render('connectionform',data);
-            });
+        Dataprovider.getNodeByLocator(lox, credentials, function kwbGetNode(err, p1) {
+            if (p1) {
+                trg = p1;
+                data.targetLocator = lox;
+                Dataprovider.getNodeByLocator(targ, credentials, function kwbGetNode1(err, p2) {
+                    if (p2) {
+                        //we are going to reverse target and source
+                        // since people tend to choose the source, A cause B (A) first for transclude
+                        src = p2;
+                        var slab = "";
+                        if (src.getLabel(constants.ENGLISH)) {
+        				    slab = src.getLabel(constants.English);
+                        } else {
+        				    slab = src.getSubject(constants.ENGLISH).theText;
+                        }
+                        data.sourcelabel = slab;
+                        data.sourceLocator = targ;
+                        if (trg.getLabel(constants.ENGLISH)) {
+        				    slab = src.getLabel(constants.English);
+                        } else {
+        				    slab = trg.getSubject(constants.ENGLISH).theText;
+                        }
+                        data.targetlabel = slab;
+                        data.isNotEdit = true;
+                        console.log("KWB.newrelation "+lox+" "+targ);
+                        return res.render('connectionform',data);
+                    } else {
+                         return res.redirect('/error/KWBCannotLoadSourceNode');
+                    }
+                });
+            } else {
+                return res.redirect('/error/KWBCannotLoadTargetNode');
+            }
         });
     });
     
-    app.get("/kwb/ajaxfetch/:id", isPrivate, function(req, res) {
+    app.get("/kwb/ajaxfetch/:id", isPrivate, function kwbGetAjax(req, res) {
         //establish the node's identity
         var q = req.params.id,
         //establish credentials
@@ -82,7 +90,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
             usr = req.user;
         if (usr) { credentials = usr.credentials;}
         //fetch the node itself
-        Dataprovider.getNodeByLocator(q, credentials, function(err, result) {
+        Dataprovider.getNodeByLocator(q, credentials, function kwbGetNode2(err, result) {
             console.log('KWBrout-1 '+err+" "+result);
             if (result) {
                 var data =  myEnvironment.getCoreUIData(req),
@@ -103,7 +111,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
                     transcludes = [];
                 }
                 myEnvironment.logDebug("KWb.ajaxfetch "+JSON.stringify(data));
-                CommonModel.__doAjaxFetch(result, credentials, "/kwb/", tags, docs, users, transcludes, data, req, function(json) {
+                CommonModel.__doAjaxFetch(result, credentials, "/kwb/", tags, docs, users, transcludes, data, req, function kwbDoAjax(json) {
                     myEnvironment.logDebug("kwb.ajaxfetch-1 "+JSON.stringify(json));
                     //send the response
                     return res.json(json);
@@ -117,11 +125,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     /**
      * Model Fill ViewFirst: get cycle starts here
      */
-    app.get('/kwb/:id', isPrivate,function(req, res) {
+    app.get('/kwb/:id', isPrivate, function kwbGetId(req, res) {
         var q = req.params.id,
             data = myEnvironment.getCoreUIData(req);
         myEnvironment.logDebug("KWBBY "+JSON.stringify(req.query));
-        CommonModel.__doGet(q,"/kwb/",data, req, function(viewspec, data) {
+        CommonModel.__doGet(q,"/kwb/",data, req, function kwbDoGet(viewspec, data) {
             if (viewspec === "Dashboard") {
                 return res.render('vf_connection', data);
             } else {
@@ -133,7 +141,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     /**
      * Add a new connection among two nodes
      */
-    app.post('/kwb/add', function(req, res) {
+    app.post('/kwb/add', function kwbPost(req, res) {
         //it's req.body in a post
         var src = req.body.sourceLocator,
             targ = req.body.targetLocator,
@@ -154,7 +162,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         req.session.clipboard = ""; // clear clipboard
         console.log("KWB.add "+src+" "+targ+" "+reln);
         //NOW, create the connection
-        KnowledgeWorkbenchModel.createConnection(src,targ,reln,req.user,taglist,function(err,tuple) {
+        KnowledgeWorkbenchModel.createConnection(src, targ, reln, req.user, taglist, function kwbCreateConnection(err, tuple) {
             console.log("KWB.post "+err+" | "+tuple);
             if (tuple) {
                 var lox = '/kwb/'+tuple.getLocator();
