@@ -195,21 +195,25 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//fetch the node itself
 		Dataprovider.getNodeByLocator(q, credentials, function guildGetNode2(err, result) {
 			console.log('GUILDrout-1 '+err+" "+result);
-			var data =  myEnvironment.getCoreUIData(req);
-			//Fetch the tags
-			var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
-			if (!tags) {
-				tags = [];
+			if (result) {
+				var data =  myEnvironment.getCoreUIData(req);
+				//Fetch the tags
+				var tags = result.listPivotsByRelationType(types.TAG_DOCUMENT_RELATION_TYPE);
+				if (!tags) {
+					tags = [];
+				}
+				var docs=[];
+				var users=[];
+				var transcludes=[];
+				myEnvironment.logDebug("Guild.ajaxfetch "+JSON.stringify(data));
+				CommonModel.__doAjaxFetch(result, credentials,"/guild/", tags, docs, users, transcludes, data, req, function guildDoAjax(json) {
+					myEnvironment.logDebug("Guild.ajaxfetch-1 "+JSON.stringify(json));
+					//send the response
+					return res.json(json);
+				});
+			} else {
+				return res.redirect('/error/GuildCannotDisplay');
 			}
-			var docs=[];
-			var users=[];
-			var transcludes=[];
-			myEnvironment.logDebug("Guild.ajaxfetch "+JSON.stringify(data));
-			CommonModel.__doAjaxFetch(result, credentials,"/guild/", tags, docs, users, transcludes, data, req, function guildDoAjax(json) {
-				myEnvironment.logDebug("Guild.ajaxfetch-1 "+JSON.stringify(json));
-				//send the response
-				return res.json(json);
-			});
 		});
 	});
 		  
@@ -237,7 +241,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
             if (usr) {
                 Dataprovider.getNodeByLocator(q, credentials, function guildGetNode3(err, result) {
                 	if (result) {
-                    var ismem = GuildModel.isMember(result, usr.handle);
+                    	var ismem = GuildModel.isMember(result, usr.handle);
 	                    if (ismem) {
 	                        data.isMember = ismem;
 	                    } else {
