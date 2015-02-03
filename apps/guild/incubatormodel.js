@@ -93,7 +93,7 @@ var IncubatorModel =  module.exports = function(environment) {
     ////////////////////////////////////////////
     if (!infobox) {
       //it doesn't exist: we must create it.
-      DataProvider.getNodeByLocator(questLocator, credentials, function(err, quest) {
+      DataProvider.getNodeByLocator(questLocator, credentials, function incubatorGetNode(err, quest) {
         if (err) {error += err;}
         if (quest) {
           var title = quest.getSubject(language).theText,
@@ -104,14 +104,14 @@ var IncubatorModel =  module.exports = function(environment) {
           bx.body = "";
           bx.language = "en"; //TODO
           //CREATE the Meta Conversation
-          ConversationModel.createMap(bx, usr, null, true, credentials, function(err, qnode) {
+          ConversationModel.createMap(bx, usr, null, true, credentials, function incubatorCreateMap(err, qnode) {
             if (err) {error += err}
             qnode.addACLValue(guildNode.getLocator()); // add to ACL
             qnode.setCreatorId(guildNode.getLocator()); // the guild is the creator
             myEnvironment.logDebug("IncubatorModel.joinQuest-2 "+qnode);
             myEnvironment.logDebug("IncubatorModel.joinQuest-3 "+JSON.stringify(qnode));
             //persist the modified node
-            DataProvider.putNode(qnode, function(err, dx) {
+            DataProvider.putNode(qnode, function incubatorPutNode(err, dx) {
               //create the GuildQuestInfobox to represent this pair
               infobox = new Infobox(questLocator,title);
               infobox[Infobox.META_TREE_ROOT_LOCATOR] = qnode.getLocator();
@@ -121,7 +121,7 @@ var IncubatorModel =  module.exports = function(environment) {
               myEnvironment.logDebug("IncubatorModel.joinQuest-4 "+JSON.stringify(infobox));
               guildNode.putInfoBox(questLocator, JSON.stringify(infobox));
               guildNode.setLastEditDate(new Date());
-              DataProvider.putNode(guildNode, function (err, data) {
+              DataProvider.putNode(guildNode, function incubatorPutNode1(err, data) {
                 if (err) {error += err;}
                 return callback(error);
               });
@@ -135,7 +135,7 @@ var IncubatorModel =  module.exports = function(environment) {
       //otherwise, just tell the guild what its current quest is
       guildNode.setProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY, questLocator);
       guildNode.setLastEditDate(new Date());
-      DataProvider.putNode(guildNode, function (err, data) {
+      DataProvider.putNode(guildNode, function incubatorPutNode2(err, data) {
         if (err) {error += err;}
         return callback(error);
       });
@@ -152,14 +152,14 @@ var IncubatorModel =  module.exports = function(environment) {
     myEnvironment.logDebug("GUILD LOCATOR -4 "+guildLocator); // debug establish the identity of this guild.
 
     // create the node
-    ConversationModel.createOtherNode(blog, user, credentials, function(err, qnode) {
+    ConversationModel.createOtherNode(blog, user, credentials, function incubatorCreateOther(err, qnode) {
       if (err) {error += err;}
       //now make it private with ACL
       if (qnode) {
         qnode.addACLValue(guildLocator); // add to ACL
         qnode.setCreatorId(guildLocator); // the guild is the creator
         myEnvironment.logDebug("IncubatorModel.createOtherNode "+qnode.toJSON());
-        DataProvider.putNode(qnode, function(err, data) {
+        DataProvider.putNode(qnode, function incubatorPutNode3(err, data) {
           if (err) {error += err;}
           return callback(error, data);
         });
@@ -171,7 +171,7 @@ var IncubatorModel =  module.exports = function(environment) {
 
   //   
   self.update = function(blog, user, credentials, callback) {
-    ConversationModel.update(blog, user, credentials, function(err, data) {
+    ConversationModel.update(blog, user, credentials, function incubatorUpdate(err, data) {
       return callback(err, data);
     });
   };
@@ -183,7 +183,7 @@ var IncubatorModel =  module.exports = function(environment) {
    */
   self.leaveQuest = function(guildNode, callback ) {
     guildNode.setProperty(gameConstants.GUILD_CURRENT_QUEST_PROPERTY, "");
-    DataProvider.putNode(guildNode, function (err, data) {
+    DataProvider.putNode(guildNode, function incubatorPutNode4(err, data) {
       return callback(err);
     });
   };
@@ -236,7 +236,7 @@ var IncubatorModel =  module.exports = function(environment) {
     myEnvironment.logDebug("IncubatorModel.setQuestRootNodeLocator-1 "+JSON.stringify(ib));
     guildNode.putInfoBox(questLocator, JSON.stringify(ib));
     guildNode.setLastEditDate(new Date());
-    DataProvider.putNode(guildNode, function (err, data) {
+    DataProvider.putNode(guildNode, function incubatorPutNode5(err, data) {
       return callback(err);
     });
   };
@@ -263,14 +263,14 @@ var IncubatorModel =  module.exports = function(environment) {
         retval;
     myEnvironment.logDebug("IncubatorModel.getGameTree-1 "+rootLocator+" | "+infobox);
     if (rootLocator) {
-      DataProvider.getNodeByLocator(rootLocator, credentials, function(err, rn) {
+      DataProvider.getNodeByLocator(rootLocator, credentials, function incubatorGetNode1(err, rn) {
         if (err) {error += err;}
         if (rn) {
           //var contextLocator = rootLocator; // we are getting this tree WRONG
           var contextLocator = guildNode.getLocator(),
               js = "javascript:fetchFromGameTreeTree",
               aux = "&guildLocator="+guildNode.getLocator();
-          ColNavWidget.makeColNav(rootLocator, rn, contextLocator, lang, js, "/incubator/ajaxtreefetch/", aux, credentials, function(err, html) {
+          ColNavWidget.makeColNav(rootLocator, rn, contextLocator, lang, js, "/incubator/ajaxtreefetch/", aux, credentials, function incubatorMakeColNav(err, html) {
             return callback(err, html);
           });
         } else {
@@ -297,14 +297,14 @@ var IncubatorModel =  module.exports = function(environment) {
         rootNode; // leave undefined
     myEnvironment.logDebug("IncubatorModel.getMetaTree-1 "+rootLocator+" "+infobox);
     if (rootLocator) {
-      DataProvider.getNodeByLocator(rootLocator, credentials, function(err, rn) {
+      DataProvider.getNodeByLocator(rootLocator, credentials, function incubatorGetNode2(err, rn) {
         if (err) {error += err;}
         if (rn) {
           // var contextLocator = rootLocator; // we are getting this tree WRONG
           var contextLocator = guildNode.getLocator(),
               js = "javascript:fetchFromMetaTree",
               aux = "&guildLocator="+guildNode.getLocator();
-          ColNavWidget.makeColNav(rootLocator, rn, contextLocator, lang, js, "/incubator/ajaxtreefetch/", aux, credentials, function(err, html) {
+          ColNavWidget.makeColNav(rootLocator, rn, contextLocator, lang, js, "/incubator/ajaxtreefetch/", aux, credentials, function incubatorMakeColNav1(err, html) {
             myEnvironment.logDebug("IncubatorModel.getMetaTree-1 "+rootLocator+" "+html);
             return callback(err, html);
           });
@@ -408,7 +408,7 @@ var IncubatorModel =  module.exports = function(environment) {
           // "smallImagePath":"/images/ibis/issue_sm.png"
           //}
           ///////////////////////////////////////////////
-          DataProvider.getNodeByLocator(snapper.locator, credentials, function(err, data) {
+          DataProvider.getNodeByLocator(snapper.locator, credentials, function incubatorGetNode3(err, data) {
             if (err) {error += err;}
             if (data) {
               myEnvironment.logDebug("IncubatorModel._unPrivatizeNode-2a "+snapper);
@@ -417,7 +417,7 @@ var IncubatorModel =  module.exports = function(environment) {
               //TODO language
               treeNode.addChildNode(questLocator, data.getSmallImage(), snapper.locator, data.getSubject(constants.ENGLISH).theText, transcludelocator);
               //now, recurse on this puppy
-              self._unPrivatizeNode(data, contextLocator, questLocator, parentList, credentials, function(err) {
+              self._unPrivatizeNode(data, contextLocator, questLocator, parentList, credentials, function incubatorUnprivatize(err) {
                  if (err) {error += err;}
                  //stay in loop 
               });
@@ -462,14 +462,14 @@ var IncubatorModel =  module.exports = function(environment) {
     myEnvironment.logDebug("IncubatorModel.play-1 "+rootLocator+" "+infobox);
     if (rootLocator) {
       //Fetch the Root Node
-      DataProvider.getNodeByLocator(rootLocator, credentials, function(err, rx) {
+      DataProvider.getNodeByLocator(rootLocator, credentials, function incubatorGetNode4(err, rx) {
         if (err) {error += err;}
         if (rx) {
           var contextLocator = guildNode.getLocator(),
           parentList = [],
           nx;
           //Process this guild's game moves
-          self._unPrivatizeNode(rx, contextLocator, questLocator, parentList, credentials, function(err) {
+          self._unPrivatizeNode(rx, contextLocator, questLocator, parentList, credentials, function incubatorUnprivatize1(err) {
             if (err) {error += err;}
             //Now, save all the processed nodes
             myEnvironment.logDebug("IncubatorModel.play-2 "+parentList);
@@ -477,7 +477,7 @@ var IncubatorModel =  module.exports = function(environment) {
               nx = parentList[i];
               nx.setLastEditDate(new Date());
               myEnvironment.logDebug("IncubatorModel.play-3 "+nx.toJSON());
-              DataProvider.putNode(nx, function(err, data) {
+              DataProvider.putNode(nx, function incubatorPutNode6(err, data) {
                 if (err) {error += err;}
                 //Stay in loop
               });
@@ -495,7 +495,7 @@ var IncubatorModel =  module.exports = function(environment) {
    };
 
   self.performTransclude = function(body, user, isEvidence, callback) {
-    ConversationModel.performTransclude(body, user, isEvidence, function(err, data) {
+    ConversationModel.performTransclude(body, user, isEvidence, function incubatorPerformTransclude(err, data) {
       return callback(err, data);
     });
   };

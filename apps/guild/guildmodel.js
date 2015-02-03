@@ -36,7 +36,7 @@ var GuildModel =  module.exports = function(environment) {
 	  self.update = function(blog, user, credentials, callback) {
 		  myEnvironment.logDebug("Quest.UPDATE "+JSON.stringify(blog));
 		  var lox = blog.locator;
-		  DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+		  DataProvider.getNodeByLocator(lox, credentials, function guildGetNode(err, result) {
 			  var error = '',
             retval;
 			  if (err) {error += err;}
@@ -63,7 +63,7 @@ var GuildModel =  module.exports = function(environment) {
 	    			  result.updateBody(body,lang,user.handle,comment);
 	    		  }
 		    	  result.setLastEditDate(new Date());
-		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function guildUpdateNodeLabel(err,data) {
 		    		  if (err) {error += err;}
 		    		  console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
 		    		  return callback(error,data);
@@ -72,7 +72,7 @@ var GuildModel =  module.exports = function(environment) {
 	    		  if (!isNotUpdateToBody) {
 	    			  result.updateBody(body,lang,user.handle,comment);
 	    			  result.setLastEditDate(new Date());
-			    	  DataProvider.putNode(result, function(err, data) {
+			    	  DataProvider.putNode(result, function guildPutNode(err, data) {
 			    		  if (err) {error += err;}
 			    		  return callback(error,data);
 			    	  });
@@ -106,7 +106,7 @@ var GuildModel =  module.exports = function(environment) {
       if (blog.isPrivate) {
         isPrivate = blog.isPrivate;
       }
-	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function guildGetNode1(err, result) {
         if (err) {error+= err;}
         if (result) {
   	      userTopic = result;
@@ -117,7 +117,7 @@ var GuildModel =  module.exports = function(environment) {
               //This creates the guild itself
   	      TopicModel.newInstanceNode(uuid.newUUID(), types.GUILD_TYPE,
                                        "", "", constants.ENGLISH, userLocator,
-                                       icons.COLLABORATION_SM, icons.COLLABORATION, isPrivate, credentials, function(err, article) {
+                                       icons.COLLABORATION_SM, icons.COLLABORATION, isPrivate, credentials, function guildNewInstance(err, article) {
             if (err) {error+= err;}
   	    	  var lang = blog.language;
   	    	  if (!lang) {lang = "en";}
@@ -130,7 +130,7 @@ var GuildModel =  module.exports = function(environment) {
                 theGuild.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
                 theGuild.addSetValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
                 //grant guild credentials to user
-                AdminModel.addToCredentials(user, theGuild.getLocator(), function(err, dx) {
+                AdminModel.addToCredentials(user, theGuild.getLocator(), function guildAddCredential(err, dx) {
                     if (err) {error+= err;}
                     //"credentials":["jackpark","78dc2560-7cd1-11e4-bbe7-2f2b0397e9a1"] showing added guild credentials
                     myEnvironment.logDebug("GuildModel.create-1 "+JSON.stringify(user));
@@ -138,28 +138,28 @@ var GuildModel =  module.exports = function(environment) {
                     // now deal with tags
                     var taglist = CommonModel.makeTagList(blog);
                     if (taglist.length > 0) {
-                        TagModel.processTagList(taglist, userTopic, article, credentials, function(err, result) {
+                        TagModel.processTagList(taglist, userTopic, article, credentials, function guildProcessTags(err, result) {
                            if (err) {error+= err;}
                             console.log('NEW_POST-1 '+result);
                             //result could be an empty list;
                             //TagModel already added Tag_Doc and Doc_Tag relations
                             console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-                            DataProvider.putNode(article, function(err, data) {
+                            DataProvider.putNode(article, function guildPutNode(err, data) {
                                if (err) {error+= err;}
                                 TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                                        userTopic.getLocator(),
-                                                                       icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
+                                                                       icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function guildRelateNodes(err, data) {
                                      if (err) {error+= err;}
                                     return callback(error, article.getLocator());
                                 }); //r1
                             }); //putnode 		  
                         }); // processtaglist
                     }  else {
-                        DataProvider.putNode(article, function(err,data) {
+                        DataProvider.putNode(article, function guildPutNode1(err,data) {
                            if (err) {error+= err;}
                             TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                                    userTopic.getLocator(),
-                                                                   icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
+                                                                   icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function guildRelateNodes1(err,data) {
                               if (err) {error+= err;}
                               return callback(error, article.getLocator());
                             }); //r1
@@ -175,7 +175,7 @@ var GuildModel =  module.exports = function(environment) {
 	  
 	  self.listGuilds = function(start, count, credentials, callback) {
 	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.GUILD_TYPE,start,count);
-	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err, data, total) {
+	    DataProvider.listNodesByQuery(query, start,count,credentials, function guildListNodes(err, data, total) {
 	      console.log("GuildModel.listIssues "+err+" "+data);
 	      return callback(err, data, total);
 	    });
@@ -188,9 +188,9 @@ var GuildModel =  module.exports = function(environment) {
 	   * @param callback signatur (data, countsent, totalavailable)
 	   */
 	  self.fillDatatable = function(start, count,credentials, callback) {
-		  self.listGuilds(start,count,credentials,function(err,result, totalx) {
+		  self.listGuilds(start,count,credentials,function guildListGuilds(err,result, totalx) {
 		      console.log('GuildModel.fillDatatable '+err+' '+totalx+" "+result);
-		      CommonModel.fillSubjectAuthorDateTable(result,"/guild/",totalx, function(html, len, total) {
+		      CommonModel.fillSubjectAuthorDateTable(result,"/guild/",totalx, function guildFillTable(html, len, total) {
 			      console.log("FILLING "+start+" "+count+" "+total);
 			      return callback(html, len, total);
 		      });
@@ -236,8 +236,8 @@ var GuildModel =  module.exports = function(environment) {
            */
       self.addMember = function(guildNode, user, callback) {
           guildNode.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, user.handle);
-          AdminModel.addToCredentials(user, guildNode.getLocator(), function(err, dx) {
-              DataProvider.putNode(guildNode, function(err, data) {
+          AdminModel.addToCredentials(user, guildNode.getLocator(), function guildAddCredential1(err, dx) {
+              DataProvider.putNode(guildNode, function guildPutNode1(err, data) {
                   return callback(err, data);
               });
           });
@@ -252,8 +252,8 @@ var GuildModel =  module.exports = function(environment) {
       self.removeMember = function(guildNode, user, callback) {
           //TODO DO NOT REMOVE if length == 1
           guildNode.removeCollectionValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
-          AdminModel.removeFromCredentials(user, guildNode.getLocator(), function(err, dx) {
-              DataProvider.putNode(guildNode, function(err, data) {
+          AdminModel.removeFromCredentials(user, guildNode.getLocator(), function guildRemoveCredential(err, dx) {
+              DataProvider.putNode(guildNode, function guildPutNode2(err, data) {
                   return callback(err, data);
               });
           });
@@ -267,7 +267,7 @@ var GuildModel =  module.exports = function(environment) {
            */
       self.addLeader = function(guildNode, userLocator, callback) {
           guildNode.addSetValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
-          DataProvider.putNode(guildNode, function(err, data) {
+          DataProvider.putNode(guildNode, function guildPutNode3(err, data) {
               return callback(err, data);
           });
       };
@@ -281,7 +281,7 @@ var GuildModel =  module.exports = function(environment) {
       self.removeLeader = function(guildNode, userLocator, callback) {
           //TODO DO NOT REMOVE IF length == 1
           guildNode.removeCollectionValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
-          DataProvider.putNode(guildNode, function(err, data) {
+          DataProvider.putNode(guildNode, function guildPutNode4(err, data) {
               return callback(err, data);
           });
       };
@@ -293,7 +293,7 @@ var GuildModel =  module.exports = function(environment) {
            */
       self.setCurrentQuest = function(guildNode, questLocator, callback) {
           guildNode.addSetValue(gameConstants.GUILD_CURRENT_QUEST_PROPERTY, questLocator);
-          DataProvider.putNode(guildNode, function(err, data) {
+          DataProvider.putNode(guildNode, function guildPutNode5(err, data) {
               return callback(err, data);
           });          
       };
@@ -306,7 +306,7 @@ var GuildModel =  module.exports = function(environment) {
            */
       self.addQuest = function(guildNode, questLocator, callback) {
           guildNode.addSetValue(gameConstants.GUILD_QUEST_LIST_PROPERTY, questLocator);
-          DataProvider.putNode(guildNode, function(err, data) {
+          DataProvider.putNode(guildNode, function guildPutNode6(err, data) {
               return callback(err, data);
           });
       };
@@ -319,7 +319,7 @@ var GuildModel =  module.exports = function(environment) {
            */
       self.removeQuest = function(guildNode, questLocator, callback) {
           guildNode.removeCollectionValue(gameConstants.GUILD_QUEST_LIST_PROPERTY, questLocator);
-          DataProvider.putNode(guildNode, function(err, data) {
+          DataProvider.putNode(guildNode, function guildPutNode7(err, data) {
               return callback(err, data);
           });
       };
