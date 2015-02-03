@@ -98,7 +98,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
       //fetch the node itself
       Dataprovider.getNodeByLocator(q, credentials, function incubatorGetNode7(err, guildnode) {
         //sanity check
-        if (guildNode) {
+        if (guildnode) {
           if (IncubatorModel.isLeader(guildnode, usr.handle)) {
             IncubatorModel.play(guildnode, usr, function incubatorPlay(err) {
               return res.redirect("/incubator/"+q);

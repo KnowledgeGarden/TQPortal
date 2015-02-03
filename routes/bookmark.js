@@ -123,7 +123,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//establish credentials
 		//defaults to an empty array if no user logged in
 			credentials = [],
-			varusr = req.user;
+			usr = req.user;
 		if (usr) { credentials = usr.credentials;}
 		//fetch the node itself
 		Dataprovider.getNodeByLocator(q, credentials, function bookmarkGetNode1(err, result) {

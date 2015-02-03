@@ -178,61 +178,66 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	 */
 	//TODO: this needs viewspec and rootLocator for a full href
 	self.fillConversationTable = function(isConversation, isChild, locator,contextLocator,credentials,callback) {
-		var TheResult = {};
-		DataProvider.getNodeByLocator(locator,credentials, function(err,data) {
-//			  myEnvironment.logDebug("CommonModel.fillConversationTable- "+err+" "+data);
-			var snappers;
-			if (isChild) {
-				if (isConversation) {
-					if (contextLocator === "") {
+		var TheResult = {},
+			error = '';
+		DataProvider.getNodeByLocator(locator,credentials, function(err, data) {
+			if (err) {error+=err;}
+			if (data) {
+				var snappers;
+				if (isChild) {
+					if (isConversation) {
+						if (contextLocator === "") {
+							snappers = data.listParentNodes();
+						} else {
+							snappers = data.listParentNodes(contextLocator);
+						}
+					} else {
 						snappers = data.listParentNodes();
-					} else {
-						snappers = data.listParentNodes(contextLocator);
 					}
 				} else {
-					snappers = data.listParentNodes();
-				}
-			} else {
-				if (isConversation) {
-					if (contextLocator === "") {
+					if (isConversation) {
+						if (contextLocator === "") {
+							snappers = data.listChildNodes();
+						} else {
+							snappers = data.listChildNodes(contextLocator);
+						}
+					} else {
 						snappers = data.listChildNodes();
-					} else {
-						snappers = data.listChildNodes(contextLocator);
 					}
-				} else {
-					snappers = data.listChildNodes();
 				}
-			}
-//			  myEnvironment.logDebug("CommonModel.fillConversationTable-1 "+isChild+" "+snappers+" "+data.toJSON());
-//			  console.log("CommonModel.fillConversationTable-1 "+isChild+" "+snappers);
-			var p; //the struct
-			var m; //the individual message
-			var url;
-			var datax = [];
-			var posts = [];
-			if (snappers) {
-//			  myEnvironment.logDebug("CommonModel.fillConversationTable- "+isChild+" "+JSON.stringify(snappers));
-				var len = snappers.length;
-				var ntype;
-				for (var i=0;i<len;i++) {
-					p = snappers[i];
-					myEnvironment.logDebug("CommonModel.fillConversationTable "+JSON.stringify(p));
-					m = [];
-					//track context with a query string
-					//Determine node type here!!!
-					//TODO: this needs to be extensible:
-					// EACH application installs its mappers 
-//TODO: this needs more work!!!
-					url = "<a class=\"nodehref\" href='/conversation/"+p.locator+"?contextLocator="+p.contextLocator+"'><img src=\""+p.smallImagePath+"\"> "+p.subject+"</a>";
-					m.push(url);
-					m.push("");
-					m.push("");
-					datax.push(m);
+	//			  myEnvironment.logDebug("CommonModel.fillConversationTable-1 "+isChild+" "+snappers+" "+data.toJSON());
+	//			  console.log("CommonModel.fillConversationTable-1 "+isChild+" "+snappers);
+				var p; //the struct
+				var m; //the individual message
+				var url;
+				var datax = [];
+				var posts = [];
+				if (snappers) {
+	//			  myEnvironment.logDebug("CommonModel.fillConversationTable- "+isChild+" "+JSON.stringify(snappers));
+					var len = snappers.length;
+					var ntype;
+					for (var i=0;i<len;i++) {
+						p = snappers[i];
+						myEnvironment.logDebug("CommonModel.fillConversationTable "+JSON.stringify(p));
+						m = [];
+						//track context with a query string
+						//Determine node type here!!!
+						//TODO: this needs to be extensible:
+						// EACH application installs its mappers 
+	//TODO: this needs more work!!!
+						url = "<a class=\"nodehref\" href='/conversation/"+p.locator+"?contextLocator="+p.contextLocator+"'><img src=\""+p.smallImagePath+"\"> "+p.subject+"</a>";
+						m.push(url);
+						m.push("");
+						m.push("");
+						datax.push(m);
+					}
 				}
+				TheResult.data = datax;
+	//		  myEnvironment.logDebug("CommonModel.fillConversationTable+ "+isChild+" "+JSON.stringify(TheResult));
+				return callback(error, TheResult);
+			} else {
+				return callback(error, TheResult);
 			}
-			TheResult.data = datax;
-//		  myEnvironment.logDebug("CommonModel.fillConversationTable+ "+isChild+" "+JSON.stringify(TheResult));
-			return callback(err,TheResult);
 		});
 	};
 

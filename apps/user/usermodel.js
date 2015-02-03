@@ -24,45 +24,50 @@ var UserModel = module.exports = function(environment) {
   self.update = function(userbody, user, credentials, callback) {
 	  topicMapEnvironment.logDebug("USER.UPDATE "+JSON.stringify(userbody));
 	  var lox = userbody.locator;
-	  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
-		  var error = '';
+	  DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+		  var error = '',
+          retval;
 		  if (err) {error += err;}
-		  var body = userbody.body,
-          lang = userbody.language,
-          comment = "an edit by "+user.handle,
-          oldBody;
-      if(result.getBody(lang)) {
-        oldBody = result.getBody(lang).theText;
-      }
-      if (oldBody) {
-        isNotUpdateToBody = (oldBody === body);
-      }
-      var oldLabel = result.getSubject(lang).theText,
-          isNotUpdateToLabel = (title === oldLabel);
-      if (!isNotUpdateToLabel) {
-        //crucial update to label
-        result.updateSubject(title,lang,user.handle,comment);
-        if (!isNotUpdateToBody) {
-          result.updateBody(body,lang,user.handle,comment);
+      if (result) {
+  		  var body = userbody.body,
+            lang = userbody.language,
+            comment = "an edit by "+user.handle,
+            oldBody;
+        if(result.getBody(lang)) {
+          oldBody = result.getBody(lang).theText;
         }
-        result.setLastEditDate(new Date());
-        DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
-          if (err) {error += err;}
-          console.log("UserModel.update "+error+" "+oldLabel+" "+title);
-          return callback(error, data);
-        });
-      } else {
-        if (!isNotUpdateToBody) {
-          result.updateBody(body, lang, user.handle, comment);
+        if (oldBody) {
+          isNotUpdateToBody = (oldBody === body);
+        }
+        var oldLabel = result.getSubject(lang).theText,
+            isNotUpdateToLabel = (title === oldLabel);
+        if (!isNotUpdateToLabel) {
+          //crucial update to label
+          result.updateSubject(title, lang, user.handle, comment);
+          if (!isNotUpdateToBody) {
+            result.updateBody(body, lang, user.handle, comment);
+          }
           result.setLastEditDate(new Date());
-          DataProvider.putNode(result, function(err, data) {
+          DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
             if (err) {error += err;}
+            console.log("UserModel.update "+error+" "+oldLabel+" "+title);
             return callback(error, data);
           });
         } else {
-          return callback(error, data);
+          if (!isNotUpdateToBody) {
+            result.updateBody(body, lang, user.handle, comment);
+            result.setLastEditDate(new Date());
+            DataProvider.putNode(result, function(err, data) {
+              if (err) {error += err;}
+              return callback(error, data);
+            });
+          } else {
+            return callback(error, data);
+          }
         }
-      };
+      } else {
+        return  callback(error, retval);
+      }
     });
   };
 
@@ -80,7 +85,7 @@ var UserModel = module.exports = function(environment) {
     credentials.push(user.getHandle());
     // In fact, we already check for valid and unique handle in routes.js
     console.log('USER.newUserTopic-1 '+user.getHandle());
-    self.findUser(user.getHandle(), credentials, function(err,result) {
+    self.findUser(user.getHandle(), credentials, function(err, result) {
       console.log('USER.newUserTopic-2 '+err+' '+result);
       //if (result !== null) {
       if (result != null /*&& result.length > 0*/) {
@@ -118,14 +123,14 @@ var UserModel = module.exports = function(environment) {
   self.findUser = function(userLocator, credentials, callback) {
 	  console.log("UserModel.findUser "+userLocator+" "+credentials);
     DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
-      callback(err,result);
+      callback(err, result);
     });
   };
   
   self.listUsers = function(start, count, credentials, callback) {
     DataProvider.listInstanceNodes(types.USER_TYPE, start,count,credentials, function(err,data,total) {
       console.log("UserModel.listInstanceNodes "+err+" "+data);
-      callback(err,data,total);
+      callback(err, data, total);
     });
   };
 	  
@@ -134,7 +139,7 @@ var UserModel = module.exports = function(environment) {
 	   * @param callback signatur (data)
 	   */
   self.fillDatatable = function(start, count, credentials, callback) {
-    self.listUsers(start,count,credentials,function(err,result, total) {
+    self.listUsers(start, count, credentials, function(err, result, total) {
       console.log('ROUTES/users '+err+' '+result);
       var len = result.length;
       var url,p
@@ -153,7 +158,7 @@ var UserModel = module.exports = function(environment) {
      // {{/each}}
       html+="</tbody></table>";
       console.log("FILLING "+total);
-      callback(html,len,total);	
+      callback(html, len, total);	
     });
   };
 };

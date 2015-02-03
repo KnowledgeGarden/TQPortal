@@ -35,45 +35,49 @@ var IssueModel =  module.exports = function(environment) {
 		myEnvironment.logDebug("Issue.UPDATE "+JSON.stringify(blog));
 		var lox = blog.locator;
 		DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
-			var error = '';
-			if (err) {error += err;}
-			var title = blog.title,
-				body = blog.body,
-				lang = blog.language,
-				comment = "an edit by "+user.handle;
-			if (!lang) {lang = "en";}
-			var isNotUpdateToBody = true,
-				oldBody;
-			if(result.getBody(lang)) {
-				oldBody = result.getBody(lang).theText;
-			}
-			if (oldBody) {
-				isNotUpdateToBody = (oldBody === body);
-			}
-			var oldLabel = result.getSubject(lang).theText,
-				isNotUpdateToLabel = (title === oldLabel);
-			if (!isNotUpdateToLabel) {
-				//crucial update to label
-				result.updateSubject(title,lang,user.handle,comment);
-				if (!isNotUpdateToBody) {
-					result.updateBody(body,lang,user.handle,comment);
+			var error = '',
+				retval;
+			if (result) {
+				if (err) {error += err;}
+				var title = blog.title,
+					body = blog.body,
+					lang = blog.language,
+					comment = "an edit by "+user.handle;
+				if (!lang) {lang = "en";}
+				var isNotUpdateToBody = true,
+					oldBody;
+				if(result.getBody(lang)) {
+					oldBody = result.getBody(lang).theText;
 				}
-				result.setLastEditDate(new Date());
-				DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
-					if (err) {error += err;}
-					console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
-					return callback(error, data);
-				});
-			} else if (!isNotUpdateToBody) {
-				result.updateBody(body, lang, user. handle, comment);
-				result.setLastEditDate(new Date());
-				DataProvider.putNode(result, function(err, data) {
-					if (err) {error += err;}
-					return callback(error, data);
-				});
+				if (oldBody) {
+					isNotUpdateToBody = (oldBody === body);
+				}
+				var oldLabel = result.getSubject(lang).theText,
+					isNotUpdateToLabel = (title === oldLabel);
+				if (!isNotUpdateToLabel) {
+					//crucial update to label
+					result.updateSubject(title,lang,user.handle,comment);
+					if (!isNotUpdateToBody) {
+						result.updateBody(body,lang,user.handle,comment);
+					}
+					result.setLastEditDate(new Date());
+					DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
+						if (err) {error += err;}
+						console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
+						return callback(error, data);
+					});
+				} else if (!isNotUpdateToBody) {
+					result.updateBody(body, lang, user. handle, comment);
+					result.setLastEditDate(new Date());
+					DataProvider.putNode(result, function(err, data) {
+						if (err) {error += err;}
+						return callback(error, data);
+					});
+				} else {
+					return callback(error, retval);
+				}
 			} else {
-				var foo;
-				return callback(error, foo);
+				return callback(error, retval);
 			}
 		});
 	};
@@ -89,14 +93,18 @@ var IssueModel =  module.exports = function(environment) {
 		  console.log('BMXXXX '+JSON.stringify(blog));
 		// some really wierd shit: the User object for the user database stores
 		// as user.handle, but passport seems to muck around and return user.username
-	    var userLocator = user.handle; // It's supposed to be user.handle;
+	    var userLocator = user.handle, // It's supposed to be user.handle;
 	    //first, fetch this user's topic
-	    var userTopic;
-		var isPrivate = false;
+			userTopic,
+			error = '',
+			retval,
+			isPrivate = false;
 		if (blog.isPrivate) {
 			isPrivate = blog.isPrivate;
 		}
-	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
+	    	if (err) {error += err;}
+	    	if (result) {
 	      userTopic = result;
 	      console.log('IssueModel.create-1 '+userLocator+' | '+userTopic);
 	      // create the blog post
@@ -150,6 +158,9 @@ var IssueModel =  module.exports = function(environment) {
 
 	          }    	
 	      });
+			} else {
+				return callback(err, retval);
+			}
 	    });
 	};
 	  

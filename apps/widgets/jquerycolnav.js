@@ -81,13 +81,17 @@ var ColNavWidget = module.exports = function(environment, dp) {
 				} else {
 					nx = kids[cursor++];
 //					console.log("ColNavWidget.__buildColNav-4 "+JSON.stringify(nx));
-					DataProvider.getNodeByLocator(nx.locator, credentials, function(err,node) {
+					DataProvider.getNodeByLocator(nx.locator, credentials, function(err, node) {
 						if (err) {error+=err;}
+						if (node) {
 //						console.log("ColNavWidget.__buildColNav-5 "+stop+" | "+err+" | "+node);
 							self.__buildColNav(rootNodeLocator, node, selectedNode, contextLocator, language, javascript, app, aux, buf, credentials, stop, function(err,html) {
 								if (err) {error+=err;}
 								loop();
 							});
+						} else {
+							loop();
+						}
 						
 					});
 				}
@@ -117,23 +121,28 @@ var ColNavWidget = module.exports = function(environment, dp) {
 	 * @param callback signature (err,colnavhtml)
 	 */
 	self.makeColNav = function(rootNodeLocator, selectedNode, contextLocator, language, javascript, app, aux, credentials,callback) {
-		var buffer = new sb();
+		var buffer = new sb(),
+			error;
 //		console.log("ColNavWidget.makeColNav "+buffer);
 		if (selectedNode.getLocator() === rootNodeLocator) {
             myEnvironment.logDebug("ColNavWidget.makeColNav-1 "+rootNodeLocator+" | "+selectedNode);
 			self.__buildColNav(rootNodeLocator, selectedNode, selectedNode, contextLocator, language, javascript, app, aux, buffer, credentials, false, function(err, html) {
 //				console.log("ColNavWidget.makeColNav-1 "+html);
 				buffer.append("</li>");
-				callback(err,buffer.toString());
+				return callback(err, buffer.toString());
 			});
 		} else {
-			DataProvider.getNodeByLocator(rootNodeLocator,credentials, function(err,node) {
-                 myEnvironment.logDebug("ColNavWidget.makeColNav-2 "+rootNodeLocator+" | "+node+" | "+selectedNode);
-				self.__buildColNav(rootNodeLocator, node, selectedNode, contextLocator, language, javascript, app, aux, buffer, credentials, false, function(err, html) {
-//					console.log("ColNavWidget.makeColNav-2 "+html);
-					buffer.append("</li>");
-					callback(err,buffer.toString());
-				});
+			DataProvider.getNodeByLocator(rootNodeLocator,credentials, function(err, node) {
+                myEnvironment.logDebug("ColNavWidget.makeColNav-2 "+rootNodeLocator+" | "+node+" | "+selectedNode);
+                if (node) {
+					self.__buildColNav(rootNodeLocator, node, selectedNode, contextLocator, language, javascript, app, aux, buffer, credentials, false, function(err, html) {
+	//					console.log("ColNavWidget.makeColNav-2 "+html);
+						buffer.append("</li>");
+						return callback(err, buffer.toString());
+					});
+				} else {
+					return callback(error, buffer.toString());
+				}
 			});
 		}
 	};

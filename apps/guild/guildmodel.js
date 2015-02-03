@@ -33,27 +33,29 @@ var GuildModel =  module.exports = function(environment) {
 	  /**
 	   * Update an existing blog entry; no tags included
 	   */
-	  self.update = function(blog,user,credentials,callback) {
+	  self.update = function(blog, user, credentials, callback) {
 		  myEnvironment.logDebug("Quest.UPDATE "+JSON.stringify(blog));
 		  var lox = blog.locator;
-		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
-			  var error = '';
+		  DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+			  var error = '',
+            retval;
 			  if (err) {error += err;}
-			  var title = blog.title;
-			  var body = blog.body;
-	    	  var lang = blog.language;
-	    	  var comment = "an edit by "+user.handle;
+        if (result) {
+          var title = blog.title,
+              body = blog.body,
+              lang = blog.language,
+              comment = "an edit by "+user.handle;
 	    	  if (!lang) {lang = "en";}
-			  var isNotUpdateToBody = true;
-	    	  var oldBody;
+          var isNotUpdateToBody = true,
+              oldBody;
 	    	  if(result.getBody(lang)) {
 	    		  oldBody = result.getBody(lang).theText;
 	    	  }
 	    	  if (oldBody) {
 	    		  isNotUpdateToBody = (oldBody === body);
 	    	  }
-	    	  var oldLabel = result.getSubject(lang).theText;
-	    	  var isNotUpdateToLabel = (title === oldLabel);
+	    	  var oldLabel = result.getSubject(lang).theText,
+              isNotUpdateToLabel = (title === oldLabel);
 	    	  if (!isNotUpdateToLabel) {
 	    		  //crucial update to label
 	    		  result.updateSubject(title,lang,user.handle,comment);
@@ -64,20 +66,23 @@ var GuildModel =  module.exports = function(environment) {
 		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
 		    		  if (err) {error += err;}
 		    		  console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
-		    		  callback(error,data);
+		    		  return callback(error,data);
 		    	  });
 	    	  } else {
 	    		  if (!isNotUpdateToBody) {
 	    			  result.updateBody(body,lang,user.handle,comment);
 	    			  result.setLastEditDate(new Date());
-			    	  DataProvider.putNode(result, function(err,data) {
+			    	  DataProvider.putNode(result, function(err, data) {
 			    		  if (err) {error += err;}
-			    		  callback(error,data);
+			    		  return callback(error,data);
 			    	  });
 	    		  } else {
-	    			  callback(error,null);
+	    			  return callback(error, retval);
 	    		  }
-	    	  };
+	    	  }
+        } else {
+          return callback(error, retval);
+        }
 		  });
 	  };
 	  
@@ -96,73 +101,75 @@ var GuildModel =  module.exports = function(environment) {
 	    //first, fetch this user's topic
 	    var userTopic,
             theGuild,
+            error = '';
             isPrivate = false;
       if (blog.isPrivate) {
         isPrivate = blog.isPrivate;
       }
 	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
-	      userTopic = result;
-	      console.log('GuildModel.create-1 '+userLocator+' | '+userTopic);
-	      // create the blog post
-	      console.log("FOO "+types.GUILD_TYPE);
-	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
-            //This creates the guild itself
-	      TopicModel.newInstanceNode(uuid.newUUID(), types.GUILD_TYPE,
-                                     "", "", constants.ENGLISH, userLocator,
-                                     icons.COLLABORATION_SM, icons.COLLABORATION, isPrivate, credentials, function(err, article) {
-	    	  var lang = blog.language;
-	    	  if (!lang) {lang = "en";}
-	    	  var subj = blog.title;
-	    	  var body = blog.body;
-              theGuild = article;
-	    	  theGuild.setSubject(subj,lang,userLocator);
-	    	  theGuild.setBody(body,lang,userLocator);
-              //Tell it about its new member/leader
-              theGuild.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
-              theGuild.addSetValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
-              //grant guild credentials to user
-              AdminModel.addToCredentials(user, theGuild.getLocator(), function(err, dx) {
-
-                  //"credentials":["jackpark","78dc2560-7cd1-11e4-bbe7-2f2b0397e9a1"] showing added guild credentials
-                  myEnvironment.logDebug("GuildModel.create-1 "+JSON.stringify(user));
-                  RPGEnvironment.addRecentIssue(article.getLocator(),blog.title);
-                  // now deal with tags
-                  var taglist = CommonModel.makeTagList(blog);
-                  if (taglist.length > 0) {
-                      TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
-                          console.log('NEW_POST-1 '+result);
-                          //result could be an empty list;
-                          //TagModel already added Tag_Doc and Doc_Tag relations
-                          console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-                          DataProvider.putNode(article, function(err,data) {
-                              console.log('ARTICLES_CREATE-3 '+err);	  
-                              if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-                              console.log('ARTICLES_CREATE-3b '+userTopic);	  
-
-                              TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-                                                                     userTopic.getLocator(),
-                                                                     icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
-                                  if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-                                  return callback(err,article.getLocator());
-                              }); //r1
-                          }); //putnode 		  
-                      }); // processtaglist
-                  }  else {
-                      DataProvider.putNode(article, function(err,data) {
-                          console.log('ARTICLES_CREATE-3 '+err);	  
-                          if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-                          console.log('ARTICLES_CREATE-3b '+userTopic);	  
-
-                          TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-                                                                 userTopic.getLocator(),
-                                                                 icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
-                              if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-                              return callback(err,article.getLocator());
-                          }); //r1
-                      }); //putnode
-                  }
-              }); // admin
-	      });
+        if (err) {error+= err;}
+        if (result) {
+  	      userTopic = result;
+  	      console.log('GuildModel.create-1 '+userLocator+' | '+userTopic);
+  	      // create the blog post
+  	      console.log("FOO "+types.GUILD_TYPE);
+  	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
+              //This creates the guild itself
+  	      TopicModel.newInstanceNode(uuid.newUUID(), types.GUILD_TYPE,
+                                       "", "", constants.ENGLISH, userLocator,
+                                       icons.COLLABORATION_SM, icons.COLLABORATION, isPrivate, credentials, function(err, article) {
+            if (err) {error+= err;}
+  	    	  var lang = blog.language;
+  	    	  if (!lang) {lang = "en";}
+  	    	  var subj = blog.title,
+                body = blog.body;
+                theGuild = article;
+  	    	  theGuild.setSubject(subj,lang,userLocator);
+  	    	  theGuild.setBody(body,lang,userLocator);
+                //Tell it about its new member/leader
+                theGuild.addSetValue(gameConstants.GUILD_MEMBER_LIST_PROPERTY, userLocator);
+                theGuild.addSetValue(gameConstants.GUILD_LEADER_LIST_PROPERTY, userLocator);
+                //grant guild credentials to user
+                AdminModel.addToCredentials(user, theGuild.getLocator(), function(err, dx) {
+                    if (err) {error+= err;}
+                    //"credentials":["jackpark","78dc2560-7cd1-11e4-bbe7-2f2b0397e9a1"] showing added guild credentials
+                    myEnvironment.logDebug("GuildModel.create-1 "+JSON.stringify(user));
+                    RPGEnvironment.addRecentIssue(article.getLocator(),blog.title);
+                    // now deal with tags
+                    var taglist = CommonModel.makeTagList(blog);
+                    if (taglist.length > 0) {
+                        TagModel.processTagList(taglist, userTopic, article, credentials, function(err, result) {
+                           if (err) {error+= err;}
+                            console.log('NEW_POST-1 '+result);
+                            //result could be an empty list;
+                            //TagModel already added Tag_Doc and Doc_Tag relations
+                            console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
+                            DataProvider.putNode(article, function(err, data) {
+                               if (err) {error+= err;}
+                                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+                                                                       userTopic.getLocator(),
+                                                                       icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
+                                     if (err) {error+= err;}
+                                    return callback(error, article.getLocator());
+                                }); //r1
+                            }); //putnode 		  
+                        }); // processtaglist
+                    }  else {
+                        DataProvider.putNode(article, function(err,data) {
+                           if (err) {error+= err;}
+                            TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
+                                                                   userTopic.getLocator(),
+                                                                   icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
+                              if (err) {error+= err;}
+                              return callback(error, article.getLocator());
+                            }); //r1
+                        }); //putnode
+                    }
+                }); // admin
+  	      });
+        } else {
+          return callback(error, retval);
+        }
 	    });
 	  };
 	  

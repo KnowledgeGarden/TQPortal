@@ -28,22 +28,31 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
         self = this;
 	
 	self.addTagsToNode = function(blog, user, credentials, callback) {
-		var taglist = CommonModel.makeTagList(blog);
-		var error = "";
+		var taglist = CommonModel.makeTagList(blog),
+			error = "",
+			retval;
 		//get userTopic
-		DataProvider.getNodeByLocator(user.handle, credentials, function(err,ut) {
+		DataProvider.getNodeByLocator(user.handle, credentials, function(err, ut) {
 			if (err) {error+=err;}
-			var userTopic = ut;
-			//get docTopic
-			DataProvider.getNodeByLocator(blog.locator, credentials, function(err,dt) {
-				if (err) {error+=err;}
-				var docTopic = dt;
-				//do the deed
-				self.processTagList(taglist,userTopic,docTopic,credentials,function(err,result) {
+			if (ut) {
+				var userTopic = ut;
+				//get docTopic
+				DataProvider.getNodeByLocator(blog.locator, credentials, function(err, dt) {
 					if (err) {error+=err;}
-					return callback(error,result);
+					var docTopic = dt;
+					if (dt) {
+						//do the deed
+						self.processTagList(taglist, userTopic, docTopic, credentials,function(err, result) {
+							if (err) {error+=err;}
+							return callback(error, result);
+						});
+					} else {
+						return callback(error, retval);
+					}
 				});
-			});
+			} else {
+				return callback(error, retval);
+			}
 			
 		});
 	};
@@ -51,48 +60,53 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	  /**
 	   * Update an existing tag entry; no tags included
 	   */
-	self.update = function(blog,user,credentials,callback) {
-		  topicMapEnvironment.logDebug("TAG.UPDATE "+JSON.stringify(blog));
-		  var lox = blog.locator;
-		  DataProvider.getNodeByLocator(lox, credentials, function(err,result) {
-			  var error = '';
-			  if (err) {error += err;}
-			  var title = blog.title;
-			  var body = blog.body;
-			  var isNotUpdateToBody = true;
-	    	  var lang = blog.language;
-	    	  if (!lang) {lang = "en";}
-	    	  var oldBody = result.getDetails(lang);
-	    	  if (oldBody) {
-	    		  isNotUpdateToBody = (oldBody === body);
-	    	  }
-	    	  var oldLabel = result.getLabel(lang);
-	    	  var isNotUpdateToLabel = (title === oldLabel);
-	    	  if (!isNotUpdateToLabel) {
-	    		  //crucial update to label
-	    		  result.updateLabel(title,lang);
-	    		  if (!isNotUpdateToBody) {
+	self.update = function(blog, user, credentials, callback) {
+		topicMapEnvironment.logDebug("TAG.UPDATE "+JSON.stringify(blog));
+		var lox = blog.locator,
+			error = '',
+			retval;
+		DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+			if (err) {error += err;}
+			if (result) {
+				var title = blog.title,
+					body = blog.body,
+					isNotUpdateToBody = true,
+					lang = blog.language;
+		    	  if (!lang) {lang = "en";}
+		    	  var oldBody = result.getDetails(lang);
+		    	  if (oldBody) {
+		    		  isNotUpdateToBody = (oldBody === body);
+		    	  }
+		    	  var oldLabel = result.getLabel(lang);
+		    	  var isNotUpdateToLabel = (title === oldLabel);
+		    	  if (!isNotUpdateToLabel) {
+		    		  //crucial update to label
+		    		  result.updateLabel(title,lang);
+		    		  if (!isNotUpdateToBody) {
+		    			  result.updateDetails(body,lang)
+		    		  }
+			    	  result.setLastEditDate(new Date());
+			    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+			    		  if (err) {error += err;}
+			    		  console.log("TagModel.update "+error+" "+oldLabel+" "+title);
+			    		  return callback(error,data);
+			    	  });
+		    	  } else if (!isNotUpdateToBody) {
+		    		  //simple update
 	    			  result.updateDetails(body,lang)
-	    		  }
-		    	  result.setLastEditDate(new Date());
-		    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
-		    		  if (err) {error += err;}
-		    		  console.log("TagModel.update "+error+" "+oldLabel+" "+title);
-		    		  return callback(error,data);
-		    	  });
-	    	  } else if (!isNotUpdateToBody) {
-	    		  //simple update
-    			  result.updateDetails(body,lang)
-    			  result.setLastEditDate(new Date());
-    			  DataProvider.putNode(result,function(err,data) {
-    				  if (err) {error += err;}
-    				  return callback(error,data);
-    			  });
-	    	  } else {
-	    		  //nothing to do. Wonder why?
-	    		  return callback(error,null);
-	    	  }
-		  });
+	    			  result.setLastEditDate(new Date());
+	    			  DataProvider.putNode(result,function(err,data) {
+	    				  if (err) {error += err;}
+	    				  return callback(error,data);
+	    			  });
+		    	  } else {
+		    		  //nothing to do. Wonder why?
+		    		  return callback(error, retval);
+		    	  }
+	    	} else {
+	    		return callback(error, retval);
+	    	}
+		});
 	};
 	  
 	self.__makeLocator = function(tagString) {
@@ -230,40 +244,45 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
    */
   self.__findOrCreateTag = function(taglist, tagLocator, label, usertopic, docTopic, credentials, callback) {
 	console.log('TagModel.__findOrCreateTag '+tagLocator+' '+usertopic);
-	var error='';
+	var error='',
+		theTag;
 	DataProvider.getNodeByLocator(tagLocator,credentials, function(err, result) {
 		console.log('TagModel.__findOrCreateTag-1 '+tagLocator+' '+err+' '+result);
 		if (err) {error += err;}
 		//Result will be a Topic or null
-		var theTag = result;
-		
-		if (!theTag) {
-			//create the tag
-			TopicModel.newInstanceNode(tagLocator, types.TAG_TYPE, label, "",constants.ENGLISH,
-					usertopic.getLocator(), icons.TAG_SM, icons.TAG, false, credentials, function(err, result) {
-				theTag = result;
-				self.__joinTags(theTag,taglist);
-				console.log('TagModel.__findOrCreateTag-2 '+theTag.toJSON());
-				DataProvider.putNode(theTag, function(err, result) {
-					console.log("TagModel.__findOrCreateTag-3 "+err+" "+result);
-					myEnvironment.addRecentTag(tagLocator,label);
-					topicMapEnvironment.logDebug("TagModel just added to RingBuffer");
-					if (err) {error += err;}
-					//wire this tag's relations
-					self.__wireRelations(theTag,  docTopic, usertopic, credentials, function(err, data) {
+		if (result) {
+			theTag = result;
+			
+			if (!theTag) {
+				//create the tag
+				TopicModel.newInstanceNode(tagLocator, types.TAG_TYPE, label, "",constants.ENGLISH,
+						usertopic.getLocator(), icons.TAG_SM, icons.TAG, false, credentials, function(err, result) {
+					theTag = result;
+					self.__joinTags(theTag,taglist);
+					console.log('TagModel.__findOrCreateTag-2 '+theTag.toJSON());
+					DataProvider.putNode(theTag, function(err, result) {
+						console.log("TagModel.__findOrCreateTag-3 "+err+" "+result);
+						myEnvironment.addRecentTag(tagLocator,label);
+						topicMapEnvironment.logDebug("TagModel just added to RingBuffer");
 						if (err) {error += err;}
+						//wire this tag's relations
+						self.__wireRelations(theTag,  docTopic, usertopic, credentials, function(err, data) {
+							if (err) {error += err;}
+						});
 					});
 				});
-			});
+			} else {
+				self.__joinTags(theTag,taglist);
+				topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
+				//wire this tag's relations
+				self.__wireRelations(theTag,  docTopic, usertopic, credentials, function(err, data) {
+					if (err) {error += err;}
+				});
+			}
+			return callback(error, theTag);
 		} else {
-			self.__joinTags(theTag,taglist);
-			topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
-			//wire this tag's relations
-			self.__wireRelations(theTag,  docTopic, usertopic, credentials, function(err, data) {
-				if (err) {error += err;}
-			});
+			return callback(error, theTag);
 		}
-		return callback(error, theTag);
 	});
   };
   

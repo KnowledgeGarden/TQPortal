@@ -107,74 +107,78 @@ var BookmarkModel =  module.exports = function(environment) {
 		  console.log('BOOKMARK.create '+JSON.stringify(blog));
 		// some really wierd shit: the User object for the user database stores
 		// as user.handle, but passport seems to muck around and return user.username
-	    var userLocator = user.handle; // It's supposed to be user.handle;
+	    var userLocator = user.handle, // It's supposed to be user.handle;
 	    //first, fetch this user's topic
-	    var url = blog.url;
-	    var userTopic
-	      , bookmarkTopic;
-	    var error = '';
-	    var isPrivate = false;
+			url = blog.url,
+			userTopic,
+			bookmarkTopic,
+			error = '',
+			isPrivate = false;
 	    if (blog.isPrivate) {
 	    	isPrivate = blog.isPrivate;
 	    }
 	    //get the user
-	    DataProvider.getNodeByLocator(userLocator, credentials, function(err,utpx) {
-	      userTopic = utpx;
-	      if (err) {error+=err;}
-	      myEnvironment.logDebug('BookmarkModel.create- '+userLocator+' | '+userTopic.toJSON());
-	      //see if the bookmark exists
-	      DataProvider.getNodeByURL(url, credentials, function(err,dNode) {
-		      if (err) {error+=err;}
-		      var lox;
-		      //test data to see if it's a proxy
-		      try {
-		    	  lox = dNode.getLocator();
-		      } catch (err) {}
-		      myEnvironment.logDebug("BookmarkModel.create-1 "+url+" "+lox);
-		      if (lox) {
-		    	  bookmarkTopic = dNode;
-		    	  //MAKE POSITION
-		    	  //TAGS to Bookmark and Position
-		    	  self.createAnnotationAndTags(bookmarkTopic, blog, userTopic, credentials, function(err, result) {
-				      if (err) {error+=err;}
-		    		  return callback(error, result);
-		    	  });
-		      } else {
-		    	  //create the bookmark
-			      TopicModel.newInstanceNode(uuid.newUUID(), types.BOOKMARK_TYPE,
-				      		"", "", constants.ENGLISH, userLocator,
-				      		icons.BOOKMARK_SM, icons.BOOKMARK, isPrivate, credentials, function(err, article) {
-			    	  myEnvironment.logDebug("BookmarkModel.create-2 "+err+" "+article);
-				      if (err) {error+=err;}
-				      bookmarkTopic = article;
-			    	  var lang = blog.language;
-			    	  if (!lang) {lang = "en";}
-			    	  var subj = blog.title;
-			    	  article.setSubject(subj,lang,userLocator);
-			    	  article.setBody("",lang,userLocator);
-			    	  article.setResourceUrl(url);
-			    	  if (!isPrivate) {
-					  	myEnvironment.addRecentBookmark(bookmarkTopic.getLocator(), blog.title);
-					  }
-					  DataProvider.putNode(bookmarkTopic, function(err,data) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function(err, utpx) {
+	    	if (err) {error+=err;}
+	    	if (utpx) {
+				userTopic = utpx;
+				myEnvironment.logDebug('BookmarkModel.create- '+userLocator+' | '+userTopic.toJSON());
+				//see if the bookmark exists
+				DataProvider.getNodeByURL(url, credentials, function(err,dNode) {
+			      if (err) {error+=err;}
+			      var lox;
+			      //test data to see if it's a proxy
+			      try {
+			    	  lox = dNode.getLocator();
+			      } catch (err) {}
+			      myEnvironment.logDebug("BookmarkModel.create-1 "+url+" "+lox);
+			      if (lox) {
+			    	  bookmarkTopic = dNode;
+			    	  //MAKE POSITION
+			    	  //TAGS to Bookmark and Position
+			    	  self.createAnnotationAndTags(bookmarkTopic, blog, userTopic, credentials, function(err, result) {
 					      if (err) {error+=err;}
-					      TopicModel.relateExistingNodesAsPivots(userTopic,bookmarkTopic,types.CREATOR_DOCUMENT_RELATION_TYPE,
-				              						userTopic.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON,
-				              						isPrivate, credentials, function(err, data) {
-					  			  if (err) {error += err;}
-					  			  //MAKE POSITION
-					  			  //TAGS to Bookmark and Position
-					  			  self.createAnnotationAndTags(bookmarkTopic,blog,userTopic,credentials, function(err, result) {
-					  				  if (err) {error+=err;}
-					  				  return callback(error,result);
-					  			  });
-					      });
-					  });
-			      });
-			  }
-		    }); //getNodeByURL  	  
-	      }); //getNodeByLocator
-	  };
+			    		  return callback(error, result);
+			    	  });
+			      } else {
+			    	  //create the bookmark
+				      TopicModel.newInstanceNode(uuid.newUUID(), types.BOOKMARK_TYPE,
+					      		"", "", constants.ENGLISH, userLocator,
+					      		icons.BOOKMARK_SM, icons.BOOKMARK, isPrivate, credentials, function(err, article) {
+				    	  myEnvironment.logDebug("BookmarkModel.create-2 "+err+" "+article);
+					      if (err) {error+=err;}
+					      bookmarkTopic = article;
+				    	  var lang = blog.language;
+				    	  if (!lang) {lang = "en";}
+				    	  var subj = blog.title;
+				    	  article.setSubject(subj,lang,userLocator);
+				    	  article.setBody("",lang,userLocator);
+				    	  article.setResourceUrl(url);
+				    	  if (!isPrivate) {
+						  	myEnvironment.addRecentBookmark(bookmarkTopic.getLocator(), blog.title);
+						  }
+						  DataProvider.putNode(bookmarkTopic, function(err,data) {
+						      if (err) {error+=err;}
+						      TopicModel.relateExistingNodesAsPivots(userTopic,bookmarkTopic,types.CREATOR_DOCUMENT_RELATION_TYPE,
+					              						userTopic.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON,
+					              						isPrivate, credentials, function(err, data) {
+						  			  if (err) {error += err;}
+						  			  //MAKE POSITION
+						  			  //TAGS to Bookmark and Position
+						  			  self.createAnnotationAndTags(bookmarkTopic, blog, userTopic, credentials, function(err, result) {
+						  				  if (err) {error+=err;}
+						  				  return callback(error,result);
+						  			  });
+						      });
+						  });
+				      });
+				  }
+			    }); //getNodeByURL
+		    } else {
+		    	callback(error, userTopic);
+		    }	  
+		}); //getNodeByLocator
+	};
 	  
 	  self.listBlogPosts = function(start, count, credentials, callback) {
 	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BOOKMARK_TYPE,start,count);

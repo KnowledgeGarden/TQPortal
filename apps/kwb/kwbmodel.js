@@ -91,69 +91,83 @@ var KnowledgeWorkbenchModel =  module.exports = function(environment, cm, tmenv)
             sourceNode, 
             targetNode,
             userTopic,
-            isPrivate = false; //TODO
+            isPrivate = false, //TODO
             credentials = userObject.credentials,
-            userLocator = userObject.handle;
+            userLocator = userObject.handle,
+            retval;
         myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection "+sourceLocator+" "+targetLocator+" "+relationType+" "+taglist+" "+userLocator);
         //get UserTopic
-        DataProvider.getNodeByLocator(userLocator,credentials, function(err,usr) {
-            userTopic = usr;
-            DataProvider.getNodeByLocator(sourceLocator,credentials,function(err,p1) {
-                if (err) {error += err;}
-                sourceNode = p1;
-                DataProvider.getNodeByLocator(targetLocator,credentials,function(err,p2) {
+        DataProvider.getNodeByLocator(userLocator,credentials, function(err, usr) {
+            if (err) {error += err;}
+            if (usr) {
+                userTopic = usr;
+                DataProvider.getNodeByLocator(sourceLocator, credentials, function(err, p1) {
                     if (err) {error += err;}
-                    targetNode = p2;
-                     myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-x ");
-                    RelationModel.createRelation(sourceNode,targetNode,relationType,userLocator,credentials,isPrivate,function(err,data) {
-                        myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-1 "+err+" "+data);
-                        //TODO seeing some kind of internal bug which returns undefined
-                        if (err) {error += err;}
-                        result = data;
-                        if (result) {
-                            myEnvironment.addRecentConnection(result.getLocator(), result.getLabel("en"));
-                            //If there are tags, process them
-                            if (taglist.length > 0) {  
-                                myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-2 "+userLocator+" | "+err+" | "+userTopic);
-                                TagModel.processTagList(taglist, userTopic, result, credentials, function(err,rsx) {
+                    if (p1) {
+                        sourceNode = p1;
+                        DataProvider.getNodeByLocator(targetLocator, credentials, function(err, p2) {
+                            if (err) {error += err;}
+                            if (p2) {
+                                targetNode = p2;
+                                myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-x ");
+                                RelationModel.createRelation(sourceNode,targetNode,relationType,userLocator,credentials,isPrivate,function(err,data) {
+                                    myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-1 "+err+" "+data);
+                                    //TODO seeing some kind of internal bug which returns undefined
                                     if (err) {error += err;}
-                                    console.log('NEW_POST-1 '+rsx);
-                                    //result could be an empty list;
-                                    //TagModel already added Tag_Doc and Doc_Tag relations
-                                    console.log("ARTICLES_CREATE_2 "+JSON.stringify(rsx));
-                                    DataProvider.putNode(result, function(err,data) {
-                                        console.log('ARTICLES_CREATE-3 '+err);	  
-                                        if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-                                        console.log('ARTICLES_CREATE-3b '+userTopic);	  
-                                        TopicModel.relateExistingNodesAsPivots(userTopic,result,types.CREATOR_DOCUMENT_RELATION_TYPE,
-                                                                   userTopic.getLocator(),
-                                                                   icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
-                                            if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-                                            myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-3 "+userLocator+" | "+err+" | "+result);
-                                            //modified to return entire node
-                                            return callback(err,result);
-                                        }); //r1
-                                    }); //putnode 		  
-                                }); // processtaglist
-                            }  else {
-                                DataProvider.putNode(result, function(err,data) {
-                                    console.log('ARTICLES_CREATE-3 '+err);	  
-                                    if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-                                    console.log('ARTICLES_CREATE-3b '+userTopic);	  
-                                    TopicModel.relateExistingNodesAsPivots(userTopic,result,types.CREATOR_DOCUMENT_RELATION_TYPE,
-		                		        userTopic.getLocator(),icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
-                                        if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-                                        myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-4 "+userLocator+" | "+err+" | "+result);
-                                        callback(err,result);
-                                    }); //r1
-                                }); //putnode 		
-                            }             
-                        } else {
-                            return callback(error,result);
-                        }
-                    }); //relatenodes
-                }); //gettarget
-            }); // getsource
+                                    result = data;
+                                    if (result) {
+                                        myEnvironment.addRecentConnection(result.getLocator(), result.getLabel("en"));
+                                        //If there are tags, process them
+                                        if (taglist.length > 0) {  
+                                            myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-2 "+userLocator+" | "+err+" | "+userTopic);
+                                            TagModel.processTagList(taglist, userTopic, result, credentials, function(err,rsx) {
+                                                if (err) {error += err;}
+                                                console.log('NEW_POST-1 '+rsx);
+                                                //result could be an empty list;
+                                                //TagModel already added Tag_Doc and Doc_Tag relations
+                                                console.log("ARTICLES_CREATE_2 "+JSON.stringify(rsx));
+                                                DataProvider.putNode(result, function(err,data) {
+                                                    console.log('ARTICLES_CREATE-3 '+err);	  
+                                                    if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+                                                    console.log('ARTICLES_CREATE-3b '+userTopic);	  
+                                                    TopicModel.relateExistingNodesAsPivots(userTopic,result,types.CREATOR_DOCUMENT_RELATION_TYPE,
+                                                                               userTopic.getLocator(),
+                                                                               icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+                                                        if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+                                                        myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-3 "+userLocator+" | "+err+" | "+result);
+                                                        //modified to return entire node
+                                                        return callback(err,result);
+                                                    }); //r1
+                                                }); //putnode 		  
+                                            }); // processtaglist
+                                        }  else {
+                                            DataProvider.putNode(result, function(err,data) {
+                                                console.log('ARTICLES_CREATE-3 '+err);	  
+                                                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
+                                                console.log('ARTICLES_CREATE-3b '+userTopic);	  
+                                                TopicModel.relateExistingNodesAsPivots(userTopic,result,types.CREATOR_DOCUMENT_RELATION_TYPE,
+            		                		        userTopic.getLocator(),icons.RELATION_ICON, icons.RELATION_ICON, false, credentials, function(err,data) {
+                                                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
+                                                    myEnvironment.logDebug("KnowledgeWorkbenchModel.createConnection-4 "+userLocator+" | "+err+" | "+result);
+                                                    callback(err,result);
+                                                }); //r1
+                                            }); //putnode 		
+                                        }             
+                                    } else {
+                                        return callback(error, result);
+                                    }
+                                }); //relatenodes
+                            } else {
+                                return callback(error, retval);
+                            }
+                        }); //gettarget
+                    } else {
+                        return callback(error, retval);
+                    }
+                }); // getsource
+            } else {
+                return callback(error, retval);
+            }
         }); // getuser
     };
 
