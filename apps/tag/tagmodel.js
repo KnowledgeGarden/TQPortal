@@ -32,17 +32,17 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 			error = "",
 			retval;
 		//get userTopic
-		DataProvider.getNodeByLocator(user.handle, credentials, function(err, ut) {
+		DataProvider.getNodeByLocator(user.handle, credentials, function tagMGetNode(err, ut) {
 			if (err) {error+=err;}
 			if (ut) {
 				var userTopic = ut;
 				//get docTopic
-				DataProvider.getNodeByLocator(blog.locator, credentials, function(err, dt) {
+				DataProvider.getNodeByLocator(blog.locator, credentials, function tagMGetNode1(err, dt) {
 					if (err) {error+=err;}
 					var docTopic = dt;
 					if (dt) {
 						//do the deed
-						self.processTagList(taglist, userTopic, docTopic, credentials,function(err, result) {
+						self.processTagList(taglist, userTopic, docTopic, credentials,function tagMProcessTags(err, result) {
 							if (err) {error+=err;}
 							return callback(error, result);
 						});
@@ -65,7 +65,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 		var lox = blog.locator,
 			error = '',
 			retval;
-		DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+		DataProvider.getNodeByLocator(lox, credentials, function tagMGetNode2(err, result) {
 			if (err) {error += err;}
 			if (result) {
 				var title = blog.title,
@@ -86,7 +86,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 		    			  result.updateDetails(body,lang)
 		    		  }
 			    	  result.setLastEditDate(new Date());
-			    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+			    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function tagMUpdateNodeLabel(err, data) {
 			    		  if (err) {error += err;}
 			    		  console.log("TagModel.update "+error+" "+oldLabel+" "+title);
 			    		  return callback(error,data);
@@ -95,7 +95,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 		    		  //simple update
 	    			  result.updateDetails(body,lang)
 	    			  result.setLastEditDate(new Date());
-	    			  DataProvider.putNode(result,function(err,data) {
+	    			  DataProvider.putNode(result,function tagMPutNode(err, data) {
 	    				  if (err) {error += err;}
 	    				  return callback(error,data);
 	    			  });
@@ -151,7 +151,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
       label = tagList[cursor++].trim();
       locator = self.__makeLocator(label);
       console.log('TAGS.processTagList-1 '+locator);
-      self.__findOrCreateTag(tagList,locator, label, usertopic,docTopic, credentials, function(err,aTag) {
+      self.__findOrCreateTag(tagList, locator, label, usertopic, docTopic, credentials, function tagMFindCreate(err, aTag) {
         console.log('TAGS.processTagList-2 '+err+' '+aTag);
         if (err) {error += err;}
         if (aTag) {// sanity 
@@ -191,7 +191,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
       locator = buf.toString()+'_TAG';
       var myTags = [];
       //find or create this tag
-      self.__findOrCreateTag(taglist,locator, label, usertopic,docTopic, credentials, function(err,aTag) {
+      self.__findOrCreateTag(taglist,locator, label, usertopic,docTopic, credentials, function tagMFindCreate1(err, Tag) {
         console.log('TAGS.processTag-1 '+err+' '+aTag);
         if (aTag) {// sanity 
           myTags.push(aTag);
@@ -246,7 +246,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	console.log('TagModel.__findOrCreateTag '+tagLocator+' '+usertopic);
 	var error='',
 		theTag;
-	DataProvider.getNodeByLocator(tagLocator,credentials, function(err, result) {
+	DataProvider.getNodeByLocator(tagLocator,credentials, function tagMGetNode3(err, result) {
 		console.log('TagModel.__findOrCreateTag-1 '+tagLocator+' '+err+' '+result);
 		if (err) {error += err;}
 		//Result will be a Topic or null
@@ -255,18 +255,19 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 			
 			if (!theTag) {
 				//create the tag
+				//TODO: notice assume PUBLIC nodes here
 				TopicModel.newInstanceNode(tagLocator, types.TAG_TYPE, label, "",constants.ENGLISH,
-						usertopic.getLocator(), icons.TAG_SM, icons.TAG, false, credentials, function(err, result) {
+						usertopic.getLocator(), icons.TAG_SM, icons.TAG, false, credentials, function tagMNewInstance(err, result) {
 					theTag = result;
 					self.__joinTags(theTag,taglist);
 					console.log('TagModel.__findOrCreateTag-2 '+theTag.toJSON());
-					DataProvider.putNode(theTag, function(err, result) {
+					DataProvider.putNode(theTag, function tagMPutNode1(err, result) {
 						console.log("TagModel.__findOrCreateTag-3 "+err+" "+result);
 						myEnvironment.addRecentTag(tagLocator,label);
 						topicMapEnvironment.logDebug("TagModel just added to RingBuffer");
 						if (err) {error += err;}
 						//wire this tag's relations
-						self.__wireRelations(theTag,  docTopic, usertopic, credentials, function(err, data) {
+						self.__wireRelations(theTag,  docTopic, usertopic, credentials, function tagMWireRelations(err, data) {
 							if (err) {error += err;}
 						});
 					});
@@ -275,7 +276,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 				self.__joinTags(theTag,taglist);
 				topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
 				//wire this tag's relations
-				self.__wireRelations(theTag,  docTopic, usertopic, credentials, function(err, data) {
+				self.__wireRelations(theTag,  docTopic, usertopic, credentials, function tagMWireRelations1(err, data) {
 					if (err) {error += err;}
 				});
 			}
@@ -296,12 +297,12 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	//myEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
 	topicMapEnvironment.logDebug('TagModel.__wireRelations-1 '+types.TAG_CREATOR_RELATION_TYPE+" "+theUser.getLocator()+" "+theTag.getLocator());
 	TopicModel.relateExistingNodesAsPivots(theUser, theTag,types.TAG_CREATOR_RELATION_TYPE,
-			theUser.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function(err, data) {
+			theUser.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function tagMRelateNodes(err, data) {
 		if (err) {error+=err;}
 		//myEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
 		topicMapEnvironment.logDebug('TagModel.__wireRelations-2 '+types.TAG_DOCUMENT_RELATION_TYPE+" "+theTag.getLocator()+" "+theDoc.getLocator());
 		TopicModel.relateExistingNodesAsPivots(theTag, theDoc, types.TAG_DOCUMENT_RELATION_TYPE,
-				theUser.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function(err, data) {
+				theUser.getLocator(), icons.RELATION_ICON_SM, icons.RELATION_ICON, false, credentials, function tagMRelateNodes1(err, data) {
 			if (err) {error+=err;}
 			return callback(error, null);
 		});
@@ -313,9 +314,9 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	  //TODO DataProvider doesn't do tuplecounting well; the tpC property is missing
 	//var query = queryDSL.sortedTupleCountTermQuery(properties.INSTANCE_OF,types.TAG_TYPE);
 	//DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data,total) {
-	DataProvider.listInstanceNodes(types.TAG_TYPE, start,count,credentials, function(err,data,total) {
+	DataProvider.listInstanceNodes(types.TAG_TYPE, start,count,credentials, function tagMListInstances(err, data, total) {
 		console.log("TagModel.listTags "+err+" "+data,total);
-		return callback(err,data, total);
+		return callback(err, data, total);
 	});
   };
 
@@ -324,9 +325,9 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
    * @param callback signatur (data)
    */
   self.fillDatatable = function(start, count, credentials, callback) {
-	self.listTags(start,count,credentials,function(err, result, totalx) {
+	self.listTags(start,count,credentials,function tagMListTags(err, result, totalx) {
 		console.log('ROUTES/tag '+err+' '+result);
-	      CommonModel.fillSubjectAuthorDateTable(result,"/tag/",totalx, function(html, len, total) {
+	      CommonModel.fillSubjectAuthorDateTable(result,"/tag/",totalx, function tagMFillTable(html, len, total) {
 		      console.log("FILLING "+start+" "+count+" "+total);
 		      return callback(html, len, total);
 	      });

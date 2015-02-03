@@ -32,13 +32,13 @@ var LandingModel =  module.exports = function(environment) {
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
 	      TopicModel.newInstanceNode(lox, types.RESOURCE_TYPE,
 	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.PUBLICATION_SM, icons.PUBLICATION, false, credentials, function(err, article) {
+	      		icons.PUBLICATION_SM, icons.PUBLICATION, false, credentials, function landingMNewInstance(err, article) {
 	    	  var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
 	    	  var body = blog.body;
 	    	  article.setBody(body,lang,userLocator);
-	    	  DataProvider.putNode(article, function(err,data) {
-	    		  callback(err,data);
+	    	  DataProvider.putNode(article, function landingMPutNode(err, data) {
+	    		  return callback(err, data);
 	    	  });
 	      });
 	   //   });

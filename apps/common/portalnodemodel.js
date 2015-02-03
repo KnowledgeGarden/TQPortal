@@ -45,7 +45,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 			userLocator = user.handle; // It's supposed to be user.handle;
 	    //first, fetch this user's topic
 	    var userTopic;
-	    DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function portalMGetNode(err, result) {
 	    	if (err) {error+=err;}
 	    	if (result) {
 				userTopic = result;
@@ -54,7 +54,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 				//NOTE: we are creating an AIR, which uses subject&body, not label&details
 				TopicModel.newInstanceNode(uuid.newUUID(), nodeType,
 									"", "", constants.ENGLISH, userLocator,
-									smallIcon, icon, isPrivate, credentials, function(err, article) {
+									smallIcon, icon, isPrivate, credentials, function portalMNewInstance(err, article) {
 					if (err) {error+=err;}
 					var lang = json.language;
 					if (!lang) {lang = "en";}
@@ -67,13 +67,13 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 					// now deal with tags
 					var taglist = CommonModel.makeTagList(json);
 					if (taglist.length > 0) {
-						TagModel.processTagList(taglist, userTopic, article, credentials, function(err, result) {
+						TagModel.processTagList(taglist, userTopic, article, credentials, function portalMProcessTags(err, result) {
 							if (err) {error+=err;}
 							console.log('NEW_POST-1 '+result);
 							//result could be an empty list;
 							//TagModel already added Tag_Doc and Doc_Tag relations
 							console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-							DataProvider.putNode(article, function(err, data) {
+							DataProvider.putNode(article, function portalMPutNode(err, data) {
 								if (err) {error+=err;}
 								console.log('ARTICLES_CREATE-3 '+err);	  
 								if (err) {console.log('ARTICLES_CREATE-3a '+err)}
@@ -81,21 +81,21 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 
 								TopicModel.relateExistingNodesAsPivots(userTopic, article, types.CREATOR_DOCUMENT_RELATION_TYPE,
 															userTopic.getLocator(), icons.RELATION_ICON,
-															icons.RELATION_ICON, isPrivate, credentials, function(err, data) {
+															icons.RELATION_ICON, isPrivate, credentials, function portalMRelateNodes(err, data) {
 									if (err) {error+=err;}
 									return callback(error, article.getLocator());
 								}); //r1
 							}); //putnode 		  
 		        		}); // processtaglist
 					} else {
-						DataProvider.putNode(article, function(err, data) {
+						DataProvider.putNode(article, function portalMPutNode1(err, data) {
 							console.log('ARTICLES_CREATE-3 '+err);	  
 							if (err) {error+=err;}
 							console.log('ARTICLES_CREATE-3b '+userTopic);	  
 
 							TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 													userTopic.getLocator(), icons.RELATION_ICON,
-													icons.RELATION_ICON, isPrivate, credentials, function(err, data) {
+													icons.RELATION_ICON, isPrivate, credentials, function portalMRelateNodes1(err, data) {
 								if (err) {error+=err;}
 		                        return callback(error, article.getLocator());
 							}); //r1
@@ -121,7 +121,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 			lox = json.locator,
 			retval,
 			error = "";
-		DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+		DataProvider.getNodeByLocator(lox, credentials, function portalMGetNode1(err, result) {
 			myEnvironment.logDebug("PortalNodeModel.update-1 "+err+" | "+result);
 			if (err) {error += err;}
 			if (result) {
@@ -149,7 +149,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 						result.updateBody(body,lang,user.handle,comment);
 					}
 					result.setLastEditDate(new Date());
-					DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
+					DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function portalMUpdateNodeLabel(err, data) {
 						if (err) {error += err;}
 						console.log("PortalNodeModel.update "+error+" "+oldLabel+" "+title);
 						return callback(error, data);
@@ -161,7 +161,7 @@ var PortalNodeModel =  module.exports = function(environment, tmenv, com) {
 						result.updateBody(body, lang,user.handle, comment);
 						result.setLastEditDate(new Date());
 						myEnvironment.logDebug("PortalNodeModel.update-3 "+body+" | "+result.toJSON());
-						DataProvider.putNode(result, function(err, data) {
+						DataProvider.putNode(result, function portalMPutNode2(err, data) {
 							if (err) {error += err;}
 							return callback(error, data);
 						});

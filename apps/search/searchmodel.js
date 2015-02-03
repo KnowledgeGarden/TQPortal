@@ -44,7 +44,7 @@ var SearchModel = module.exports = function(environment) {
 	 * @param count
 	 * @param callback: signature (err,data)
 	 */
-	self.runSearch = function(query, user, language, start,count,callback) {
+	self.runSearch = function(query, user, language, start, count, callback) {
 //		var test = {};
 		var credentials = []; //default
 		if (user) {credentials = user.credentials;}
@@ -52,7 +52,7 @@ var SearchModel = module.exports = function(environment) {
 //		test.label = "This one's for the gipper";
 //		result.push(test);
 		console.log("SearchModel.runSearch "+query+" "+user);
-		DataProvider.listNodesByTextSearch(query,language,start,count,credentials,function(err,data,total) {
+		DataProvider.listNodesByTextSearch(query, language, start, count, credentials, function searchMListNodes(err, data, total) {
 			console.log("SearchModel.runSearch-1 "+err+data);
 			var len = 0;
 		      var html = "<table  cellspacing=\"0\"><thead>";
@@ -97,7 +97,7 @@ var SearchModel = module.exports = function(environment) {
 				}
 			}
 		    html+="</tbody></table>";
-		    callback(html,len,total);	
+		    return callback(html, len, total);	
 		});
 	};
 };

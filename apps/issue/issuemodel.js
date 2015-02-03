@@ -34,7 +34,7 @@ var IssueModel =  module.exports = function(environment) {
 	self.update = function(blog, user, credentials, callback) {
 		myEnvironment.logDebug("Issue.UPDATE "+JSON.stringify(blog));
 		var lox = blog.locator;
-		DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+		DataProvider.getNodeByLocator(lox, credentials, function issueMGetNode(err, result) {
 			var error = '',
 				retval;
 			if (result) {
@@ -61,7 +61,7 @@ var IssueModel =  module.exports = function(environment) {
 						result.updateBody(body,lang,user.handle,comment);
 					}
 					result.setLastEditDate(new Date());
-					DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
+					DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function issueMUpdateNodeLabel(err, data) {
 						if (err) {error += err;}
 						console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
 						return callback(error, data);
@@ -69,7 +69,7 @@ var IssueModel =  module.exports = function(environment) {
 				} else if (!isNotUpdateToBody) {
 					result.updateBody(body, lang, user. handle, comment);
 					result.setLastEditDate(new Date());
-					DataProvider.putNode(result, function(err, data) {
+					DataProvider.putNode(result, function issueMPutNode(err, data) {
 						if (err) {error += err;}
 						return callback(error, data);
 					});
@@ -102,7 +102,7 @@ var IssueModel =  module.exports = function(environment) {
 		if (blog.isPrivate) {
 			isPrivate = blog.isPrivate;
 		}
-	    DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
+	    DataProvider.getNodeByLocator(userLocator, credentials, function issueMGetNode1(err, result) {
 	    	if (err) {error += err;}
 	    	if (result) {
 	      userTopic = result;
@@ -112,11 +112,11 @@ var IssueModel =  module.exports = function(environment) {
 	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
 	      TopicModel.newInstanceNode(uuid.newUUID(), types.CHALLENGE_TYPE,
 	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.WARNING_SM, icons.WARNING, isPrivate, credentials, function(err, article) {
-	    	  var lang = blog.language;
+	      		icons.WARNING_SM, icons.WARNING, isPrivate, credentials, function issueMNewInstance(err, article) {
+				var lang = blog.language;
 	    	  if (!lang) {lang = "en";}
-	    	  var subj = blog.title;
-	    	  var body = blog.body;
+	    	  var subj = blog.title,
+					body = blog.body;
 	    	  article.setSubject(subj,lang,userLocator);
 	    	  article.setBody(body.trim(),lang,userLocator);
 	    //	  console.log('BlogModel.create-2 '+article.toJSON());
@@ -124,38 +124,37 @@ var IssueModel =  module.exports = function(environment) {
 	    	     // now deal with tags
 				var taglist = CommonModel.makeTagList(blog);
 	          if (taglist.length > 0) {
-	            TagModel.processTagList(taglist, userTopic, article, credentials, function(err,result) {
+	            TagModel.processTagList(taglist, userTopic, article, credentials, function issueMProcessTags(err, result) {
 	              console.log('NEW_POST-1 '+result);
 	              //result could be an empty list;
 	              //TagModel already added Tag_Doc and Doc_Tag relations
 	              console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-	              DataProvider.putNode(article, function(err,data) {
+	              DataProvider.putNode(article, function issueMPutNode1(err, data) {
 	                console.log('ARTICLES_CREATE-3 '+err);	  
 	                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
 	                console.log('ARTICLES_CREATE-3b '+userTopic);	  
 
 	                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
+	                      		icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function issueMRelateNodes(err, data) {
 	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 	                    return callback(err,article.getLocator());
 	                 }); //r1
 	              }); //putnode 		  
 	        	}); // processtaglist
 	          }  else {
-	              DataProvider.putNode(article, function(err,data) {
+	              DataProvider.putNode(article, function issueMPutNode2(err, data) {
 	                  console.log('ARTICLES_CREATE-3 '+err);	  
 	                  if (err) {console.log('ARTICLES_CREATE-3a '+err)}
 	                  console.log('ARTICLES_CREATE-3b '+userTopic);	  
 
 	                  TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
 	                  		userTopic.getLocator(),
-	                       icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function(err,data) {
+	                       icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function issueMRelateNodes1(err, data) {
 	                               if (err) {console.log('ARTICLES_CREATE-3d '+err);}
 	                               return callback(err, article.getLocator());
-	                       }); //r1
-	                }); //putnode 		  
-
+	                  }); //r1
+	              }); //putnode 		  
 	          }    	
 	      });
 			} else {
@@ -165,9 +164,9 @@ var IssueModel =  module.exports = function(environment) {
 	};
 	  
 	  self.listIssues = function(start, count, credentials, callback) {
-        DataProvider.listInstanceNodes(types.CHALLENGE_TYPE, start,count,credentials, function(err,data,total){
+        DataProvider.listInstanceNodes(types.CHALLENGE_TYPE, start, count, credentials, function issueMListInstances(err, data, total){
                 console.log("IssueModel.listIssues "+err+" "+data);
-	      return callback(err,data, total);
+	      return callback(err, data, total);
 	    });
 	  };
 	  
@@ -178,14 +177,12 @@ var IssueModel =  module.exports = function(environment) {
 	   * @param callback signatur (data, countsent, totalavailable)
 	   */
 	  self.fillDatatable = function(start, count,credentials, callback) {
-		  self.listIssues(start,count,credentials,function(err,result, totalx) {
+		  self.listIssues(start,count,credentials,function issueMListIssues(err, result, totalx) {
 		      console.log('IssueModel.fillDatatable '+err+' '+totalx+" "+result);
-		      CommonModel.fillSubjectAuthorDateTable(result,"/issue/",totalx, function(html,len,total) {
+		      CommonModel.fillSubjectAuthorDateTable(result,"/issue/",totalx, function issueMFillTable(html, len, total) {
 			      console.log("FILLING "+start+" "+count+" "+total);
-			      return callback(html,len,total);
-		    	  
+			      return callback(html, len, total);
 		      });
 		  });
 	  };
-	  
-}
+};

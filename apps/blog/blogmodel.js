@@ -33,7 +33,7 @@ var BlogModel =  module.exports = function(environment) {
    * Update an existing node; no tags included
    */
   self.update = function(json, user, callback) {
-	  PortalNodeModel.update(json,user,function(err,result) {
+	  PortalNodeModel.update(json, user, function blogMUpdate(err, result) {
 		  return callback(err, null);
 	  });
   };
@@ -50,7 +50,7 @@ var BlogModel =  module.exports = function(environment) {
     if (json.isPrivate) {
       isPrivate = json.isPrivate;
     }
-	  PortalNodeModel.create(json, user,types.BLOG_TYPE,icons.PUBLICATION_SM, icons.PUBLICATION, isPrivate, function(err, lox) {
+	  PortalNodeModel.create(json, user,types.BLOG_TYPE,icons.PUBLICATION_SM, icons.PUBLICATION, isPrivate, function blogMCreate(err, lox) {
       if (!isPrivate) {
 		    myEnvironment.addRecentBlog(lox,json.title);
       }
@@ -60,7 +60,7 @@ var BlogModel =  module.exports = function(environment) {
   
   self.listBlogPosts = function(start, count, credentials, callback) {
     var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BLOG_TYPE,start,count);
-    DataProvider.listNodesByQuery(query, start,count,credentials, function(err, data, total) {
+    DataProvider.listNodesByQuery(query, start,count,credentials, function blogMListNodes(err, data, total) {
       console.log("BlogModel.listBlogPosts "+err+" "+data);
       return callback(err, data, total);
     });
@@ -75,7 +75,7 @@ var BlogModel =  module.exports = function(environment) {
   self.fillDatatable = function(start, count,credentials, callback) {
 	  self.listBlogPosts(start, count, credentials, function(err, result, totalx) {
 	      console.log('BlogModel.fillDatatable '+err+' '+totalx+" "+result);
-	      CommonModel.fillSubjectAuthorDateTable(result,"/blog/",totalx, function(html, len, total) {
+	      CommonModel.fillSubjectAuthorDateTable(result, "/blog/", totalx, function blogMFillTable(html, len, total) {
 		      console.log("FILLING "+start+" "+count+" "+total);
 		      return callback(html, len, total);
 	      });

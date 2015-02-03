@@ -22,7 +22,7 @@ var IssueModel =  module.exports = function(environment) {
         CommonModel = environment.getCommonModel(),
         queryDSL = topicMapEnvironment.getQueryDSL(),
         RPGEnvironment = environment.getRPGEnvironment(),
-	    ConversationModel = new Conmodel(environment),
+        ConversationModel = new Conmodel(environment),
         self = this;
 	
 	self.getRPGEnvironment = function() {
@@ -36,7 +36,7 @@ var IssueModel =  module.exports = function(environment) {
   self.update = function(blog, user, credentials, callback) {
         myEnvironment.logDebug("Quest.UPDATE "+JSON.stringify(blog));
 	  var lox = blog.locator;
-	  DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+	  DataProvider.getNodeByLocator(lox, credentials, function questMGetNode(err, result) {
 		  var error = '',
           foo;
 		  if (err) {error += err;}
@@ -63,7 +63,7 @@ var IssueModel =  module.exports = function(environment) {
       			  result.updateBody(body,lang,user.handle,comment);
       		  }
   	    	  result.setLastEditDate(new Date());
-  	    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err,data) {
+  	    	  DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function questMUpdateNodeLabel(err, data) {
   	    		  if (err) {error += err;}
   	    		  console.log("IssueModel.update "+error+" "+oldLabel+" "+title);
   	    		  return callback(error,data);
@@ -71,7 +71,7 @@ var IssueModel =  module.exports = function(environment) {
       	  } else if (!isNotUpdateToBody) {
             result.updateBody(body,lang,user.handle,comment);
             result.setLastEditDate(new Date());
-            DataProvider.putNode(result, function(err, data) {
+            DataProvider.putNode(result, function questMPutNode(err, data) {
               if (err) {error += err;}
               return callback(error, data);
             });
@@ -104,7 +104,7 @@ var IssueModel =  module.exports = function(environment) {
     }
     myEnvironment.logDebug("QuestModel.create-1 "+issueloc+" | "+JSON.stringify(blog));
     //get the user
-    DataProvider.getNodeByLocator(userLocator, credentials, function(err, result) {
+    DataProvider.getNodeByLocator(userLocator, credentials, function questMGetNode1(err, result) {
       if (err) {error += err;}
       if (result) {
         userTopic = result;
@@ -112,7 +112,7 @@ var IssueModel =  module.exports = function(environment) {
         var lang = blog.language;
         if (!lang) {lang = "en";}
         //get the quest topic
-        DataProvider.getNodeByLocator(issueloc, credentials, function(err, issuenode) {
+        DataProvider.getNodeByLocator(issueloc, credentials, function questMGetNode2(err, issuenode) {
           if (err) {error += err}
           console.log("FIDDLE "+err+" | "+issuenode);
           if (issuenode) {
@@ -140,7 +140,7 @@ var IssueModel =  module.exports = function(environment) {
             myEnvironment.logDebug("QuestModel.create-2B ");
             //NoW create the quest's Issue
             var parent; // there is no parent
-            ConversationModel.createIssue(bx, user, parent, isPrivate, credentials, function(err, qnode) {
+            ConversationModel.createIssue(bx, user, parent, isPrivate, credentials, function questMCreateIssue(err, qnode) {
               if (err) {error += err}
               //Change the icons in qnode and save it
               qnode.setImage(icons.CHALLENGE);
@@ -150,15 +150,15 @@ var IssueModel =  module.exports = function(environment) {
               myEnvironment.logDebug("QuestModel.create-2 "+error);
               TopicModel.relateExistingNodesAsPivots(issuenode, qnode, extendedtypes.ISSUE_QUEST_RELATION_TYPE,
                                     userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-                                    isPrivate, credentials, function(err, data) {
+                                    isPrivate, credentials, function questMRelateNodes(err, data) {
                 if (err) {error += err}
-                DataProvider.putNode(qnode, function(err, dx) {
+                DataProvider.putNode(qnode, function questMPutNode1(err, dx) {
                   if (err) {error += err}
                   // now deal with tags
                   myEnvironment.logDebug("QuestModel.create-3 "+error+" "+qnode.toJSON());
                   var taglist = CommonModel.makeTagList(blog);
                   if (taglist.length > 0) {
-                    TagModel.processTagList(taglist, userTopic, qnode, credentials, function(err, result) {
+                    TagModel.processTagList(taglist, userTopic, qnode, credentials, function questMProcessTags(err, result) {
                       console.log('NEW_POST-1 '+result);
                       if (err) {error += err}
                       //result could be an empty list;
@@ -166,7 +166,7 @@ var IssueModel =  module.exports = function(environment) {
                       console.log("ARTICLES_CREATE_2 "+JSON.stringify(qnode));
                       TopicModel.relateExistingNodesAsPivots(userTopic, qnode, types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                           userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-                                                          isPrivate, credentials, function(err, data) {
+                                                          isPrivate, credentials, function questMRelateNodes1(err, data) {
                         if (err) {error += err}
                         return callback(error, qnode.getLocator());
                       }); //r1
@@ -174,7 +174,7 @@ var IssueModel =  module.exports = function(environment) {
                   } else {
                     TopicModel.relateExistingNodesAsPivots(userTopic,qnode,types.CREATOR_DOCUMENT_RELATION_TYPE,
                                                         userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON,
-                                                        isPrivate, credentials, function(err, data) {
+                                                        isPrivate, credentials, function questMRelateNodes2(err, data) {
                       if (err) {error += err}
                       return callback(error, qnode.getLocator());
                     }); //r1
@@ -193,9 +193,9 @@ var IssueModel =  module.exports = function(environment) {
   };
 	  
   self.listQuests = function(start, count, credentials, callback) {
-    DataProvider.listInstanceNodes(types.QUEST_TYPE, start,count,credentials, function(err,data,total){
+    DataProvider.listInstanceNodes(types.QUEST_TYPE, start, count, credentials, function questMListInstances(err, data, total){
       console.log("QuestModel.listIssues "+err+" "+data);
-      return callback(err,data, total);
+      return callback(err, data, total);
     });
   };
 	  
@@ -206,12 +206,11 @@ var IssueModel =  module.exports = function(environment) {
    * @param callback signatur (data, countsent, totalavailable)
    */
   self.fillDatatable = function(start, count,credentials, callback) {
-	  self.listQuests(start,count,credentials,function(err,result, totalx) {
+	  self.listQuests(start, count, credentials, function questMListQuests(err, result, totalx) {
 	      console.log('QuestModel.fillDatatable '+err+' '+totalx+" "+result);
-	      CommonModel.fillSubjectAuthorDateTable(result,"/quest/",totalx, function(html,len,total) {
+	      CommonModel.fillSubjectAuthorDateTable(result, "/quest/", totalx, function questMFillTable(html, len, total) {
 		      console.log("FILLING "+start+" "+count+" "+total);
-		      return callback(html,len,total);
-	    	  
+		      return callback(html, len, total);
 	      });
 	  });
   };
@@ -224,8 +223,8 @@ var IssueModel =  module.exports = function(environment) {
    */
   self.addGuild = function(questNode, guildLocator, callback) {
       questNode.addSetValue(gameConstants.QUEST_GUILD_LIST_PROPERTY, guildLocator);
-      questNode.putNode(questNode, function(err, data) {
-          callback(err, data);
+      questNode.putNode(questNode, function questMPutNode2(err, data) {
+          return callback(err, data);
       });
   };
       
@@ -237,8 +236,8 @@ var IssueModel =  module.exports = function(environment) {
    */
   self.removeGuild = function(questNode, guildLocator, callback) {
       questNode.removeCollectionValue(gameConstants.QUEST_GUILD_LIST_PROPERTY, guildLocator);
-      DataProvider.putNode(questNode, function(err, data) {
-          callback(err, data);
+      DataProvider.putNode(questNode, function questMPutNode3(err, data) {
+          return callback(err, data);
       });
   };
           
@@ -259,9 +258,9 @@ var IssueModel =  module.exports = function(environment) {
    */
   self.getTreeRootNode = function(questNode, credentials, callback) {
       var rootLocator =  questNode.getProperty(gameConstants.QUEST_ROOT_NODE_PROPERTY);
-      DataProvider.getNodeByLocator(rootLocator, credentials, function(err, data) {
+      DataProvider.getNodeByLocator(rootLocator, credentials, function questMGetNode3(err, data) {
         return callback(err, data);
       });
   };
 
-}
+};

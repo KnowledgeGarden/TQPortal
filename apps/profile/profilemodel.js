@@ -9,25 +9,25 @@ var types = require('tqtopicmap/lib/types')
 	, User = require('../../core/user');
 
 var ProfileModel =  module.exports = function(environment) {
-	var UserDatabase = environment.getUserDatabase();
-	var topicMapEnvironment = environment.getTopicMapEnvironment();
-	var self = this;
+	var UserDatabase = environment.getUserDatabase(),
+		topicMapEnvironment = environment.getTopicMapEnvironment(),
+		self = this;
 	
-	self.updateProfile = function(data,user,callback) {
+	self.updateProfile = function(data, user, callback) {
 		console.log("PROFILE "+user.handle+" | "+JSON.stringify(data));
-		var lLox = user.handle;
-		var dLox = data.userlocator;
+		var lLox = user.handle,
+			dLox = data.userlocator;
 		//PROFILE {"userlocator":"jackpark","email":"jackpark@gmail.com","fullname":"Jack
 		//	Park","avatar":"jackpark","homepage":"http://knowledgegardens.wordpress.com/","L
 		//	atitude":"4545","Longitude":"5555"}
 		//Sanity
 		if (lLox === dLox) {
 			//TODO get user object, update it, save it
-			UserDatabase.findOne(data.useremail, function(err,user) {
+			UserDatabase.findOne(data.useremail, function profileMFindOne(err, user) {
 				console.log("ProfileModel "+err+" "+user);
 				if (!user) {
 					topicMapEnvironment.logError("UserModel")
-					callback("ProfileMissingUser"+lLox);
+					return callback("ProfileMissingUser"+lLox);
 				} else {
 					var changed = false;
 					if (data.fullname !== user.fullname) {
@@ -51,7 +51,7 @@ var ProfileModel =  module.exports = function(environment) {
 						changed = true;
 					}
 					if (changed) {
-						UserDatabase.save(user, function(err,data) {
+						UserDatabase.save(user, function profileMSave(err, data) {
 							console.log("ProfileModel.save "+err);
 							return callback("");
 						});
@@ -61,7 +61,7 @@ var ProfileModel =  module.exports = function(environment) {
 				}
 			});
 		} else {
-			callback("BadProfile"+lLox);
+			return callback("BadProfile"+lLox);
 		}
 	}
 };

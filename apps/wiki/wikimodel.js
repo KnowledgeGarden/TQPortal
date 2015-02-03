@@ -21,9 +21,9 @@ var WikiModel =  module.exports = function(environment) {
 	/**
 	 * Update an existing node; no tags included
 	 */
-	self.update = function(json,user,callback) {
-		PortalNodeModel.update(json,user,function(err,result) {
-			return callback(err,null);
+	self.update = function(json, user, callback) {
+		PortalNodeModel.update(json, user, function wikiMUpdate(err, result) {
+			return callback(err, null);
 		});
 	};
 	
@@ -37,7 +37,7 @@ var WikiModel =  module.exports = function(environment) {
 		if (json.isPrivate) {
 			isPrivate = json.isPrivate;
 		}
-		PortalNodeModel.create(json, user, types.WIKI_TYPE, icons.PUBLICATION_SM, icons.PUBLICATION, isPrivate,function(err, lox) {
+		PortalNodeModel.create(json, user, types.WIKI_TYPE, icons.PUBLICATION_SM, icons.PUBLICATION, isPrivate, function wikiMCreate(err, lox) {
 			if (!isPrivate) {
 				myEnvironment.addRecentWiki(lox, json.title);
 			}
@@ -46,7 +46,7 @@ var WikiModel =  module.exports = function(environment) {
 	};
 
 	self.listWikiPosts = function(start, count, credentials, callback) {
-		DataProvider.listInstanceNodes(types.WIKI_TYPE, start,count,credentials, function(err, data, total){
+		DataProvider.listInstanceNodes(types.WIKI_TYPE, start,count,credentials, function wikiMListInstances(err, data, total){
 			console.log("WikiModel.listBlogPosts "+err+" "+data);
 			return callback(err, data, total);
 	  });
@@ -57,11 +57,11 @@ var WikiModel =  module.exports = function(environment) {
 	 * @param callback signatur (data)
 	 */
 	self.fillDatatable = function(start, count, credentials, callback) {
-		self.listWikiPosts(start,count,credentials,function(err, result, totalx) {
+		self.listWikiPosts(start,count,credentials,function wikiMListTopics(err, result, totalx) {
 			console.log('ROUTES/bookmark '+err+' '+result);
-			CommonModel.fillSubjectAuthorDateTable(result, "/wiki/", totalx, function(html, len, total) {
+			CommonModel.fillSubjectAuthorDateTable(result, "/wiki/", totalx, function wikiMFillTable(html, len, total) {
 				console.log("FILLING "+start+" "+count+" "+total);
-				return callback(html,len,total);  
+				return callback(html, len, total);  
 			});
 		});
 	};

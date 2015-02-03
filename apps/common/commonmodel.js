@@ -95,7 +95,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	 * @param callback signature (err,node)
 	 */
 	self.fillTree = function(rootLocator, credentials, callback) {
-		DataProvider.getTree(rootLocator, 0,0,0, credentials, function(err, node) {
+		DataProvider.getTree(rootLocator, 0,0,0, credentials, function commonMGetTree(err, node) {
 			console.log("CommonModel.fillTree " + rootLocator + " " + JSON.stringify(node));
 			//myEnvironment.logDebug("CommonModel.fillTree "+)
 			callback(err, node);
@@ -180,7 +180,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	self.fillConversationTable = function(isConversation, isChild, locator,contextLocator,credentials,callback) {
 		var TheResult = {},
 			error = '';
-		DataProvider.getNodeByLocator(locator,credentials, function(err, data) {
+		DataProvider.getNodeByLocator(locator,credentials, function commonMGetNode(err, data) {
 			if (err) {error+=err;}
 			if (data) {
 				var snappers;
@@ -207,15 +207,15 @@ var CommonModel = module.exports = function(environment, tmenv) {
 				}
 	//			  myEnvironment.logDebug("CommonModel.fillConversationTable-1 "+isChild+" "+snappers+" "+data.toJSON());
 	//			  console.log("CommonModel.fillConversationTable-1 "+isChild+" "+snappers);
-				var p; //the struct
-				var m; //the individual message
-				var url;
-				var datax = [];
-				var posts = [];
+				var p, //the struct
+					m, //the individual message
+					url,
+					datax = [],
+					posts = [];
 				if (snappers) {
 	//			  myEnvironment.logDebug("CommonModel.fillConversationTable- "+isChild+" "+JSON.stringify(snappers));
-					var len = snappers.length;
-					var ntype;
+					var len = snappers.length,
+						ntype;
 					for (var i=0;i<len;i++) {
 						p = snappers[i];
 						myEnvironment.logDebug("CommonModel.fillConversationTable "+JSON.stringify(p));
@@ -269,18 +269,18 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	//TODO: use viewspec to decide whether to fillTree or not: not needed in Conversation mode
 	self.generateViewFirstData = function(theNode, tagList, docList, userList, credentials,
 			canEdit, coreData, contextLocator, app, clipboard, language, transcludeList, viewspec, callback) {
-		var data = coreData;
-		var q = theNode.getLocator();
+		var data = coreData,
+			q = theNode.getLocator();
 		data.canEdit = canEdit;
 		data.isNotEdit = true;
-		var editLocator = app+"edit/"+q;
-		var date = theNode.getLastEditDate();
+		var editLocator = app+"edit/"+q,
+			date = theNode.getLastEditDate();
 		data.locator = q;
 		data.app = app;
 		data.smallIcon = theNode.getSmallImage();
         //transcluder
-        var transcluderLocator;
-        var tc = theNode.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
+        var transcluderLocator,
+			tc = theNode.listPivotsByRelationType(types.DOCUMENT_TRANSCLUDER_RELATION_TYPE);
         if (tc && tc.length > 0) {
             //TODO
             //I THINK THIS IS TO PREVENT REPEAT TRANSCLUSIONS ???
@@ -333,8 +333,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
 			//TODO this must be used in the transclude button
 		}
 		data.source = theNode.toJSON();
-		var transcludehtml="";
-        var newrelnhtml = "";
+		var transcludehtml="",
+			newrelnhtml = "";
 		if (credentials.length > 0 && clipboard === "") {
             //authenticated and nothing on the clipboard
             //deal with remembering this node
@@ -382,7 +382,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		}
 		//Technically speaking, we don't need to do this in Conversation view
 		if (viewspec === "Dashboard") {
-			self.fillTree(q,credentials,function(err,node) {
+			self.fillTree(q,credentials, function commonMFillTree(err, node) {
 				console.log("CommonModel.generateViewFirstData "+err+" "+node);
 				if (node) {
 					data.jtree = node;
@@ -399,17 +399,17 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	 */
 	self.__doAjaxFetch = function(theNode, credentials, app, tags, docs, users, transcludes, data, req, callback) {
 		myEnvironment.logDebug("CommonModel.__doAjaxFetch- "+JSON.stringify(data));
-		var q = theNode.getLocator();
-		var lang = req.query.language;
+		var q = theNode.getLocator(),
+			lang = req.query.language;
 		if (!lang) {
 			lang = "en";
 		}
 		data.language = lang;
 		//establish rootLocator if any
 		//required if there is a conversation tree in play
-		var rootLocator = req.query.rootLocator;
+		var rootLocator = req.query.rootLocator,
 		//establish the viewspec
-		var viewspec = req.query.viewspec;
+			viewspec = req.query.viewspec;
 		if (!viewspec) {
 			//Default to Dashboard
 			viewspec = "Dashboard";
@@ -439,8 +439,8 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		// TODO
 		//   NEED to add a isQuestGameNode
 		///////////////////////////////////////////
-		var canEdit;
-		var isQuestGameNode = data.isQuestGameNode;
+		var canEdit,
+			isQuestGameNode = data.isQuestGameNode;
 		if (isQuestGameNode) {
 			canEdit = false;
 		} else {
@@ -459,16 +459,16 @@ var CommonModel = module.exports = function(environment, tmenv) {
 		//generate the ViewFirst node data
 		//TODO must add transcludes
 		self.generateViewFirstData(theNode, tags, docs, users, credentials, canEdit, data,
-				contextLocator, app, clipboard, lang, transcludes, viewspec, function(json) {
+				contextLocator, app, clipboard, lang, transcludes, viewspec, function commonMGenerateView(json) {
 			json.myLocatorXP = q+"?contextLocator="+contextLocator;
 			json.myLocator = q;
-            KnowledgeWorkbenchModel.showRelations(theNode, function(rresult) {
+            KnowledgeWorkbenchModel.showRelations(theNode, function commonMShowRelations(rresult) {
                 if (rresult) {
                     json.relations = rresult;
                 }
                 myEnvironment.logDebug("CommonModel.__doAjax-1 "+JSON.stringify(json));
                 //get all parents
-                self.fillConversationTable(true, true, q, "", credentials, function(err, cresult) {
+                self.fillConversationTable(true, true, q, "", credentials, function commonMFillTable(err, cresult) {
                     if (cresult) {
                         //the field which olds the C-Conversation nodes
                         json.ccontable = cresult;
@@ -476,7 +476,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
                     //get just my parents in particular context
                     //TODO
                     //HUGE ISSUE: if viewspec === "Conversation" we don't need this
-                    self.fillConversationTable(true, false, q, contextLocator, credentials, function(err, presult) {
+                    self.fillConversationTable(true, false, q, contextLocator, credentials, function commonMFillTable1(err, presult) {
                         if (presult) {
                             //for displaying P-Conversations
                             json.pcontable = presult;
@@ -488,7 +488,7 @@ var CommonModel = module.exports = function(environment, tmenv) {
                             //create the actual MillerColumn html
                             var js = "javascript:fetchFromTree";
                            // ColNavWidget.makeColNav(rootLocator, theNode, contextLocator, lang, js, "/conversation/ajaxfetch/", "", credentials, function(err,html) {
-                            ColNavWidget.makeColNav(rootLocator, theNode, contextLocator, lang, js, app+ "ajaxfetch/", "", credentials, function(err, html) {
+                            ColNavWidget.makeColNav(rootLocator, theNode, contextLocator, lang, js, app+ "ajaxfetch/", "", credentials, function commonMMakeColNav(err, html) {
                                 json.colnav = html;
                                 return callback(json, contextLocator);
                             });
@@ -505,9 +505,9 @@ var CommonModel = module.exports = function(environment, tmenv) {
 	 * Handles fetching an app given an id
 	 */
 	self.__doGet = function(locator, app, data, req, callback) {
-		var viewspec = "Dashboard"; // default
-		var rootLocator = "";
-		var contextLocator = "";
+		var viewspec = "Dashboard", // default
+			rootLocator = "",
+			contextLocator = "";
 		try {
 			if (req.query.viewspec) {
 				viewspec = req.query.viewspec;

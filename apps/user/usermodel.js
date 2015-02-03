@@ -24,7 +24,7 @@ var UserModel = module.exports = function(environment) {
   self.update = function(userbody, user, credentials, callback) {
 	  topicMapEnvironment.logDebug("USER.UPDATE "+JSON.stringify(userbody));
 	  var lox = userbody.locator;
-	  DataProvider.getNodeByLocator(lox, credentials, function(err, result) {
+	  DataProvider.getNodeByLocator(lox, credentials, function userMGetNode(err, result) {
 		  var error = '',
           retval;
 		  if (err) {error += err;}
@@ -48,7 +48,7 @@ var UserModel = module.exports = function(environment) {
             result.updateBody(body, lang, user.handle, comment);
           }
           result.setLastEditDate(new Date());
-          DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function(err, data) {
+          DataProvider.updateNodeLabel(result, oldLabel, title, credentials, function userMUpdateNodeLabel(err, data) {
             if (err) {error += err;}
             console.log("UserModel.update "+error+" "+oldLabel+" "+title);
             return callback(error, data);
@@ -57,7 +57,7 @@ var UserModel = module.exports = function(environment) {
           if (!isNotUpdateToBody) {
             result.updateBody(body, lang, user.handle, comment);
             result.setLastEditDate(new Date());
-            DataProvider.putNode(result, function(err, data) {
+            DataProvider.putNode(result, function userMPutNode(err, data) {
               if (err) {error += err;}
               return callback(error, data);
             });
@@ -85,7 +85,7 @@ var UserModel = module.exports = function(environment) {
     credentials.push(user.getHandle());
     // In fact, we already check for valid and unique handle in routes.js
     console.log('USER.newUserTopic-1 '+user.getHandle());
-    self.findUser(user.getHandle(), credentials, function(err, result) {
+    self.findUser(user.getHandle(), credentials, function userMFindUser(err, result) {
       console.log('USER.newUserTopic-2 '+err+' '+result);
       //if (result !== null) {
       if (result != null /*&& result.length > 0*/) {
@@ -95,7 +95,7 @@ var UserModel = module.exports = function(environment) {
         var usr;
         topicModel.newInstanceNode(user.getHandle(), types.USER_TYPE,
                       "","","en",user.getHandle(), icons.PERSON_ICON_SM,icons.PERSON_ICON,
-                      false, credentials, function(err, result) {
+                      false, credentials, function userMNewInstance(err, result) {
           console.log('USER.newUserTopic-3 '+err+' '+result.toJSON());
           myEnvironment.logDebug('USER.newUserTopic-3 '+err+' '+result.toJSON());
           usr = result;
@@ -105,7 +105,7 @@ var UserModel = module.exports = function(environment) {
           if (user.getHomepage()) {
             usr.setResourceUrl(user.getHomepage());
           }
-          DataProvider.putNode(usr, function(err, data) {
+          DataProvider.putNode(usr, function userMPutNode1(err, data) {
             console.log('UserModel.newUserTopic+ '+usr.getLocator()+" "+err);
             return callback(err, data);
           });
@@ -122,15 +122,15 @@ var UserModel = module.exports = function(environment) {
    */
   self.findUser = function(userLocator, credentials, callback) {
 	  console.log("UserModel.findUser "+userLocator+" "+credentials);
-    DataProvider.getNodeByLocator(userLocator, credentials, function(err,result) {
-      callback(err, result);
+    DataProvider.getNodeByLocator(userLocator, credentials, function userMGetNode1(err, result) {
+      return callback(err, result);
     });
   };
   
   self.listUsers = function(start, count, credentials, callback) {
-    DataProvider.listInstanceNodes(types.USER_TYPE, start,count,credentials, function(err,data,total) {
+    DataProvider.listInstanceNodes(types.USER_TYPE, start, count, credentials, function userMListInstances(err, data, total) {
       console.log("UserModel.listInstanceNodes "+err+" "+data);
-      callback(err, data, total);
+      return callback(err, data, total);
     });
   };
 	  
@@ -139,11 +139,12 @@ var UserModel = module.exports = function(environment) {
 	   * @param callback signatur (data)
 	   */
   self.fillDatatable = function(start, count, credentials, callback) {
-    self.listUsers(start, count, credentials, function(err, result, total) {
+    self.listUsers(start, count, credentials, function userNListUsers(err, result, total) {
       console.log('ROUTES/users '+err+' '+result);
-      var len = result.length;
-      var url,p
-      var html = "<table  cellspacing=\"0\"><thead>";
+      var len = result.length,
+          url,
+          p,
+          html = "<table  cellspacing=\"0\"><thead>";
       html+="<tr><th>Member</th></tr>";
       html+="</thead><tbody>";
       
@@ -158,7 +159,7 @@ var UserModel = module.exports = function(environment) {
      // {{/each}}
       html+="</tbody></table>";
       console.log("FILLING "+total);
-      callback(html, len, total);	
+      return callback(html, len, total);	
     });
   };
 };
