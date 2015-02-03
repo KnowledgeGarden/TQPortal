@@ -41,7 +41,7 @@
     "nodemailer": "~1.2.1",
     "ws": "~0.4.32",
     "nodejs-websocket": "~1.0.0",
-    "tqtopicmap": "https://github.com/KnowledgeGarden/TQTopicMap/archive/v0.12.5.tar.gz",
+    "tqtopicmap": "https://github.com/KnowledgeGarden/TQTopicMap/archive/v0.12.4.tar.gz",
     "morgan": "~1.5.0"
   },
   "devDependencies": {
