@@ -18,7 +18,7 @@ module.exports = function (passport, userdb) {
   passport.serializeUser(function(user, done) {
     //This takes a user passed in from the database; we crash if it is empty or corrupted
 	  console.log('passport.serializeUser '+JSON.stringify(user));
-	  console.log('passport.serializeUser-1 '+user.email);
+	//  console.log('passport.serializeUser-1 '+user.email);
     return done(null, user.email);
   });
 
@@ -38,30 +38,16 @@ module.exports = function (passport, userdb) {
                     function passportUse(email, password, done) {
     console.log('LOGINSTART '+email+" is trying to login as local.");
     userdb.findOne(email, function passportFindONe1(err, puser) {
-      //NOTE: puser is a JSON object
       console.log('LOGINSTART-1 '+err+' | '+puser);
-      if(!puser){
-        console.log("user not found.");
-        return done(err, false, { message: 'Unknown user ' + email });
-      }
-      console.log(puser);
-      console.log(puser.email+' '+puser.password);
+      if (err) { return done(err); }
+      //What is critical here is any error must return just a new Error and nothing else
+      if (!puser) { return done(new Error("NoSuchUser")); }
       var User = new Ux(puser);
-      console.log('LOGINNEXT '+JSON.stringify(User.getData()));
-      User.comparePassword(password, function passportCompare(err, isMatch) {
-        console.log('LOGINNEXT-1 '+err+' '+isMatch);
-        if (err) return done(err);
-        if(isMatch) {
-          return done(err, User);
-        } else {
-          return done(err, false, { message: 'Invalid password' });
-        }
-      });
-	            //if (password!==puser.password) {
-	            //	console.log("password invalid. "+puser.password);
-	            //    return done(null, false, { message: 'Invalid password' });
-	            //}
-      return done(err, puser);
+      console.log('LOGINSTART-2 '+JSON.stringify(User.getData()));
+      var isMatch = User.comparePassword(password);
+      console.log('LOGINSTART-3 '+isMatch);
+      if (!isMatch) { console.log("ARRRRG"); return done(new Error("BadPassword")); }
+      return done(null, puser);
     });
   })); 
 

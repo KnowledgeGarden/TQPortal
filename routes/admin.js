@@ -19,7 +19,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         isInvitationOnly = environment.getIsInvitationOnly();
 	console.log("Starting Admin ");
 
-	function isAdmin(req,res,next) {
+	function isAdmin(req, res, next) {
 		console.log("FIX "+constants.ADMIN_CREDENTIALS);
 		console.log("FIXx "+constants.ENGLISH);
 		// must be authenticated
@@ -30,18 +30,17 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			for(var i=0;i<creds.length;i++) {
 				console.log("Admin.isAdmin-1 "+creds[i]+" "+constants.ADMIN_CREDENTIALS);
 				if (creds[i].trim() === constants.ADMIN_CREDENTIALS) {
-					next();
-					return;
+					return next();
 				}
 			}
 		}
-		res.redirect('/');
+		return res.redirect('/');
 	}
 	
-	function isPrivate(req,res,next) {
+	function isPrivate(req, res, next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
-			res.redirect('/login');
+			return res.redirect('/login');
 		} else {
 			return next();
 		}
@@ -56,7 +55,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (isPrivatePortal) {
 			return res.redirect('/login');
 		}
-		res.redirect('/');
+		return res.redirect('/');
 	}
 	
 	///////////////
@@ -68,7 +67,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		var q = req.params.id;
 		console.log("Admin.setView "+q);
 		req.session.viewtype = q;
-		res.redirect('/');
+		return res.redirect('/');
 	});
 	///////////////
 	// LOGOUT
@@ -76,14 +75,14 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	app.get('/logout', function adminGetLogout(req, res) {
 		req.session.clipboard = "";
 		req.logout();
-		res.redirect('/');
+		return res.redirect('/');
 	});
 
 	///////////////
 	// login
 	///////////////
 	app.get('/login', function adminGetLogin(req, res) {
-		res.render('login', environment.getCoreUIData(req));
+		return res.render('login', environment.getCoreUIData(req));
 	});
   
 	app.post('/login', function adminPostLogin(req, res, next) {
@@ -92,6 +91,8 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//Do the authentication using passport local strategy
 		passport.authenticate('local', function adminAuthenticate(err, user, info) {
 			console.log('Login2: '+err+' '+user+' '+info);
+			var erx = err;
+			if (erx) console.log("FooError");
 			
 			//in node_modules/passport/middleware/authenticate.js
 			// there is a strange event in which, if the authentication
@@ -100,9 +101,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			//The bug could be in the way I am calling, or something else,
 			// but this fix stops that.  All other "bad user" issues
 			// work just fine
-			if (bugfix) {return;}
+			//if (bugfix) {return;}
+			console.log("HERE");
 		
-			bugfix = true;
+			//bugfix = true;
 			if (info) {
 				console.log('Login22: '+JSON.stringify(info));
 			}
@@ -112,8 +114,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 			//NO SUCH USER
 			//Login2: null false [object Object]
 			//Login22: {"message":"Unknown user joe@sixpack.com"}
-			if (err) {
-				return next(err);
+			if (erx) console.log("LogError");
+
+			if (erx) {
+				return res.redirect('/error/BadLogin'); 
 			}
 			if (info) {
 				//this could be anything contained in the message in info
@@ -139,7 +143,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	app.get('/signup', function adminGetSignup(req, res){
 		var data = environment.getCoreUIData(req);
 		data.invitationOnly = isInvitationOnly;
-		res.render('signup', data);
+		return res.render('signup', data);
 	});
 	
 	app.post('/validate', function adminPostValidate(req, res) {
@@ -367,6 +371,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     res.render('adminnodeedit', data);
   });
     
+    /**
+     * Called from Admin view Edit Node
+     */
 	app.get('/choosenode', isAdmin, function adminGetChooseNode(req, res) {
 		//It's interesting that req.query works on this one
 		// var foo = req.body;
@@ -394,6 +401,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	  
 	});
 
+	/**
+	 * Called by way of nodeeditform when a node has been edited
+	 */
 	app.post('/updatenode', isAdmin, function adminPostUpdateNode(req, res) {
       //it's interesting that req.body works on this one
 //     var foo = req.body;

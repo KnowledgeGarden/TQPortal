@@ -141,11 +141,11 @@ var User = module.exports = function(json) {
    * @param candidatePassword
    * @param callback signature (err, isMatch)
    */
-  self.comparePassword = function(candidatePassword, callback) {
-    bcrypt.compare(candidatePassword, data['password'], function userBcript1(err, isMatch) {
-      if(err) return callback(err, false);
-      console.log('USER_COMPAREPWD '+isMatch);
-      return callback(err, isMatch);
-    });
-  }
+  self.comparePassword = function(candidatePassword) {
+    console.log("User.comparePassword- ");
+    var isMatch = bcrypt.compareSync(candidatePassword, data.password);
+    console.log("User.comparePassword "+isMatch);
+    return isMatch;
+  };
+
 };
