@@ -8,6 +8,7 @@ var types = require('tqtopicmap/lib/types')
 	, properties = require('tqtopicmap/lib/properties')
 	, extendedtypes = require("../../core/extendedtypology")
 	, constants = require('../../core/constants')
+//	, S = require('string')
 	, rpa = require('../../core/util/stringutil')
 ;
 
@@ -112,8 +113,8 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	self.__makeLocator = function(tagString) {
 		  var label = tagString.trim();
           label = label.toLowerCase();
-	      var locator = label.replace(" ", "_");
-          locator = replaceAll(locator,"'", "_");
+	      var locator = replaceAll(label, " ", "_");
+          locator = replaceAll(locator, "'", "_");
           locator = replaceAll(locator, ":", "_");
           locator = replaceAll(locator, "+", "P");
           locator = replaceAll(locator, "-", "M");
@@ -272,10 +273,10 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 				});
 			});
 		} else {
-			self.__joinTags(theTag,taglist);
+			self.__joinTags(theTag, taglist);
 			topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
 			//wire this tag's relations
-			self.__wireRelations(theTag,  docTopic, usertopic, credentials, function tagMWireRelations1(err, data) {
+			self.__wireRelations(theTag, docTopic, usertopic, credentials, function tagMWireRelations1(err, data) {
 				if (err) {error += err;}
 			});
 		}

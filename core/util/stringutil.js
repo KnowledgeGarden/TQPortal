@@ -1,12 +1,8 @@
 /**
- * New node file
+ * StringUtil
  */
 
-exports.replaceAll = function(word, character, replaceChar){
-	var myword = word.valueOf();
-	
-    while(myword.indexOf(character) !== -1)
-        myword = myword.replace(character,replaceChar);
-
-    return myword;
+exports.replaceAll = function(word, char1, replaceChar){
+	var myword = word; //word.valueOf();
+	return myword.replace(new RegExp(char1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(replaceChar?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):replaceChar);
 }
