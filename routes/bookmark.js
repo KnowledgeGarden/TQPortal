@@ -169,8 +169,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	});
   });
 
-  var _bookmarksupport = function(body,usx, callback) {
+  var _bookmarksupport = function(body, usx, callback) {
 	var credentials = usx.credentials;
+	topicMapEnvironment.logDebug("Bookmark.bookmarksupport "+JSON.stringify(body));
 	if (body.locator === "") {
 		BookmarkModel.create(body, usx, credentials, function bookmarkCreate(err, result) {
 			return callback(err,result);

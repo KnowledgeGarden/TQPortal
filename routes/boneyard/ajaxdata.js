@@ -32,12 +32,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     var credentials = [];
     var usr = req.user;
     if (usr) {credentials = usr.credentials;}
-    BlogModel.fillDatatable(credentials, function(data) {
+    BlogModel.fillDatatable(credentials, function ajaxdataBlog(data) {
  //     console.log("AJAX_DATA GETBLOG "+JSON.stringify(data));
-      try {
-        res.set('Content-type', 'text/json');
-      }  catch (e) { }
-      res.json(data);
+      return res.json(data);
     });
   });
   
@@ -46,12 +43,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     var credentials = [];
     var usr = req.user;
     if (usr) {credentials = usr.credentials;}
-    BookmarkModel.fillDatatable(credentials, function(data) {
+    BookmarkModel.fillDatatable(credentials, function ajaxdataBookmark(data) {
  //     console.log("AJAX_DATA GETBLOG "+JSON.stringify(data));
-      try {
-        res.set('Content-type', 'text/json');
-      }  catch (e) { }
-      res.json(data);
+      return res.json(data);
     });
   });
 
@@ -63,12 +57,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     var credentials = [];
     var usr = req.user;
     if (usr) {credentials = usr.credentials;}
-    WikiModel.fillDatatable(credentials, function(data) {
+    WikiModel.fillDatatable(credentials, function ajaxdataWiki(data) {
 //      console.log("AJAX_DATA GETWIKI "+JSON.stringify(data));
-      try {
-        res.set('Content-type', 'text/json');
-      }  catch (e) { }
-      res.json(data);
+      return res.json(data);
     });
   });
   /**
@@ -79,12 +70,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     var credentials = [];
     var usr = req.user;
     if (usr) {credentials = usr.credentials;}
-    ConversationModel.fillDatatable(credentials, function(data) {
+    ConversationModel.fillDatatable(credentials, function ajaxDataConversation(data) {
 //      console.log("AJAX_DATA GETWIKI "+JSON.stringify(data));
-      try {
-        res.set('Content-type', 'text/json');
-      }  catch (e) { }
-      res.json(data);
+      return res.json(data);
     });
   });
 
@@ -96,13 +84,10 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var credentials = [];
     var usr = req.user;
     if (usr) {credentials = usr.credentials;}
-	UserModel.fillDatatable(credentials, function(data) {
+    UserModel.fillDatatable(credentials, function ajaxDataUser(data) {
       console.log("AJAX_DATA GETUSER "+JSON.stringify(data));
-      try {
-        res.set('Content-type', 'text/json');
-      }  catch (e) { }
-      res.json(data);
-      });
+      return res.json(data);
+    });
   });
   
   /**
@@ -113,22 +98,16 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	var credentials = [];
     var usr = req.user;
     if (usr) {credentials = usr.credentials;}
-	TagModel.fillDatatable(credentials, function(data) {
+	TagModel.fillDatatable(credentials, function ajaxDataTag(data) {
       console.log("AJAX_DATA GETTAG "+JSON.stringify(data));
-      try {
-        res.set('Content-type', 'text/json');
-      }  catch (e) { }
-      res.json(data);
+      return res.json(data);
     });
   });
   //
-  app.get('/ajaxadminusers', function(req,res) {
-	AdminModel.fillDatatable(function(data) {
-		console.log("AJAX_DATA GETADMINUSERS "+JSON.stringify(data));
-		try {
-			res.set('Content-type', 'text/json');
-		}  catch (e) { }
-		res.json(data);
-	});
+  app.get('/ajaxadminusers', function(req, res) {
+  	AdminModel.fillDatatable(function ajaxDataAdmin(data) {
+  		console.log("AJAX_DATA GETADMINUSERS "+JSON.stringify(data));
+  		return res.json(data);
+  	});
   });
 };

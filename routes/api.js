@@ -13,11 +13,11 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
         APIModel = new apim(environment);
 	
 
-	app.get('/api', function(req, res) {
+	app.get('/api', function apiGet(req, res) {
 		//TODO
 	});
 	
-	app.post('/api', function(req, res) {
+	app.post('/api', function apiPost(req, res) {
 		//TODO
 	});
 };

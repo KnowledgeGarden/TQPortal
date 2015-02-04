@@ -11,24 +11,24 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   
   function isPrivate(req,res,next) {
 	  console.log("BOOTING HOME");
-	console.log("Home.isPrivate "+isPrivatePortal);
-    if (isPrivatePortal) {
-      if (req.isAuthenticated()) {return next();}
-      res.redirect('/login');
-	} else {
-		{return next();}
-	}
+  	console.log("Home.isPrivate "+isPrivatePortal);
+      if (isPrivatePortal) {
+        if (req.isAuthenticated()) {return next();}
+        return res.redirect('/login');
+  	} else {
+  		return next();
+  	}
   }
   function isLoggedIn(req, res, next) {
-	// if user is authenticated in the session, carry on 
-	console.log('ISLOGGED IN '+req.isAuthenticated());
-	if (req.isAuthenticated()) {return next();}
-	// if they aren't redirect them to the home page
-	// really should issue an error message
-	if (isPrivatePortal) {
-      return res.redirect('/login');
-	}
-	res.redirect('/');
+  	// if user is authenticated in the session, carry on 
+  	console.log('ISLOGGED IN '+req.isAuthenticated());
+  	if (req.isAuthenticated()) {return next();}
+  	// if they aren't redirect them to the home page
+  	// really should issue an error message
+  	if (isPrivatePortal) {
+        return res.redirect('/login');
+  	}
+  	return res.redirect('/');
   }
 	
   function __get(request) {
@@ -37,7 +37,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /////////////////
   // Routes
   /////////////////
-  app.get('/', isPrivate, function(req, res) {
+  app.get('/', isPrivate, function homeGet(req, res) {
     //changing this value allows changing landing page
 	  var sess = req.session;
 	//console.log("CLIPBOARD: "+sess.clipboard);
@@ -51,7 +51,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     data.conv = HomeModel.listRecentConversations();
     data.bkmks = HomeModel.listRecentBookmarks();
     //console.log("GETHOME "+JSON.stringify(data));
-    res.render(idx, data);
+    return res.render(idx, data);
 	  
   });
 };

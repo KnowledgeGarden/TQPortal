@@ -9,9 +9,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
     /////////////////
 	// router
 	/////////////////
-	app.get("/dbpedia", function(req,res) {
+	app.get("/dbpedia", function dbPediaGet(req, res) {
 		var data = environment.getCoreUIData(req);
-		res.render("dbpedia",data);
+		return res.render("dbpedia", data);
 	});
 
 };

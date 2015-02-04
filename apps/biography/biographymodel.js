@@ -27,26 +27,26 @@ var BiographyModel =  module.exports = function(environment) {
 	/**
 	 * Update an existing node; no tags included
 	 */
-	self.update = function(json,user,credentials,callback) {
-		PortalNodeModel.update(json,user,function(err,result) {
-			callback(err,null);
+	self.update = function(json, user, credentials, callback) {
+		PortalNodeModel.update(json, user, function biographyMUpdate(err, esult) {
+			return callback(err, null);
 		});
 	},
 
 	self.create = function (json, user, credentials, callback) {
 		  console.log('BMXXXX '+JSON.stringify(json));
 		  var isPrivate = false; //TODO
-		  PortalNodeModel.create(json,user,types.BIOGRAPHY_TYPE,icons.BIOGRAPHY_SM, icons.BIOGRAPHY_SM, isPrivate,function(err,lox) {
+		  PortalNodeModel.create(json, user, types.BIOGRAPHY_TYPE, icons.BIOGRAPHY_SM, icons.BIOGRAPHY_SM, isPrivate, function biographyMCreate(err, lox) {
 			//TODO  myEnvironment.addRecentBlog(lox,json.title);
-			  callback(err,lox);
+			  return callback(err, lox);
 		  });
 	},
 	  
 	self.listBiographies = function(start, count, credentials, callback) {
 	    var query = queryDSL.sortedDateTermQuery(properties.INSTANCE_OF,types.BIOGRAPHY_TYPE,start,count);
-	    DataProvider.listNodesByQuery(query, start,count,credentials, function(err,data, total) {
+	    DataProvider.listNodesByQuery(query, start,count,credentials, function biographyMListNodes(err, data, total) {
 	      console.log("BlogModel.listBlogPosts "+err+" "+data);
-	      callback(err,data, total);
+	      return callback(err,data, total);
 	    });
 	},
 	
@@ -56,13 +56,12 @@ var BiographyModel =  module.exports = function(environment) {
 	 * @param credentials
 	 * @param callback signatur (data, countsent, totalavailable)
 	 */
-	self.fillDatatable = function(start, count,credentials, callback) {
-	  self.listBiographies(start,count,credentials,function(err,result, totalx) {
+	self.fillDatatable = function(start, count, redentials, callback) {
+	  self.listBiographies(start, count, credentials, function biographyMListBiographies(err, result, totalx) {
 	      console.log('BlogModel.fillDatatable '+err+' '+totalx+" "+result);
-	      CommonModel.fillSubjectAuthorDateTable(result,"/biography/",totalx, function(html,len,total) {
+	      CommonModel.fillSubjectAuthorDateTable(result, "/biography/", totalx, function biographyMFillTable(html, len, total) {
 		      console.log("FILLING "+start+" "+count+" "+total);
-		      callback(html,len,total);
-	    	  
+		      return callback(html, len, total);
 	      });
 	  });
 	};

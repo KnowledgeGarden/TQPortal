@@ -7,9 +7,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/////////////////
 	environment.addApplicationToMenu("/calendar","Calendar");
 
-	app.get("/calendar", function(req,res) {
+	app.get("/calendar", function calendarGet(req, res) {
 		var data = environment.getCoreUIData(req);
-		res.render("calendar",data);
+		return res.render("calendar", data);
 	});
 
 };

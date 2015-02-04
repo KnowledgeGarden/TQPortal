@@ -16,9 +16,9 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	function isPrivate(req,res,next) {
 		if (isPrivatePortal) {
 			if (req.isAuthenticated()) {return next();}
-			res.redirect('/login');
+			return res.redirect('/login');
 		} else {
-			{return next();}
+			return next();
 		}
 	}
 	
@@ -31,7 +31,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		if (isPrivatePortal) {
 			return res.redirect('/login');
 		}
-		res.redirect('/');
+		return res.redirect('/');
 	}
 	/////////////////
 	// Menu
@@ -41,39 +41,36 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 	/////////////////
 	// Routes
 	/////////////////
-	app.get('/biography', isPrivate,function(req,res) {
+	app.get('/biography', isPrivate, function biographyGet(req, res) {
 		var data = environment.getCoreUIData(req);
 		data.start=0;
 		data.count=constants.MAX_HIT_COUNT; //pagination size
 		data.total=0;
 		data.query="/biography/index";
 		//rendering this will cause an ajax query to blog/index
-		res.render('biographyhome',data);
+		return res.render('biographyhome', data);
 	});
 
 	/**
 	 * Fetch based on page Next and Previous buttons from ajax
 	*/
-	app.get("/biography/index", isPrivate,function(req,res) {
-		var start = parseInt(req.query.start);
-		var count = parseInt(req.query.count);
-		var credentials= [];
+	app.get("/biography/index", isPrivate, function biographyGetIndex(req, res) {
+		var start = parseInt(req.query.start),
+			count = parseInt(req.query.count),
+			credentials= [];
 		if (req.user) {credentials = req.user.credentials;}
 
-		BiographyModel.fillDatatable(start,count, credentials, function(data, countsent,totalavailable) {
+		BiographyModel.fillDatatable(start,count, credentials, function biographyFillTable(data, countsent, totalavailable) {
 			console.log("Biography.index "+data);
-			var cursor = start+countsent;
-			var json = {};
+			var cursor = start+countsent,
+				json = {};
 			//pagination is based on start and count
 			//both values are maintained in an html div
 			json.start = cursor;
 			json.count = constants.MAX_HIT_COUNT; //pagination size
 			json.total = totalavailable;
 			json.table = data;
-			try {
-				res.set('Content-type', 'text/json');
-			}  catch (e) { }
-			res.json(json);
+			return res.json(json);
 		});
 	});
 };

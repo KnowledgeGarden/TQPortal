@@ -11,7 +11,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
   /////////////////
   // Routes
   /////////////////
-  app.get('/about', function(req,res) {
+  app.get('/about', function aboutGet(req, res) {
     res.render('about', __get(req));
   });
 };
