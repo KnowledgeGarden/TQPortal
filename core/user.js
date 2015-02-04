@@ -92,9 +92,9 @@ var User = module.exports = function(json) {
    * @param callback: signature (err)
    */
   self.setPassword = function(password, callback) {
-    bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
+    bcrypt.genSalt(SALT_WORK_FACTOR, function userBcript(err, salt) {
       if(err) return callback(err);
-      bcrypt.hash(password, salt, function(err, hash) {
+      bcrypt.hash(password, salt, function userHash(err, hash) {
         if(err) return callback(err);
         data['password'] = hash;
         callback();
@@ -142,7 +142,7 @@ var User = module.exports = function(json) {
    * @param callback signature (err, isMatch)
    */
   self.comparePassword = function(candidatePassword, callback) {
-    bcrypt.compare(candidatePassword, data['password'], function(err, isMatch) {
+    bcrypt.compare(candidatePassword, data['password'], function userBcript1(err, isMatch) {
       if(err) return callback(err, false);
       console.log('USER_COMPAREPWD '+isMatch);
       return callback(err, isMatch);

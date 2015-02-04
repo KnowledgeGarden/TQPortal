@@ -18,7 +18,7 @@ function UserDatabase(environment, esclient, configProperties, callback) {
 		error = "";
 		this.myEnvironment = environment;
 	console.log("UDB "+environment);
-	fs.readFile(mappingpath, function(err, mapfil) {
+	fs.readFile(mappingpath, function userDbReadMap(err, mapfil) {
 		if (err) {error += err;}
 //		console.log("UDB-1 "+mapfil);
 		var config = {};
@@ -45,12 +45,12 @@ function UserDatabase(environment, esclient, configProperties, callback) {
 			config.server.port = sip.port;
 		}
 		//init USER_COLLECTION
-		ESClient.initIndex(config, JSON.parse(mapfil), function(err, client) {
+		ESClient.initIndex(config, JSON.parse(mapfil), function userDbInitIndex(err, client) {
 			if (err) {error += err;}
 			config._indices = [];
 			config._indices.push(constants.INVITATION_COLLECTION);
 			//init INVITATION_COLLECTION
-			ESClient.initIndex(config, JSON.parse(mapfil), function(err, client) {
+			ESClient.initIndex(config, JSON.parse(mapfil), function userDbInitIndex1(err, client) {
 				console.log("UserDatabase- "+this.ESClient+" | "+err);
 				this.ESClient = ESClient;
 				return callback(error, this);
@@ -77,7 +77,7 @@ UserDatabase.prototype.save = function(user, callback) {
 	_jopts._id = user.email;
 	console.log("UserDatabase.save "+JSON.stringify(user));
 	console.log("UserDatabase.save-1 "+JSON.stringify(_jopts));
-	ESClient.index(_jopts, user, function(err, data) {
+	ESClient.index(_jopts, user, function userDbSave(err, data) {
 		return callback(err, data);
 	});
 };
@@ -87,7 +87,7 @@ UserDatabase.prototype.removeUser = function(email, callback) {
 	_jopts._index = constants.USER_COLLECTION;
 	_jopts._type = constants.CORE_TYPE;
 	_jopts._id = email;
-	ESClient.index(_jopts, function(err, data) {
+	ESClient.index(_jopts, function userDbIndex(err, data) {
 		return callback(err, data);
 	});	
 };
@@ -108,7 +108,7 @@ UserDatabase.prototype.__getUserByHandle = function(handle, callback) {
 	//supposed to be term but that didn't work
 	m.term = q;
 	query.query = m;
-	ESClient.search(_jopts, query, function(err, data) {
+	ESClient.search(_jopts, query, function userDbSearch(err, data) {
 		//Returns a json blob
 		var usr;
 		if (data) {
@@ -135,7 +135,7 @@ UserDatabase.prototype.findOne = function(email, callback) {
 	m.term = q;
 	query.query = m;
 //	console.log("UserDatabase.findOne "+email+" | "+ESClient);
-	ESClient.search(_jopts, query, function(err, data) {
+	ESClient.search(_jopts, query, function userDbSearch1(err, data) {
 		//Returns a json blob
 //		console.log("UserDatabase.findOne-1 "+JSON.stringify(data));
 		var usr;
@@ -165,7 +165,7 @@ UserDatabase.prototype.listUsers = function(callback) {
 //	//supposed to be term but that didn't work
 //	m.term = q;
 //	query.query = m;
-	ESClient.search(_jopts, query, function(err, data) {
+	ESClient.search(_jopts, query, function userDbSearch2(err, data) {
 		console.log("UDB "+JSON.stringify(data));
 		foo.myEnvironment.logDebug("UserDatabase.listUsers "+JSON.stringify(data));
 		//Returns a json blob
@@ -199,7 +199,7 @@ UserDatabase.prototype.handleExists = function(handle, callback) {
 	//supposed to be term but that didn't work
 	m.term = q;
 	query.query = m;
-	ESClient.search(_jopts, query, function(err, data) {
+	ESClient.search(_jopts, query, function userDbSearch3(err, data) {
 		console.log("USERDATABASE EXISTS "+JSON.stringify(data));
 		var truth = (data.hits.total > 0);
 		return callback(err, truth);
@@ -216,7 +216,7 @@ UserDatabase.prototype.hasInvitation = function(email, callback) {
 	_jopts._type = constants.CORE_TYPE;
 	_jopts._ID = email;
 
-	ESClient.existsDocument(_jopts, email, function(err, data) {
+	ESClient.existsDocument(_jopts, email, function userDbExists(err, data) {
 		var truth = (data && data.exists);
 		return callback(err, truth);
 	});
@@ -227,7 +227,7 @@ UserDatabase.prototype.addInvitation = function(email, callback) {
 	_jopts._index = constants.INVITATION_COLLECTION;
 	_jopts._type = constants.CORE_TYPE;
 	_jopts._id = email;
-	ESClient.index(_jopts, {}, function(err, data) {
+	ESClient.index(_jopts, {}, function userDbIndex2(err, data) {
 		return callback(err, data);
 	});
 };
@@ -237,7 +237,7 @@ UserDatabase.prototype.removeInvitation = function(email, callback) {
 	_jopts._index = constants.INVITATION_COLLECTION;
 	_jopts._type = constants.CORE_TYPE;
 	_jopts._id = email;
-	ESClient.index(_jopts, function(err, data) {
+	ESClient.index(_jopts, function userDbIndex3(err, data) {
 		return callback(err, data);
 	});	
 };

@@ -69,7 +69,7 @@ var Environment = function(callback) {  //function(callback) {
 		var myself = this;
 
 		//get the logs
-		logApp = new Lp(function(logp) {
+		logApp = new Lp(function environmentLogApp(logp) {
 			logApp = logp;
 			logger = logApp.getLogger();
 			    console.log("AAAA "+logger.category);
@@ -78,10 +78,10 @@ var Environment = function(callback) {  //function(callback) {
 			monitorLogger = logApp.getMonitorLogger();
 			apiLogger = logApp.getAPILogger();
 			//read the config file
-			fs.readFile(path, function(err, configfile) {
+			fs.readFile(path, function environmentReadConfig(err, configfile) {
 				configProperties = JSON.parse(configfile);
 				// load the help menu
-				fs.readFile(helppath, function(err, helpfile) {  
+				fs.readFile(helppath, function environmentReadHelp(err, helpfile) {  
 					helpMenuProperties = JSON.parse(helpfile);
 					helpMenu = helpMenuProperties.helpMenu;
 					if (!helpMenu) {helpMenu = [];}
@@ -91,7 +91,7 @@ var Environment = function(callback) {  //function(callback) {
 					//TODO improve the connect string with credentials, etc
 //					userdatabase = new Udb(configProperties, function(err, dx) {
 					//Bring up the topicmap
-		            var foo = new Indx(function(err, tmx) {
+		            var foo = new Indx(function environmentIndex(err, tmx) {
 		                TopicMapEnvironment = tmx;
 		                logger.debug("TQPortalEnvironment just getting started 3");
 		                //grab ESClient from the topic map
@@ -99,7 +99,7 @@ var Environment = function(callback) {  //function(callback) {
 		                //now bring up the userdatabase using elasticsearch
 		                			
 
-						userdatabase = new Udes(this, esclient, configProperties, function(err, dx) {
+						userdatabase = new Udes(this, esclient, configProperties, function environmentUserDb(err, dx) {
 										logger.debug("TQPortalEnvironment just getting started 4");
 
 				            //user databasea
@@ -110,7 +110,7 @@ var Environment = function(callback) {  //function(callback) {
 			                // boot the game environment
 			                RPGEnvironment = new Genv(this, TopicMapEnvironment);
 			                //load recents
-			                fs.readFile(recentspath, function(err, recents) {
+			                fs.readFile(recentspath, function environmentRecents(err, recents) {
 			                    var rx = JSON.parse(recents);
 			                    console.log("RECENTS "+err+" "+JSON.stringify(rx));
 			                    blogRing = new rbuf(20, "blog", TopicMapEnvironment);
@@ -164,7 +164,7 @@ var Environment = function(callback) {  //function(callback) {
 			                    // since it is not yet finished building
 			                    theMessage = "";
 			                    CommonModel = new Cm(this, TopicMapEnvironment);
-			                    PortalNodeModel = new Pnm(this,TopicMapEnvironment, CommonModel);
+			                    PortalNodeModel = new Pnm(this, TopicMapEnvironment, CommonModel);
 			                    //fire up the program
 			                    console.log("ENVIRONMENT TM "+err+" "+TopicMapEnvironment.hello()+" "+self.getIsPrivatePortal());
 			                    self.logDebug("Portal Environment started ");
@@ -411,7 +411,7 @@ var Environment = function(callback) {  //function(callback) {
 	};
 	self = this;
 	console.log("ENVIRONMENT END");
-	self.init(function(err,data) {
+	self.init(function environmentInit(err,data) {
 		self.logDebug("FUCK");
 		logger.debug("FUCK MORE");
 		//self = this;

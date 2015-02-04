@@ -18,7 +18,7 @@ var express = require("express"),
 //Environment
 // The Environment boots databases and provides logging services
 ////////////////////////////
-var x = new Env(function(err, env) {
+var x = new Env(function serverEnv(err, env) {
 	console.log("SERVER A "+env);
 	var Environment  =  env;
 	//Environment = env;
@@ -31,7 +31,7 @@ var x = new Env(function(err, env) {
 	console.log("SERVER B");
 	//now that environment is up, run bootstrap to see
 	// if there is new information to add to the index
-	bootstrap.bootstrap(bdir, function(berr) {
+	bootstrap.bootstrap(bdir, function serverBootstrap(berr) {
 		console.log("Environment started "+Environment.getPort());
 		Environment.logDebug("Server Starting-1 "+berr);
 		var UserDatabase = Environment.getUserDatabase();
@@ -77,7 +77,7 @@ var x = new Env(function(err, env) {
 		 */
 		function loadApps() {
 			Environment.logDebug("Server Starting-3");
-			require('fs').readdirSync('./routes').forEach(function (file) {
+			require('fs').readdirSync('./routes').forEach(function serverLoadApps(file) {
 				// only load javascript files
 				if (file.indexOf(".js") > -1) {
 					console.log('BURP '+file);
@@ -93,7 +93,7 @@ var x = new Env(function(err, env) {
 		Environment.logDebug("Server Starting-5");
 		//now watch for anything else that comes in which routers don't catch
 		//and log it to monitor
-		app.get("/*", function(req,res) {
+		app.get("/*", function serverGet(req, res) {
 			var path = req.path,
 				query = req.query;
 			if (query) {query = JSON.stringify(query);}
@@ -104,7 +104,7 @@ var x = new Env(function(err, env) {
 			return res.redirect("/");
 		});
 		  
-		app.post("/*", function(req,res) {
+		app.post("/*", function serverPost(req, res) {
 			var path = req.path,
 				query = req.query;
 			if (query) {query = JSON.stringify(query);}
@@ -114,7 +114,7 @@ var x = new Env(function(err, env) {
 			Environment.logMonitorDebug(msg);
 			return res.redirect("/");
 		});
-		app.put("/*", function(req,res) {
+		app.put("/*", function serverPut(req, res) {
 			var path = req.path,
 				query = req.query;
 			if (query) {query = JSON.stringify(query);}
@@ -132,7 +132,7 @@ var x = new Env(function(err, env) {
 		// console.log("Server "+app);
 		//console.log("Server2 "+app.get("port"));
 
-		http.createServer(app).listen(app.get("port"), function() {
+		http.createServer(app).listen(app.get("port"), function serverCreate() {
 	    	Environment.logDebug("Express server listening on port " + app.get("port"));
 		});
 		//add a socket for chat rooms

@@ -27,7 +27,7 @@ module.exports = function (passport, userdb) {
    * @param email
    */
   passport.deserializeUser(function(email, done) {
-	  userdb.findOne(email, function(err, user) {
+	  userdb.findOne(email, function passportFindONe(err, user) {
 //    	console.log('passport.deserializer '+email+' '+user);
       return done(err, user);
     });
@@ -35,9 +35,9 @@ module.exports = function (passport, userdb) {
 
   passport.use(new LocalStrategy({
                     usernameField: 'email', passwordField: 'password'},
-                    function(email, password, done) {
+                    function passportUse(email, password, done) {
     console.log('LOGINSTART '+email+" is trying to login as local.");
-    userdb.findOne(email, function(err, puser) {
+    userdb.findOne(email, function passportFindONe1(err, puser) {
       //NOTE: puser is a JSON object
       console.log('LOGINSTART-1 '+err+' | '+puser);
       if(!puser){
@@ -48,7 +48,7 @@ module.exports = function (passport, userdb) {
       console.log(puser.email+' '+puser.password);
       var User = new Ux(puser);
       console.log('LOGINNEXT '+JSON.stringify(User.getData()));
-      User.comparePassword(password, function(err, isMatch) {
+      User.comparePassword(password, function passportCompare(err, isMatch) {
         console.log('LOGINNEXT-1 '+err+' '+isMatch);
         if (err) return done(err);
         if(isMatch) {
