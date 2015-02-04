@@ -134,7 +134,7 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
 	  //TODO
 	  //ADD ability to setIntersect joint tags
   self.processTagList = function(tagList, usertopic, docTopic, credentials, callback) {
-    console.log('TAGS.processTagList '+tagList+' '+usertopic);
+    topicMapEnvironment.logDebug('TAGS.processTagList '+tagList+' '+usertopic);
     var labels = [],
 		locators = [],
 		locator,
@@ -243,47 +243,43 @@ var TagModel = module.exports = function(environment, cm, tmenv) {
    * @param callback: signature (err, aTag)
    */
   self.__findOrCreateTag = function(taglist, tagLocator, label, usertopic, docTopic, credentials, callback) {
-	console.log('TagModel.__findOrCreateTag '+tagLocator+' '+usertopic);
+	topicMapEnvironment.logDebug('TagModel.__findOrCreateTag '+tagLocator+' '+usertopic);
 	var error='',
 		theTag;
 	DataProvider.getNodeByLocator(tagLocator,credentials, function tagMGetNode3(err, result) {
 		console.log('TagModel.__findOrCreateTag-1 '+tagLocator+' '+err+' '+result);
 		if (err) {error += err;}
 		//Result will be a Topic or null
-		if (result) {
-			theTag = result;
-			
-			if (!theTag) {
-				//create the tag
-				//TODO: notice assume PUBLIC nodes here
-				TopicModel.newInstanceNode(tagLocator, types.TAG_TYPE, label, "",constants.ENGLISH,
-						usertopic.getLocator(), icons.TAG_SM, icons.TAG, false, credentials, function tagMNewInstance(err, result) {
-					theTag = result;
-					self.__joinTags(theTag,taglist);
-					console.log('TagModel.__findOrCreateTag-2 '+theTag.toJSON());
-					DataProvider.putNode(theTag, function tagMPutNode1(err, result) {
-						console.log("TagModel.__findOrCreateTag-3 "+err+" "+result);
-						myEnvironment.addRecentTag(tagLocator,label);
-						topicMapEnvironment.logDebug("TagModel just added to RingBuffer");
+		theTag = result;
+		
+		if (!theTag) {
+			//create the tag
+			//TODO: notice assume PUBLIC nodes here
+			TopicModel.newInstanceNode(tagLocator, types.TAG_TYPE, label, "",constants.ENGLISH,
+					usertopic.getLocator(), icons.TAG_SM, icons.TAG, false, credentials, function tagMNewInstance(err, result) {
+				theTag = result;
+				self.__joinTags(theTag,taglist);
+				console.log('TagModel.__findOrCreateTag-2 '+theTag.toJSON());
+				DataProvider.putNode(theTag, function tagMPutNode1(err, result) {
+					console.log("TagModel.__findOrCreateTag-3 "+err+" "+result);
+					myEnvironment.addRecentTag(tagLocator,label);
+					topicMapEnvironment.logDebug("TagModel just added to RingBuffer");
+					if (err) {error += err;}
+					//wire this tag's relations
+					self.__wireRelations(theTag,  docTopic, usertopic, credentials, function tagMWireRelations(err, data) {
 						if (err) {error += err;}
-						//wire this tag's relations
-						self.__wireRelations(theTag,  docTopic, usertopic, credentials, function tagMWireRelations(err, data) {
-							if (err) {error += err;}
-						});
 					});
 				});
-			} else {
-				self.__joinTags(theTag,taglist);
-				topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
-				//wire this tag's relations
-				self.__wireRelations(theTag,  docTopic, usertopic, credentials, function tagMWireRelations1(err, data) {
-					if (err) {error += err;}
-				});
-			}
-			return callback(error, theTag);
+			});
 		} else {
-			return callback(error, theTag);
+			self.__joinTags(theTag,taglist);
+			topicMapEnvironment.logDebug("TagModel.__findOrCreateTag found "+theTag.toJSON());
+			//wire this tag's relations
+			self.__wireRelations(theTag,  docTopic, usertopic, credentials, function tagMWireRelations1(err, data) {
+				if (err) {error += err;}
+			});
 		}
+		return callback(error, theTag);
 	});
   };
   

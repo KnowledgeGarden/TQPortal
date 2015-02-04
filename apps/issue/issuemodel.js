@@ -91,6 +91,7 @@ var IssueModel =  module.exports = function(environment) {
 	   */
 	self.create = function (blog, user, credentials, callback) {
 		  console.log('BMXXXX '+JSON.stringify(blog));
+		TopicMapEnvironment.logDebug("IssueModel.create "+JSON.stringify(blog));
 		// some really wierd shit: the User object for the user database stores
 		// as user.handle, but passport seems to muck around and return user.username
 	    var userLocator = user.handle, // It's supposed to be user.handle;
@@ -105,84 +106,83 @@ var IssueModel =  module.exports = function(environment) {
 	    DataProvider.getNodeByLocator(userLocator, credentials, function issueMGetNode1(err, result) {
 	    	if (err) {error += err;}
 	    	if (result) {
-	      userTopic = result;
-	      console.log('IssueModel.create-1 '+userLocator+' | '+userTopic);
-	      // create the blog post
-	      console.log("FOO "+types.CHALLENGE_TYPE);
-	      //NOTE: we are creating an AIR, which uses subject&body, not label&details
-	      TopicModel.newInstanceNode(uuid.newUUID(), types.CHALLENGE_TYPE,
-	      		"", "", constants.ENGLISH, userLocator,
-	      		icons.WARNING_SM, icons.WARNING, isPrivate, credentials, function issueMNewInstance(err, article) {
-				var lang = blog.language;
-	    	  if (!lang) {lang = "en";}
-	    	  var subj = blog.title,
-					body = blog.body;
-	    	  article.setSubject(subj,lang,userLocator);
-	    	  article.setBody(body.trim(),lang,userLocator);
-	    //	  console.log('BlogModel.create-2 '+article.toJSON());
-	    	  RPGEnvironment.addRecentIssue(article.getLocator(),blog.title);
-	    	     // now deal with tags
-				var taglist = CommonModel.makeTagList(blog);
-	          if (taglist.length > 0) {
-	            TagModel.processTagList(taglist, userTopic, article, credentials, function issueMProcessTags(err, result) {
-	              console.log('NEW_POST-1 '+result);
-	              //result could be an empty list;
-	              //TagModel already added Tag_Doc and Doc_Tag relations
-	              console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
-	              DataProvider.putNode(article, function issueMPutNode1(err, data) {
-	                console.log('ARTICLES_CREATE-3 '+err);	  
-	                if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-	                console.log('ARTICLES_CREATE-3b '+userTopic);	  
-
-	                TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	                		userTopic.getLocator(),
-	                      		icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function issueMRelateNodes(err, data) {
-	                    if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                    return callback(err,article.getLocator());
-	                 }); //r1
-	              }); //putnode 		  
-	        	}); // processtaglist
-	          }  else {
-	              DataProvider.putNode(article, function issueMPutNode2(err, data) {
-	                  console.log('ARTICLES_CREATE-3 '+err);	  
-	                  if (err) {console.log('ARTICLES_CREATE-3a '+err)}
-	                  console.log('ARTICLES_CREATE-3b '+userTopic);	  
-
-	                  TopicModel.relateExistingNodesAsPivots(userTopic,article,types.CREATOR_DOCUMENT_RELATION_TYPE,
-	                  		userTopic.getLocator(),
-	                       icons.RELATION_ICON, icons.RELATION_ICON, isPrivate, credentials, function issueMRelateNodes1(err, data) {
-	                               if (err) {console.log('ARTICLES_CREATE-3d '+err);}
-	                               return callback(err, article.getLocator());
-	                  }); //r1
-	              }); //putnode 		  
-	          }    	
-	      });
+				userTopic = result;
+				console.log('IssueModel.create-1 '+userLocator+' | '+userTopic);
+				// create the blog post
+				console.log("FOO "+types.CHALLENGE_TYPE);
+				//NOTE: we are creating an AIR, which uses subject&body, not label&details
+				TopicModel.newInstanceNode(uuid.newUUID(), types.CHALLENGE_TYPE,
+								"", "", constants.ENGLISH, userLocator, icons.WARNING_SM, icons.WARNING, 
+								isPrivate, credentials, function issueMNewInstance(err, article) {
+					if (err) {error += err;}
+					var lang = blog.language;
+					if (!lang) {lang = "en";}
+					var subj = blog.title,
+						body = blog.body;
+					article.setSubject(subj,lang,userLocator);
+					article.setBody(body.trim(),lang,userLocator);
+					RPGEnvironment.addRecentIssue(article.getLocator(), blog.title);
+					// now deal with tags
+					var taglist = CommonModel.makeTagList(blog);
+					TopicMapEnvironment.logDebug("IssueModel.create-1 "+JSON.stringify(taglist));
+					if (taglist.length > 0) {
+						TagModel.processTagList(taglist, userTopic, article, credentials, function issueMProcessTags(err, result) {
+							if (err) {error += err;}
+							TopicMapEnvironment.logDebug("IssueModel.create-3 "+err+" "+result);
+							//result could be an empty list;
+							//TagModel already added Tag_Doc and Doc_Tag relations
+							console.log("ARTICLES_CREATE_2 "+JSON.stringify(article));
+							DataProvider.putNode(article, function issueMPutNode1(err, data) {
+								if (err) {error += err;}
+								console.log('ARTICLES_CREATE-3 '+err);	  
+								console.log('ARTICLES_CREATE-3b '+userTopic);	  
+	                			TopicModel.relateExistingNodesAsPivots(userTopic, article, types.CREATOR_DOCUMENT_RELATION_TYPE,
+												userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON, isPrivate,
+												credentials, function issueMRelateNodes(err, data) {
+									if (err) {error += err;}
+	                    			return callback(error, article.getLocator());
+								}); //r1
+							}); //putnode 		  
+						}); // processtaglist
+					} else {
+						TopicMapEnvironment.logDebug("IssueModel.create-4 ");
+						DataProvider.putNode(article, function issueMPutNode2(err, data) {
+							if (err) {error += err;}
+							TopicModel.relateExistingNodesAsPivots(userTopic, article, types.CREATOR_DOCUMENT_RELATION_TYPE,
+											userTopic.getLocator(), icons.RELATION_ICON, icons.RELATION_ICON, isPrivate,
+											credentials, function issueMRelateNodes1(err, data) {
+								if (err) {error += err;}
+								return callback(error, article.getLocator());
+							}); //r1
+						}); //putnode 		  
+					}    	
+				});
 			} else {
-				return callback(err, retval);
+				return callback(error, retval);
 			}
 	    });
 	};
 	  
-	  self.listIssues = function(start, count, credentials, callback) {
-        DataProvider.listInstanceNodes(types.CHALLENGE_TYPE, start, count, credentials, function issueMListInstances(err, data, total){
-                console.log("IssueModel.listIssues "+err+" "+data);
-	      return callback(err, data, total);
-	    });
-	  };
+	self.listIssues = function(start, count, credentials, callback) {
+		DataProvider.listInstanceNodes(types.CHALLENGE_TYPE, start, count, credentials, function issueMListInstances(err, data, total) {
+			console.log("IssueModel.listIssues "+err+" "+data);
+			return callback(err, data, total);
+		});
+	};
 	  
-	  /**
-	   * @param start
-	   * @param count
-	   * @param credentials
-	   * @param callback signatur (data, countsent, totalavailable)
-	   */
-	  self.fillDatatable = function(start, count,credentials, callback) {
-		  self.listIssues(start,count,credentials,function issueMListIssues(err, result, totalx) {
-		      console.log('IssueModel.fillDatatable '+err+' '+totalx+" "+result);
-		      CommonModel.fillSubjectAuthorDateTable(result,"/issue/",totalx, function issueMFillTable(html, len, total) {
-			      console.log("FILLING "+start+" "+count+" "+total);
-			      return callback(html, len, total);
-		      });
-		  });
-	  };
+	/**
+	 * @param start
+	 * @param count
+	 * @param credentials
+	 * @param callback signatur (data, countsent, totalavailable)
+	 */
+	self.fillDatatable = function(start, count,credentials, callback) {
+		self.listIssues(start,count,credentials,function issueMListIssues(err, result, totalx) {
+			console.log('IssueModel.fillDatatable '+err+' '+totalx+" "+result);
+			CommonModel.fillSubjectAuthorDateTable(result,"/issue/",totalx, function issueMFillTable(html, len, total) {
+				console.log("FILLING "+start+" "+count+" "+total);
+				return callback(html, len, total);
+			});
+		});
+	};
 };
