@@ -67,7 +67,7 @@ exports.plugin = function(app, environment, ppt, isPrivatePortal) {
 		//WARNING: this will not compile -- missing _blogsupport from blog.js
 			_blogsupport(body, usx, function nodeEditSupport(err, result) {
 			console.log('BLOG_NEW_POST-1 '+err+' '+result);
-			return res.redirect('/);
+			return res.redirect('/');
 		});
 	});
 
