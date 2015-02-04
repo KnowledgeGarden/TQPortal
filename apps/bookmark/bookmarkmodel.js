@@ -50,7 +50,7 @@ var BookmarkModel =  module.exports = function(environment) {
 
 		if (!lang) {lang = "en";}
 
-		myEnvironment.logDebug("BookmarkModel.createAnnotationAndTags "+bookmarkNode.toJSON());
+		topicMapEnvironment.logDebug("BookmarkModel.createAnnotationAndTags "+bookmarkNode.toJSON());
 		//contextLocator, parentNode,newLocator, 
 		//nodeType, subject, body, language, smallIcon, largeIcon,
 		//  credentials, userLocator, isPrivate, callback
@@ -64,6 +64,7 @@ var BookmarkModel =  module.exports = function(environment) {
 			}
 			if (err) {error += err;}
 			var taglist = CommonModel.makeTagList(blog);
+			topicMapEnvironment.logDebug("BookmarkModel.createAnnotationAndTags-1 "+JSON.stringify(taglist));
 	        if (taglist.length > 0) {
 				TagModel.processTagList(taglist, userTopic, positionNode, credentials, function bookmarkMProcessTags(err, result) {
 					console.log('NEW_POST-1 '+result);
@@ -103,8 +104,8 @@ var BookmarkModel =  module.exports = function(environment) {
 	 * If the bookmark doesn't exist, create it.
 	 * Given the bookmark, then create a Position node with it as the conversation root.
 	 */
-	  self.create = function (blog, user, credentials, callback) {
-		  console.log('BOOKMARK.create '+JSON.stringify(blog));
+	self.create = function (blog, user, credentials, callback) {
+		topicMapEnvironment.logDebug('BOOKMARK.create '+JSON.stringify(blog));
 		// some really wierd shit: the User object for the user database stores
 		// as user.handle, but passport seems to muck around and return user.username
 	    var userLocator = user.handle, // It's supposed to be user.handle;
@@ -123,26 +124,22 @@ var BookmarkModel =  module.exports = function(environment) {
 	    	if (err) {error+=err;}
 	    	if (utpx) {
 				userTopic = utpx;
-				myEnvironment.logDebug('BookmarkModel.create- '+userLocator+' | '+userTopic.toJSON());
+				topicMapEnvironment.logDebug('BookmarkModel.create- '+userLocator+' | '+userTopic.toJSON());
 				//see if the bookmark exists
 				DataProvider.getNodeByURL(url, credentials, function bookmarkMGetNode2(err, dNode) {
-			      if (err) {error+=err;}
-			      if (dNode) {
-				      var lox;
-				      //test data to see if it's a proxy
-				      try {
-				    	  lox = dNode.getLocator();
-				      } catch (err) {}
-				      myEnvironment.logDebug("BookmarkModel.create-1 "+url+" "+lox);
-				      if (lox) {
-				    	  bookmarkTopic = dNode;
-				    	  //MAKE POSITION
-				    	  //TAGS to Bookmark and Position
-				    	  self.createAnnotationAndTags(bookmarkTopic, blog, userTopic, credentials, function bookmarkMCreateAnnotation(err, result) {
+					if (err) {error+=err;}
+					var lox;
+					topicMapEnvironment.logDebug("BookmarkModel.create-1 "+url+" "+lox);
+			      	if (dNode) {
+			      		lox = dNode.getLocator();
+						bookmarkTopic = dNode;
+						//MAKE Note
+						//TAGS to Bookmark and Position
+						self.createAnnotationAndTags(bookmarkTopic, blog, userTopic, credentials, function bookmarkMCreateAnnotation(err, result) {
 						      if (err) {error+=err;}
 				    		  return callback(error, result);
-				    	  });
-				      } else {
+						});
+					} else {
 				    	  //create the bookmark
 					      TopicModel.newInstanceNode(uuid.newUUID(), types.BOOKMARK_TYPE,
 						      		"", "", constants.ENGLISH, userLocator,
@@ -174,9 +171,6 @@ var BookmarkModel =  module.exports = function(environment) {
 							      });
 							  });
 					      });
-					  }
-					} else {
-						return callback(error, retval);
 					}
 			    }); //getNodeByURL
 		    } else {
