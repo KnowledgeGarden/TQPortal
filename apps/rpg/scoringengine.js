@@ -4,10 +4,8 @@
  * ValueMatrix based on creation, context, and more
  */
  var types = require('tqtopicmap/lib/types'),
-    sb = require('tqtopicmap/lib/util/stringbuilder'),
     constants = require('../../core/constants'),
-    infoBoxConstants = require('./gamevvaluematrixinfoboxconstants'),
-    RGBib = require('./rpginfoboxmodel')
+    infoBoxConstants = require('./gamevvaluematrixinfoboxconstants')
 ;
 
 var ScoringEngine = module.exports = function(environment, tmenv) {
@@ -38,7 +36,7 @@ var ScoringEngine = module.exports = function(environment, tmenv) {
 	 * @param callback signature (err);
 	 */
 	self.scoreGameTree = function(gameTreeRoot, callback) {
-		val error;
+		var error;
 
 		//TODO
 		return callback(error)
