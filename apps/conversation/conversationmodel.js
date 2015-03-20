@@ -27,7 +27,7 @@ var ConversationModel = module.exports = function(environment) {
 	/**
 	 * Update an existing node; no tags included
 	 */
-	self.update = function(json, user, credentials, callback) {
+	self.update = function(json, user, callback) {
 		PortalNodeModel.update(json, user, function conversationMUpdate(err, result) {
 			return callback(err, null);
 		});
